@@ -3,9 +3,6 @@ import 'package:go_router/go_router.dart';
 
 class Catalogo extends StatefulWidget {
   const Catalogo({super.key});
-
- 
-
   @override
   State<Catalogo> createState() => _CatalogoState();
 }

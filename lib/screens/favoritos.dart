@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-class RegistroUsuario extends StatefulWidget {
-  const RegistroUsuario({super.key});
+class Favoritos extends StatefulWidget {
+  const Favoritos({super.key});
   @override
-  State<RegistroUsuario> createState() => _RegistroUsuarioState();
+  State<Favoritos> createState() => _FavoritosState();
 }
 
-class _RegistroUsuarioState extends State<RegistroUsuario> {
+class _FavoritosState extends State<Favoritos> {
   @override
   Widget build(BuildContext context) {
    
@@ -17,13 +17,13 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
        
           mainAxisAlignment: .center,
           children: [
-            const Text('Registrarse:'),
+            const Text('Mis favoritos:'),
             const SizedBox(height: 10),
             ElevatedButton(
               onPressed: () {
-                context.go("");
+                context.go("/");
               },
-              child: const Text("ACEPTAR"),
+              child: const Text(""),
             ),
           ],
         ),

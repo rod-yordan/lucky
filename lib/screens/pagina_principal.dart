@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 
 class PaginaPrincipal extends StatelessWidget {
   const PaginaPrincipal({super.key});
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -103,17 +102,28 @@ class PaginaPrincipal extends StatelessWidget {
       currentIndex: 0,
       type: BottomNavigationBarType.fixed,
       onTap: (index) {
-        if (index == 4) {
-          context.go('/iniciarSesion');
+        switch (index) {
+          case 0: 
+            context.go('/');
+            break;
+          case 1: 
+            context.go("/catalogo");
+            break;
+          case 2: 
+            context.go("/cupones");
+            break;
+          case 3:
+            context.go("/favoritos");
+            break;
+          case 4: 
+            context.go('/iniciarSesion');
+            break;
         }
       },
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
         BottomNavigationBarItem(icon: Icon(Icons.list), label: 'Catálogo'),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.confirmation_number),
-          label: 'Cupones',
-        ),
+        BottomNavigationBarItem(icon: Icon(Icons.confirmation_number), label: 'Cupones'),
         BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Favoritos'),
         BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Mi cuenta'),
       ],

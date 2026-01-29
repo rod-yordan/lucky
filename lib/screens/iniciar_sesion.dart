@@ -3,9 +3,6 @@ import 'package:go_router/go_router.dart';
 
 class IniciarSesion extends StatefulWidget {
   const IniciarSesion({super.key});
-
- 
-
   @override
   State<IniciarSesion> createState() => _IniciarSesionState();
 }
@@ -20,12 +17,12 @@ class _IniciarSesionState extends State<IniciarSesion> {
        
           mainAxisAlignment: .center,
           children: [
-            const Text('Inicia sesion:'),
+            const Text('No tienes una cuenta? Registrate:'),
             ElevatedButton(
               onPressed: () {
-                context.go("");
+                context.go("/registroUsuario");
               },
-              child: const Text("Aceptar"),
+              child: const Text("Registrarse"),
             ),
             
             ],
