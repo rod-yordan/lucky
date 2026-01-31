@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:lucky/screens/barra_navegacion.dart';
 
 class PaginaPrincipal extends StatefulWidget {
   const PaginaPrincipal({super.key});
@@ -59,7 +59,7 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      bottomNavigationBar: _barraInferior(context),
+      bottomNavigationBar: const BarraNavegacion(currentIndex: 0),
       body: SafeArea(
         child: Column(
           children: [
@@ -132,17 +132,44 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
     return SizedBox(
       height: 170,
       width: double.infinity,
-      child: PageView.builder(
-        controller: _pageController,
-        itemCount: banners.length,
-        onPageChanged: (i) => setState(() => _paginaActual = i),
-        itemBuilder: (_, i) {
-          return Image.asset(
-            banners[i],
-            fit: BoxFit.cover,
-            width: double.infinity,
-          );
-        },
+      child: Stack(
+        children: [
+          PageView.builder(
+            controller: _pageController,
+            itemCount: banners.length,
+            onPageChanged: (i) => setState(() => _paginaActual = i),
+            itemBuilder: (_, i) {
+              return Image.asset(
+                banners[i],
+                fit: BoxFit.cover,
+                width: double.infinity,
+              );
+            },
+          ),
+          // Indicadores
+          Positioned(
+            bottom: 12,
+            left: 0,
+            right: 0,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(banners.length, (index) {
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  width: _paginaActual == index ? 10 : 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: _paginaActual == index
+                        ? Colors.white
+                        : Colors.white.withAlpha(120),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                );
+              }),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -183,7 +210,7 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: lista.length,
-        separatorBuilder: (_, _) => const SizedBox(width: 16),
+        separatorBuilder: (_, __) => const SizedBox(width: 16),
         itemBuilder: (_, i) => _productoCard(lista[i]),
       ),
     );
@@ -232,27 +259,6 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
           ),
         ],
       ),
-    );
-  }
-
-  // ================= BARRA INFERIOR =================
-  Widget _barraInferior(BuildContext context) {
-    return BottomNavigationBar(
-      currentIndex: 0,
-      type: BottomNavigationBarType.fixed,
-      onTap: (i) {
-        if (i == 0) context.go('/');
-      },
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
-        BottomNavigationBarItem(icon: Icon(Icons.list), label: 'Catálogo'),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.confirmation_number),
-          label: 'Cupones',
-        ),
-        BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Favoritos'),
-        BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Mi cuenta'),
-      ],
     );
   }
 }
