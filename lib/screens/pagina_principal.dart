@@ -14,6 +14,27 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
 
   final List<String> banners = ['assets/banner1.png', 'assets/banner2.png'];
 
+  final List<Map<String, dynamic>> productos = [
+    {
+      'imagen': 'assets/jean_mujer.png',
+      'titulo': 'Jean Mujer Skinny Denim',
+      'precio': 89.90,
+      'precioAntes': 179.90,
+    },
+    {
+      'imagen': 'assets/jean_hombre.png',
+      'titulo': 'Jean Hombre Silueta Slim',
+      'precio': 119.90,
+      'precioAntes': 159.90,
+    },
+    {
+      'imagen': 'assets/jean_hombre.png',
+      'titulo': 'Jean Hombre Silueta Slim',
+      'precio': 119.90,
+      'precioAntes': 159.90,
+    },
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -26,141 +47,78 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
       if (!mounted) return;
 
       _paginaActual = (_paginaActual + 1) % banners.length;
-
       _pageController.animateToPage(
         _paginaActual,
-        duration: const Duration(milliseconds: 400),
+        duration: const Duration(milliseconds: 500),
         curve: Curves.easeInOut,
       );
     }
   }
 
   @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      bottomNavigationBar: _barraInferior(context),
       body: SafeArea(
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(30, 20, 30, 0),
-              child: Column(children: [_barraSuperior(), _categorias()]),
-            ),
-
-            _bannerCarrusel(context),
-            _recomendado(),
-            const Spacer(),
-          ],
-        ),
-      ),
-      bottomNavigationBar: _barraInferior(context),
-    );
-  }
-
-  // Widget barra superior
-  Widget _barraSuperior() {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Image.asset('logo.jpg', height: 50),
-            const Icon(Icons.shopping_cart_outlined, size: 28),
-          ],
-        ),
-        const SizedBox(height: 16),
-        // Barra de búsqueda
-        Container(
-          height: 45,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          decoration: BoxDecoration(
-            color: Colors.grey.shade200,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: const Row(
-            children: [
-              Icon(Icons.search, color: Colors.grey),
-              SizedBox(width: 8),
-              Text('Buscar productos...', style: TextStyle(color: Colors.grey)),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-      ],
-    );
-  }
-
-  // Categorías
-  Widget _categorias() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: const [
-        Text('Todo', style: TextStyle(fontWeight: FontWeight.bold)),
-        Text('Mujer'),
-        Text('Hombre'),
-        Text('Promociones'),
-      ],
-    );
-  }
-
-  // Widget para banners publicitarios
-  Widget _bannerCarrusel(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(30, 12, 30, 0),
-      child: SizedBox(
-        height: 160,
-        child: Stack(
-          children: [
-            PageView.builder(
-              controller: _pageController,
-              itemCount: banners.length,
-              onPageChanged: (index) {
-                setState(() {
-                  _paginaActual = index;
-                });
-              },
-              itemBuilder: (context, index) {
-                return GestureDetector(
-                  onTap: () => context.go('/catalogo'),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: Image.asset(
-                      banners[index],
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                    ),
+            // ================= BARRA SUPERIOR =================
+            Container(
+              color: Colors.white,
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(children: const [SizedBox(height: 20)]),
                   ),
-                );
-              },
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: _BarraSuperior(),
+                  ),
+                  const SizedBox(height: 12),
+                  Container(height: 1, color: Colors.black12),
+                ],
+              ),
             ),
 
-            // Indicadores
-            Positioned(
-              bottom: 12,
-              left: 0,
-              right: 0,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(banners.length, (index) {
-                  return AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    width: _paginaActual == index ? 10 : 6,
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: _paginaActual == index
-                          ? Colors.white
-                          : Colors.white.withAlpha(120),
-                      borderRadius: BorderRadius.circular(10),
+            // ================= CONTENIDO =================
+            Expanded(
+              child: Container(
+                color: const Color(0xFFF7F7F7),
+                child: ListView(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Column(
+                        children: const [
+                          SizedBox(height: 12),
+                          _Categorias(),
+                          SizedBox(height: 14),
+                        ],
+                      ),
                     ),
-                  );
-                }),
+
+                    _bannerCarrusel(),
+
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Column(
+                        children: [
+                          _seccionProductos(
+                            titulo: 'Recomendado',
+                            productos: productos,
+                          ),
+                          _seccionProductos(
+                            titulo: 'Más populares',
+                            productos: productos,
+                          ),
+                          const SizedBox(height: 24),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -169,52 +127,121 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
     );
   }
 
-  // Recomendado
-  Widget _recomendado() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: const [
-          Text(
-            'Recomendado',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          Row(
+  // ================= BANNER =================
+  Widget _bannerCarrusel() {
+    return SizedBox(
+      height: 170,
+      width: double.infinity,
+      child: PageView.builder(
+        controller: _pageController,
+        itemCount: banners.length,
+        onPageChanged: (i) => setState(() => _paginaActual = i),
+        itemBuilder: (_, i) {
+          return Image.asset(
+            banners[i],
+            fit: BoxFit.cover,
+            width: double.infinity,
+          );
+        },
+      ),
+    );
+  }
+
+  // ================= SECCIÓN REUTILIZABLE =================
+  Widget _seccionProductos({
+    required String titulo,
+    required List<Map<String, dynamic>> productos,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Ver todo', style: TextStyle(color: Colors.grey)),
-              SizedBox(width: 4),
-              Icon(Icons.arrow_forward_ios, size: 14),
+              Text(
+                titulo,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const Text('Ver todo', style: TextStyle(color: Colors.grey)),
             ],
+          ),
+        ),
+        _listaProductos(productos),
+      ],
+    );
+  }
+
+  // ================= LISTA PRODUCTOS =================
+  Widget _listaProductos(List<Map<String, dynamic>> lista) {
+    return SizedBox(
+      height: 310,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: lista.length,
+        separatorBuilder: (_, _) => const SizedBox(width: 16),
+        itemBuilder: (_, i) => _productoCard(lista[i]),
+      ),
+    );
+  }
+
+  // ================= CARD PRODUCTO =================
+  Widget _productoCard(Map<String, dynamic> p) {
+    return Container(
+      width: 170,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
+            child: Image.asset(
+              p['imagen'],
+              height: 190,
+              width: double.infinity,
+              fit: BoxFit.cover,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(p['titulo'], maxLines: 2, overflow: TextOverflow.ellipsis),
+                const SizedBox(height: 6),
+                Text(
+                  'S/ ${p['precio']}',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  'S/ ${p['precioAntes']}',
+                  style: const TextStyle(
+                    decoration: TextDecoration.lineThrough,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  // Barra inferior
+  // ================= BARRA INFERIOR =================
   Widget _barraInferior(BuildContext context) {
     return BottomNavigationBar(
       currentIndex: 0,
       type: BottomNavigationBarType.fixed,
-      onTap: (index) {
-        switch (index) {
-          case 0:
-            context.go('/');
-            break;
-          case 1:
-            context.go('/catalogo');
-            break;
-          case 2:
-            context.go('/cupones');
-            break;
-          case 3:
-            context.go('/favoritos');
-            break;
-          case 4:
-            context.go('/iniciarSesion');
-            break;
-        }
+      onTap: (i) {
+        if (i == 0) context.go('/');
       },
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
@@ -225,6 +252,60 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
         ),
         BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Favoritos'),
         BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Mi cuenta'),
+      ],
+    );
+  }
+}
+
+// ================= WIDGETS PEQUEÑOS =================
+
+class _BarraSuperior extends StatelessWidget {
+  const _BarraSuperior();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Image.asset('logo.jpg', height: 45),
+            const Icon(Icons.shopping_cart_outlined, size: 28),
+          ],
+        ),
+        const SizedBox(height: 14),
+        Container(
+          height: 42,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade200,
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: const Row(
+            children: [
+              Icon(Icons.search, color: Colors.grey),
+              SizedBox(width: 8),
+              Text('Buscar productos...', style: TextStyle(color: Colors.grey)),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _Categorias extends StatelessWidget {
+  const _Categorias();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        Text('Todo', style: TextStyle(fontWeight: FontWeight.bold)),
+        Text('Mujer'),
+        Text('Hombre'),
+        Text('Promociones'),
       ],
     );
   }
