@@ -206,7 +206,7 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
   // ================= LISTA PRODUCTOS =================
   Widget _listaProductos(List<Map<String, dynamic>> lista) {
     return SizedBox(
-      height: 310,
+      height: 330,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: lista.length,
@@ -231,7 +231,7 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
             borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
             child: Image.asset(
               p['imagen'],
-              height: 190,
+              height: 220,
               width: double.infinity,
               fit: BoxFit.cover,
             ),
