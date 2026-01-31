@@ -68,13 +68,13 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
               color: Colors.white,
               child: Column(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Column(children: const [SizedBox(height: 20)]),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: SizedBox(height: 16),
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: _BarraSuperior(),
+                    child: _barraSuperior(),
                   ),
                   const SizedBox(height: 12),
                   Container(height: 1, color: Colors.black12),
@@ -91,10 +91,10 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Column(
-                        children: const [
-                          SizedBox(height: 12),
-                          _Categorias(),
-                          SizedBox(height: 14),
+                        children: [
+                          const SizedBox(height: 12),
+                          _categorias(),
+                          const SizedBox(height: 14),
                         ],
                       ),
                     ),
@@ -124,6 +124,49 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _barraSuperior() {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Image.asset('logo.jpg', height: 45),
+            const Icon(Icons.shopping_cart_outlined, size: 28),
+          ],
+        ),
+        const SizedBox(height: 14),
+        Container(
+          height: 42,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade200,
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: const Row(
+            children: [
+              Icon(Icons.search, color: Colors.grey),
+              SizedBox(width: 8),
+              Text('Buscar productos...', style: TextStyle(color: Colors.grey)),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ================= CATEGORIAS =================
+  Widget _categorias() {
+    return const Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        Text('Todo', style: TextStyle(fontWeight: FontWeight.bold)),
+        Text('Mujer'),
+        Text('Hombre'),
+        Text('Promociones'),
+      ],
     );
   }
 
@@ -259,60 +302,6 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
           ),
         ],
       ),
-    );
-  }
-}
-
-// ================= WIDGETS PEQUEÑOS =================
-
-class _BarraSuperior extends StatelessWidget {
-  const _BarraSuperior();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Image.asset('logo.jpg', height: 45),
-            const Icon(Icons.shopping_cart_outlined, size: 28),
-          ],
-        ),
-        const SizedBox(height: 14),
-        Container(
-          height: 42,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          decoration: BoxDecoration(
-            color: Colors.grey.shade200,
-            borderRadius: BorderRadius.circular(18),
-          ),
-          child: const Row(
-            children: [
-              Icon(Icons.search, color: Colors.grey),
-              SizedBox(width: 8),
-              Text('Buscar productos...', style: TextStyle(color: Colors.grey)),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _Categorias extends StatelessWidget {
-  const _Categorias();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        Text('Todo', style: TextStyle(fontWeight: FontWeight.bold)),
-        Text('Mujer'),
-        Text('Hombre'),
-        Text('Promociones'),
-      ],
     );
   }
 }
