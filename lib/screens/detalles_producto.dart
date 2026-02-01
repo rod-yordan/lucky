@@ -78,7 +78,7 @@ class _DetallesProductoState extends State<DetallesProducto> {
                     children: [
                       // Imagen del producto
                       Container(
-                        height: 450,
+                        height: 500,
                         width: double.infinity,
                         color: Colors.white,
                         child: Image.asset(
@@ -93,7 +93,7 @@ class _DetallesProductoState extends State<DetallesProducto> {
                       Padding(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 24,
-                          vertical: 24,
+                          vertical: 16,
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -101,12 +101,9 @@ class _DetallesProductoState extends State<DetallesProducto> {
                             // Título
                             Text(
                               producto['titulo'],
-                              style: const TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: const TextStyle(fontSize: 20),
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 8),
 
                             // Precios
                             Row(
@@ -114,19 +111,51 @@ class _DetallesProductoState extends State<DetallesProducto> {
                                 Text(
                                   'S/ ${producto['precio']}',
                                   style: const TextStyle(
+                                    color: Color(0xFFED1C24),
                                     fontSize: 24,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
+
+                                // Precio anterior (si existe)
+                                if (tienePrecioAnterior) ...[
+                                  const SizedBox(height: 4),
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 8.0),
+                                    child: Stack(
+                                      children: [
+                                        Text(
+                                          'S/ ${producto['precioAntes']}',
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            color: Colors.grey.shade700,
+                                          ),
+                                        ),
+                                        Positioned.fill(
+                                          child: Align(
+                                            alignment: Alignment.center,
+                                            child: Container(
+                                              height: 1, // Grosor del tachado
+                                              color: Colors
+                                                  .grey
+                                                  .shade700, // Color gris
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+
                                 if (descuentoPorcentaje > 0) ...[
                                   const SizedBox(width: 12),
                                   Container(
                                     padding: const EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                      vertical: 4,
+                                      horizontal: 6,
+                                      vertical: 1,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: Colors.red,
+                                      color: const Color(0xFFED1C24),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Text(
@@ -141,29 +170,12 @@ class _DetallesProductoState extends State<DetallesProducto> {
                                 ],
                               ],
                             ),
-
-                            // Precio anterior (si existe)
-                            if (tienePrecioAnterior) ...[
-                              const SizedBox(height: 4),
-                              Text(
-                                'S/ ${producto['precioAntes']}',
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  decoration: TextDecoration.lineThrough,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            ],
-
-                            const SizedBox(height: 24),
+                            const SizedBox(height: 8),
 
                             // Selección de color
                             const Text(
                               'Color:',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: TextStyle(fontSize: 16),
                             ),
                             const SizedBox(height: 12),
 
@@ -179,24 +191,25 @@ class _DetallesProductoState extends State<DetallesProducto> {
                                   },
                                   child: Container(
                                     margin: const EdgeInsets.only(right: 12),
-                                    padding: const EdgeInsets.all(2),
+                                    padding: const EdgeInsets.all(1),
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
                                       border: Border.all(
                                         color: seleccionado
                                             ? Colors.black
                                             : Colors.transparent,
-                                        width: 2,
+                                        width: 1,
                                       ),
                                     ),
                                     child: Container(
-                                      width: 36,
-                                      height: 36,
+                                      width: 30,
+                                      height: 30,
                                       decoration: BoxDecoration(
                                         color: color['codigo'],
                                         shape: BoxShape.circle,
                                         border: Border.all(
-                                          color: Colors.grey.shade300,
+                                          color: Colors.grey.shade500,
+                                          width: 1.5,
                                         ),
                                       ),
                                     ),
@@ -205,15 +218,12 @@ class _DetallesProductoState extends State<DetallesProducto> {
                               }).toList(),
                             ),
 
-                            const SizedBox(height: 24),
+                            const SizedBox(height: 16),
 
                             // Selección de talla
                             const Text(
                               'Talla:',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: TextStyle(fontSize: 16),
                             ),
                             const SizedBox(height: 12),
 
@@ -229,18 +239,19 @@ class _DetallesProductoState extends State<DetallesProducto> {
                                   child: Container(
                                     margin: const EdgeInsets.only(right: 12),
                                     padding: const EdgeInsets.symmetric(
-                                      horizontal: 20,
-                                      vertical: 10,
+                                      horizontal: 12,
+                                      vertical: 3,
                                     ),
                                     decoration: BoxDecoration(
                                       color: seleccionada
-                                          ? Colors.black
+                                          ? Colors.grey.shade300
                                           : Colors.white,
                                       borderRadius: BorderRadius.circular(8),
                                       border: Border.all(
                                         color: seleccionada
                                             ? Colors.black
-                                            : Colors.grey.shade300,
+                                            : Colors.grey.shade500,
+                                        width: 1,
                                       ),
                                     ),
                                     child: Text(
@@ -248,9 +259,7 @@ class _DetallesProductoState extends State<DetallesProducto> {
                                       style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
-                                        color: seleccionada
-                                            ? Colors.white
-                                            : Colors.black,
+                                        color: Colors.black,
                                       ),
                                     ),
                                   ),

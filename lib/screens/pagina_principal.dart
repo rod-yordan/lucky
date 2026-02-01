@@ -314,7 +314,11 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
                     children: [
                       Text(
                         'S/ ${p['precio']}',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                          color: Color(0xFFED1C24),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
                       if (descuentoPorcentaje > 0) ...[
                         const SizedBox(width: 8),
@@ -324,7 +328,7 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
                             vertical: 1,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.red,
+                            color: const Color(0xFFED1C24),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
@@ -341,14 +345,25 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
                   ),
                   if (p['precioAntes'] != null &&
                       p['precioAntes'] != p['precio']) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      'S/ ${p['precioAntes']}',
-                      style: const TextStyle(
-                        decoration: TextDecoration.lineThrough,
-                        color: Colors.grey,
-                        fontSize: 14,
-                      ),
+                    Stack(
+                      children: [
+                        Text(
+                          'S/ ${p['precioAntes']}',
+                          style: TextStyle(
+                            color: Colors.grey.shade700,
+                            fontSize: 12,
+                          ),
+                        ),
+                        Positioned.fill(
+                          child: Align(
+                            alignment: Alignment.center,
+                            child: Container(
+                              height: 1,
+                              color: Colors.grey.shade700,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ],
