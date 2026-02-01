@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lucky/screens/barra_navegacion.dart';
 
 class PaginaPrincipal extends StatefulWidget {
@@ -138,19 +139,29 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
           ],
         ),
         const SizedBox(height: 14),
-        Container(
-          height: 42,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          decoration: BoxDecoration(
-            color: Colors.grey.shade200,
-            borderRadius: BorderRadius.circular(18),
-          ),
-          child: const Row(
-            children: [
-              Icon(Icons.search, color: Colors.grey),
-              SizedBox(width: 8),
-              Text('Buscar productos...', style: TextStyle(color: Colors.grey)),
-            ],
+
+        GestureDetector(
+          onTap: () {
+            context.go('/busqueda');
+          },
+          child: Container(
+            width: double.infinity,
+            height: 42,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade200,
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.search, color: Colors.grey),
+                SizedBox(width: 8),
+                Text(
+                  'Buscar productos...',
+                  style: TextStyle(color: Colors.grey, fontSize: 16),
+                ),
+              ],
+            ),
           ),
         ),
       ],

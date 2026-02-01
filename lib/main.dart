@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucky/screens/busqueda.dart';
 import 'package:lucky/screens/catalogo.dart';
 import 'package:lucky/screens/cupones.dart';
 import 'package:lucky/screens/favoritos.dart';
@@ -20,6 +21,12 @@ final GoRouter _router = GoRouter(
         return const PaginaPrincipal();
       },
       routes: <RouteBase>[
+        GoRoute(
+          path: 'busqueda',
+          builder: (BuildContext context, GoRouterState state) {
+            return const Busqueda();
+          },
+        ),
         GoRoute(
           path: 'registroUsuario',
           builder: (BuildContext context, GoRouterState state) {
