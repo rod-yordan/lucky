@@ -21,18 +21,19 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
       'titulo': 'Jean Mujer Skinny Denim',
       'precio': 89.90,
       'precioAntes': 179.90,
+      'descuento': 50,
     },
     {
       'imagen': 'assets/jean_hombre.png',
       'titulo': 'Jean Hombre Silueta Slim',
       'precio': 119.90,
       'precioAntes': 159.90,
+      'descuento': 25,
     },
     {
-      'imagen': 'assets/jean_hombre.png',
-      'titulo': 'Jean Hombre Silueta Slim',
-      'precio': 119.90,
-      'precioAntes': 159.90,
+      'imagen': 'assets/casaca_hombre.png',
+      'titulo': 'Casaca Hombre Knife Total Bio Blue',
+      'precio': 209.90,
     },
   ];
 
@@ -272,46 +273,89 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
 
   // ================= CARD PRODUCTO =================
   Widget _productoCard(Map<String, dynamic> p) {
-    return Container(
-      width: 170,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
-            child: Image.asset(
-              p['imagen'],
-              height: 220,
-              width: double.infinity,
-              fit: BoxFit.cover,
+    int descuentoPorcentaje = p['descuento'] ?? 0;
+
+    return GestureDetector(
+      onTap: () {
+        context.go('/detalleProducto', extra: p);
+      },
+      child: Container(
+        width: 170,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(18),
+              ),
+              child: Image.asset(
+                p['imagen'],
+                height: 220,
+                width: double.infinity,
+                fit: BoxFit.cover,
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(p['titulo'], maxLines: 2, overflow: TextOverflow.ellipsis),
-                const SizedBox(height: 6),
-                Text(
-                  'S/ ${p['precio']}',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  'S/ ${p['precioAntes']}',
-                  style: const TextStyle(
-                    decoration: TextDecoration.lineThrough,
-                    color: Colors.grey,
+            Padding(
+              padding: const EdgeInsets.all(10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    p['titulo'],
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-              ],
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Text(
+                        'S/ ${p['precio']}',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      if (descuentoPorcentaje > 0) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 1,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            '-$descuentoPorcentaje%',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  if (p['precioAntes'] != null &&
+                      p['precioAntes'] != p['precio']) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      'S/ ${p['precioAntes']}',
+                      style: const TextStyle(
+                        decoration: TextDecoration.lineThrough,
+                        color: Colors.grey,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
