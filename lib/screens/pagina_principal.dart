@@ -17,21 +17,26 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
 
   final List<Map<String, dynamic>> productos = [
     {
-      'imagen': 'assets/jean_mujer.png',
+      'imagenes': [
+        'assets/jean_mujer.png',
+        'assets/jean_mujer2.jpg',
+        'assets/jean_mujer3.jpg',
+        'assets/jean_mujer4.jpg',
+      ],
       'titulo': 'Jean Mujer Skinny Denim',
       'precio': 89.90,
       'precioAntes': 179.90,
       'descuento': 50,
     },
     {
-      'imagen': 'assets/jean_hombre.png',
+      'imagenes': ['assets/jean_hombre.png'],
       'titulo': 'Jean Hombre Silueta Slim',
       'precio': 119.90,
       'precioAntes': 159.90,
       'descuento': 25,
     },
     {
-      'imagen': 'assets/casaca_hombre.png',
+      'imagenes': ['assets/casaca_hombre.png'],
       'titulo': 'Casaca Hombre Knife Total Bio Blue',
       'precio': 209.90,
     },

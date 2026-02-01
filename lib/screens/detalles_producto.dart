@@ -14,6 +14,14 @@ class DetallesProducto extends StatefulWidget {
 class _DetallesProductoState extends State<DetallesProducto> {
   String _tallaSeleccionada = '28';
   String _colorSeleccionado = 'Azul';
+  int _paginaActual = 0;
+  final PageController _pageController = PageController();
+
+  List<String> get imagenesProducto {
+    return widget.producto['imagenes'] != null
+        ? List<String>.from(widget.producto['imagenes'])
+        : [widget.producto['imagen']];
+  }
 
   final List<String> tallas = ['28', '30', '32'];
   final List<Map<String, dynamic>> colores = [
@@ -22,6 +30,12 @@ class _DetallesProductoState extends State<DetallesProducto> {
     {'nombre': 'Gris', 'codigo': Color(0xFF6B7280)},
     {'nombre': 'Blanco', 'codigo': Colors.white},
   ];
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -76,16 +90,61 @@ class _DetallesProductoState extends State<DetallesProducto> {
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      // Imagen del producto
-                      Container(
+                      SizedBox(
                         height: 500,
                         width: double.infinity,
-                        color: Colors.white,
-                        child: Image.asset(
-                          producto['imagen'],
-                          fit: BoxFit.cover,
-                          height: double.infinity,
-                          width: double.infinity,
+                        child: Stack(
+                          children: [
+                            PageView.builder(
+                              controller: _pageController,
+                              itemCount: imagenesProducto.length,
+                              onPageChanged: (index) {
+                                setState(() {
+                                  _paginaActual = index;
+                                });
+                              },
+                              itemBuilder: (context, index) {
+                                return Container(
+                                  color: Colors.white,
+                                  child: Image.asset(
+                                    imagenesProducto[index],
+                                    fit: BoxFit.cover,
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                  ),
+                                );
+                              },
+                            ),
+                            Positioned(
+                              bottom: 16,
+                              left: 0,
+                              right: 0,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: List.generate(
+                                  imagenesProducto.length,
+                                  (index) {
+                                    return AnimatedContainer(
+                                      duration: const Duration(
+                                        milliseconds: 300,
+                                      ),
+                                      margin: const EdgeInsets.symmetric(
+                                        horizontal: 4,
+                                      ),
+                                      width: _paginaActual == index ? 10 : 6,
+                                      height: 6,
+                                      decoration: BoxDecoration(
+                                        color: _paginaActual == index
+                                            ? Colors.white
+                                            : Colors.white.withAlpha(120),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
 
@@ -190,7 +249,7 @@ class _DetallesProductoState extends State<DetallesProducto> {
                                     });
                                   },
                                   child: Container(
-                                    margin: const EdgeInsets.only(right: 12),
+                                    margin: const EdgeInsets.only(right: 6),
                                     padding: const EdgeInsets.all(1),
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
@@ -237,7 +296,7 @@ class _DetallesProductoState extends State<DetallesProducto> {
                                     });
                                   },
                                   child: Container(
-                                    margin: const EdgeInsets.only(right: 12),
+                                    margin: const EdgeInsets.only(right: 10),
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: 12,
                                       vertical: 3,
@@ -274,12 +333,24 @@ class _DetallesProductoState extends State<DetallesProducto> {
                               children: [
                                 // Botón "A favoritos"
                                 Expanded(
-                                  child: Container(
-                                    height: 50,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(color: Colors.black),
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      // Navegar a favoritos
+                                      context.go('/favoritos');
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.white,
+                                      foregroundColor: Colors.black,
+                                      side: const BorderSide(
+                                        color: Colors.grey,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      elevation: 0,
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 16,
+                                      ),
                                     ),
                                     child: Row(
                                       mainAxisAlignment:
@@ -288,16 +359,11 @@ class _DetallesProductoState extends State<DetallesProducto> {
                                         const Icon(
                                           Icons.favorite_border,
                                           size: 20,
-                                          color: Colors.black,
                                         ),
-                                        const SizedBox(width: 8),
+                                        const SizedBox(width: 4),
                                         Text(
                                           'A favoritos',
-                                          style: TextStyle(
-                                            color: Colors.black,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                          ),
+                                          style: TextStyle(fontSize: 16),
                                         ),
                                       ],
                                     ),
@@ -308,11 +374,34 @@ class _DetallesProductoState extends State<DetallesProducto> {
 
                                 // Botón "Al carrito"
                                 Expanded(
-                                  child: Container(
-                                    height: 50,
-                                    decoration: BoxDecoration(
-                                      color: Colors.black,
-                                      borderRadius: BorderRadius.circular(12),
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      // Aquí iría la lógica para agregar al carrito
+                                      // Por ahora, puedes navegar al carrito o mostrar un snackbar
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            '${widget.producto['titulo']} agregado al carrito',
+                                          ),
+                                          duration: const Duration(seconds: 2),
+                                        ),
+                                      );
+
+                                      // navegar al carrito
+                                      context.go('/carrito');
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFFED1C24),
+                                      foregroundColor: Colors.white,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      elevation: 0,
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 16,
+                                      ),
                                     ),
                                     child: Row(
                                       mainAxisAlignment:
@@ -321,16 +410,11 @@ class _DetallesProductoState extends State<DetallesProducto> {
                                         const Icon(
                                           Icons.shopping_cart_outlined,
                                           size: 20,
-                                          color: Colors.white,
                                         ),
-                                        const SizedBox(width: 8),
+                                        const SizedBox(width: 4),
                                         Text(
                                           'Al carrito',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                          ),
+                                          style: TextStyle(fontSize: 16),
                                         ),
                                       ],
                                     ),

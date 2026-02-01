@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucky/screens/busqueda.dart';
+import 'package:lucky/screens/carrito.dart';
 import 'package:lucky/screens/catalogo.dart';
 import 'package:lucky/screens/cupones.dart';
 import 'package:lucky/screens/detalles_producto.dart';
@@ -63,6 +64,12 @@ final GoRouter _router = GoRouter(
           builder: (BuildContext context, GoRouterState state) {
             final producto = state.extra as Map<String, dynamic>;
             return DetallesProducto(producto: producto);
+          },
+        ),
+        GoRoute(
+          path: 'carrito',
+          builder: (BuildContext context, GoRouterState state) {
+            return const Carrito();
           },
         ),
       ],
