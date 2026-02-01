@@ -277,7 +277,7 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
 
     return GestureDetector(
       onTap: () {
-        context.go('/detalleProducto', extra: p);
+        context.go('/detallesProducto', extra: p);
       },
       child: Container(
         width: 170,

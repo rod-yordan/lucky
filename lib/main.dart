@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucky/screens/busqueda.dart';
 import 'package:lucky/screens/catalogo.dart';
 import 'package:lucky/screens/cupones.dart';
+import 'package:lucky/screens/detalles_producto.dart';
 import 'package:lucky/screens/favoritos.dart';
 import 'package:lucky/screens/iniciar_sesion.dart';
 import 'package:lucky/screens/pagina_principal.dart';
@@ -55,6 +56,13 @@ final GoRouter _router = GoRouter(
           path: 'cupones',
           builder: (BuildContext context, GoRouterState state) {
             return const Cupones();
+          },
+        ),
+        GoRoute(
+          path: 'detallesProducto',
+          builder: (BuildContext context, GoRouterState state) {
+            final producto = state.extra as Map<String, dynamic>;
+            return DetallesProducto(producto: producto);
           },
         ),
       ],
