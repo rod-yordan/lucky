@@ -211,7 +211,7 @@ class _IniciarSesionState extends State<IniciarSesion> {
       height: 50,
       child: ElevatedButton(
         onPressed: () {
-          // Acción de iniciar sesión
+          context.go('/');
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.black,
@@ -220,7 +220,7 @@ class _IniciarSesionState extends State<IniciarSesion> {
           ),
         ),
         child: const Text(
-          'Iniciar Sesión',
+          'Iniciar sesión',
           style: TextStyle(
             color: Colors.white,
             fontSize: 16,
