@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:lucky/providers/carrito_provider.dart';
 import 'package:lucky/screens/busqueda.dart';
 import 'package:lucky/screens/carrito.dart';
 import 'package:lucky/screens/catalogo.dart';
@@ -82,6 +84,23 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(routerConfig: _router);
+    return MultiProvider(
+      providers: [ChangeNotifierProvider(create: (_) => CarritoProvider())],
+      child: MaterialApp.router(
+        routerConfig: _router,
+        title: 'Lucky',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          primaryColor: const Color(0xFFED1C24),
+          scaffoldBackgroundColor: Colors.white,
+          fontFamily: 'Inter',
+          appBarTheme: const AppBarTheme(
+            backgroundColor: Colors.white,
+            elevation: 0,
+            iconTheme: IconThemeData(color: Colors.black),
+          ),
+        ),
+      ),
+    );
   }
 }

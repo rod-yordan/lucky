@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:lucky/providers/carrito_provider.dart';
 import 'package:lucky/screens/barra_navegacion.dart';
 
 class PaginaPrincipal extends StatefulWidget {
@@ -144,42 +146,86 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
   }
 
   Widget _barraSuperior() {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Image.asset('logo.jpg', height: 45),
-            const Icon(Icons.shopping_cart_outlined, size: 28),
-          ],
-        ),
-        const SizedBox(height: 14),
+    return Consumer<CarritoProvider>(
+      builder: (context, carritoProvider, child) {
+        final cantidadTotal = carritoProvider.cantidadTotal;
 
-        GestureDetector(
-          onTap: () {
-            context.go('/busqueda');
-          },
-          child: Container(
-            width: double.infinity,
-            height: 42,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade200,
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child: const Row(
+        return Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Icon(Icons.search, color: Colors.grey),
-                SizedBox(width: 8),
-                Text(
-                  'Buscar productos...',
-                  style: TextStyle(color: Colors.grey, fontSize: 16),
+                Image.asset('assets/logo.jpg', height: 45),
+                Stack(
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        context.go('/carrito');
+                      },
+                      icon: const Icon(
+                        Icons.shopping_cart_outlined,
+                        size: 28,
+                        color: Colors.black,
+                      ),
+                    ),
+                    if (cantidadTotal > 0)
+                      Positioned(
+                        right: 0,
+                        top: 0,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFED1C24),
+                            shape: BoxShape.circle,
+                          ),
+                          constraints: const BoxConstraints(
+                            minWidth: 20,
+                            minHeight: 20,
+                          ),
+                          child: Text(
+                            cantidadTotal > 9 ? '9+' : cantidadTotal.toString(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ],
             ),
-          ),
-        ),
-      ],
+            const SizedBox(height: 14),
+
+            GestureDetector(
+              onTap: () {
+                context.go('/busqueda');
+              },
+              child: Container(
+                width: double.infinity,
+                height: 42,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.search, color: Colors.grey),
+                    SizedBox(width: 8),
+                    Text(
+                      'Buscar productos...',
+                      style: TextStyle(color: Colors.grey, fontSize: 16),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 

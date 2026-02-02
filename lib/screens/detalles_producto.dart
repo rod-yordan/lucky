@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:lucky/providers/carrito_provider.dart';
 import 'package:lucky/screens/barra_navegacion.dart';
 
 class DetallesProducto extends StatefulWidget {
@@ -72,7 +74,53 @@ class _DetallesProductoState extends State<DetallesProducto> {
                             color: Colors.black,
                           ),
                         ),
-                        const Icon(Icons.shopping_cart_outlined, size: 28),
+                        Consumer<CarritoProvider>(
+                          builder: (context, carritoProvider, child) {
+                            final cantidadTotal = carritoProvider.cantidadTotal;
+
+                            return Stack(
+                              children: [
+                                IconButton(
+                                  onPressed: () {
+                                    context.go('/carrito');
+                                  },
+                                  icon: const Icon(
+                                    Icons.shopping_cart_outlined,
+                                    size: 28,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                if (cantidadTotal > 0)
+                                  Positioned(
+                                    right: 0,
+                                    top: 0,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(4),
+                                      decoration: const BoxDecoration(
+                                        color: Color(0xFFED1C24),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      constraints: const BoxConstraints(
+                                        minWidth: 20,
+                                        minHeight: 20,
+                                      ),
+                                      child: Text(
+                                        cantidadTotal > 9
+                                            ? '9+'
+                                            : cantidadTotal.toString(),
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            );
+                          },
+                        ),
                       ],
                     ),
                   ),
@@ -333,7 +381,6 @@ class _DetallesProductoState extends State<DetallesProducto> {
                                 Expanded(
                                   child: ElevatedButton(
                                     onPressed: () {
-                                      // Navegar a favoritos
                                       context.go('/favoritos');
                                     },
                                     style: ElevatedButton.styleFrom(
@@ -374,21 +421,42 @@ class _DetallesProductoState extends State<DetallesProducto> {
                                 Expanded(
                                   child: ElevatedButton(
                                     onPressed: () {
-                                      // Aquí iría la lógica para agregar al carrito
-                                      // Por ahora, puedes navegar al carrito o mostrar un snackbar
+                                      final carritoProvider =
+                                          Provider.of<CarritoProvider>(
+                                            context,
+                                            listen: false,
+                                          );
+
+                                      // Crear producto con las selecciones del usuario
+                                      final productoCarrito = {
+                                        ...widget.producto,
+                                        'talla': _tallaSeleccionada,
+                                        'color': _colorSeleccionado,
+                                      };
+
+                                      // Agregar al carrito usando el Provider
+                                      carritoProvider.agregarProducto(
+                                        productoCarrito,
+                                      );
+
+                                      // Mostrar mensaje de confirmación
                                       ScaffoldMessenger.of(
                                         context,
                                       ).showSnackBar(
                                         SnackBar(
                                           content: Text(
-                                            '${widget.producto['titulo']} agregado al carrito',
+                                            '${widget.producto['titulo']} ($_tallaSeleccionada, $_colorSeleccionado) agregado al carrito',
                                           ),
                                           duration: const Duration(seconds: 2),
+                                          action: SnackBarAction(
+                                            label: 'Ver carrito',
+                                            textColor: Colors.white,
+                                            onPressed: () {
+                                              context.go('/carrito');
+                                            },
+                                          ),
                                         ),
                                       );
-
-                                      // navegar al carrito
-                                      context.go('/carrito');
                                     },
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: const Color(0xFFED1C24),
