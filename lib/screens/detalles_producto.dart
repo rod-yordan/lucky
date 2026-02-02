@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:lucky/providers/carrito_provider.dart';
-import 'package:lucky/screens/barra_navegacion.dart';
 
 class DetallesProducto extends StatefulWidget {
   final Map<String, dynamic> producto;
@@ -47,7 +46,6 @@ class _DetallesProductoState extends State<DetallesProducto> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      bottomNavigationBar: const BarraNavegacion(currentIndex: 0),
       body: SafeArea(
         child: Column(
           children: [
@@ -452,7 +450,9 @@ class _DetallesProductoState extends State<DetallesProducto> {
                                             label: 'Ver carrito',
                                             textColor: Colors.white,
                                             onPressed: () {
-                                              context.go('/carrito');
+                                              if (mounted) {
+                                                context.go('/carrito');
+                                              }
                                             },
                                           ),
                                         ),

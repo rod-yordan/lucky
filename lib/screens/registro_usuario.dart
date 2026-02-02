@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lucky/screens/barra_navegacion.dart';
 
 class RegistroUsuario extends StatefulWidget {
   const RegistroUsuario({super.key});
@@ -16,7 +15,6 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      bottomNavigationBar: const BarraNavegacion(currentIndex: 4),
       body: SafeArea(
         child: Column(
           children: [

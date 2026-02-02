@@ -1,35 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
 class BarraNavegacion extends StatelessWidget {
   final int currentIndex;
+  final Function(int)? onTap; // <-- Agregar callback
 
-  const BarraNavegacion({super.key, required this.currentIndex});
+  const BarraNavegacion({super.key, required this.currentIndex, this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return BottomNavigationBar(
       currentIndex: currentIndex,
       type: BottomNavigationBarType.fixed,
-      onTap: (index) {
-        switch (index) {
-          case 0:
-            context.go('/');
-            break;
-          case 1:
-            context.go('/catalogo');
-            break;
-          case 2:
-            context.go('/cupones');
-            break;
-          case 3:
-            context.go('/favoritos');
-            break;
-          case 4:
-            context.go('/iniciarSesion');
-            break;
-        }
-      },
+      onTap: onTap, // <-- Usar el callback
+      elevation: 8, // Sombra más pronunciada
+      backgroundColor: Colors.white,
+      selectedItemColor: Colors.black,
+      unselectedItemColor: Colors.grey[600],
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
         BottomNavigationBarItem(icon: Icon(Icons.list), label: 'Catálogo'),

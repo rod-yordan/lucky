@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:lucky/providers/carrito_provider.dart';
-import 'package:lucky/screens/barra_navegacion.dart';
 
 class Carrito extends StatefulWidget {
   const Carrito({super.key});
@@ -16,7 +15,6 @@ class _CarritoState extends State<Carrito> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      bottomNavigationBar: const BarraNavegacion(currentIndex: 0),
       body: SafeArea(
         child: Column(
           children: [
