@@ -18,9 +18,7 @@ class _DetallesProductoState extends State<DetallesProducto> {
   final PageController _pageController = PageController();
 
   List<String> get imagenesProducto {
-    return widget.producto['imagenes'] != null
-        ? List<String>.from(widget.producto['imagenes'])
-        : [widget.producto['imagen']];
+    return List<String>.from(widget.producto['imagenes']);
   }
 
   final List<String> tallas = ['28', '30', '32'];

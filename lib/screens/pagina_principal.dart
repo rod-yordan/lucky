@@ -29,14 +29,23 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
       'descuento': 50,
     },
     {
-      'imagenes': ['assets/jean_hombre.png'],
+      'imagenes': [
+        'assets/jean_hombre.png',
+        'assets/jean_hombre2.png',
+        'assets/jean_hombre3.png',
+      ],
       'titulo': 'Jean Hombre Silueta Slim',
       'precio': 119.90,
       'precioAntes': 159.90,
       'descuento': 25,
     },
     {
-      'imagenes': ['assets/casaca_hombre.png'],
+      'imagenes': [
+        'assets/casaca_hombre.png',
+        'assets/casaca_hombre2.png',
+        'assets/casaca_hombre3.png',
+        'assets/casaca_hombre4.png',
+      ],
       'titulo': 'Casaca Hombre Knife Total Bio Blue',
       'precio': 209.90,
     },
@@ -278,6 +287,8 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
 
   // ================= CARD PRODUCTO =================
   Widget _productoCard(Map<String, dynamic> p) {
+    final List<String> imagenes = List<String>.from(p['imagenes']);
+    final String imagenPrincipal = imagenes.isNotEmpty ? imagenes[0] : '';
     int descuentoPorcentaje = p['descuento'] ?? 0;
 
     return GestureDetector(
@@ -298,7 +309,7 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
                 top: Radius.circular(18),
               ),
               child: Image.asset(
-                p['imagen'],
+                imagenPrincipal,
                 height: 220,
                 width: double.infinity,
                 fit: BoxFit.cover,
