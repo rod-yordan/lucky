@@ -127,10 +127,9 @@ class _DetallesProductoState extends State<DetallesProducto> {
               ),
             ),
 
-            // ================= CONTENIDO =================
+            // ================= CONTENIDO (TODO SE DESPLAZA) =================
             Expanded(
-              child: Container(
-                color: const Color(0xFFF7F7F7),
+              child: SingleChildScrollView(
                 child: Column(
                   children: [
                     // Imagen del producto
@@ -190,352 +189,334 @@ class _DetallesProductoState extends State<DetallesProducto> {
                     ),
 
                     // Información del producto
-                    Expanded(
-                      child: SingleChildScrollView(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 16,
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Título
-                              Text(
-                                producto['titulo'],
-                                style: const TextStyle(fontSize: 20),
-                              ),
-                              const SizedBox(height: 8),
+                    Container(
+                      color: const Color(0xFFF7F7F7),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 16,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Título
+                            Text(
+                              producto['titulo'],
+                              style: const TextStyle(fontSize: 20),
+                            ),
+                            const SizedBox(height: 8),
 
-                              // Precios
-                              Row(
-                                children: [
-                                  Text(
-                                    'S/ ${producto['precio']}',
-                                    style: const TextStyle(
-                                      color: Color(0xFFFF0000),
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                            // Precios
+                            Row(
+                              children: [
+                                Text(
+                                  'S/ ${producto['precio']}',
+                                  style: const TextStyle(
+                                    color: Color(0xFFFF0000),
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
                                   ),
+                                ),
 
-                                  // Precio anterior (si existe)
-                                  if (tienePrecioAnterior) ...[
-                                    const SizedBox(height: 4),
-                                    Padding(
-                                      padding: const EdgeInsets.only(left: 8.0),
-                                      child: Stack(
-                                        children: [
-                                          Text(
-                                            'S/ ${producto['precioAntes']}',
-                                            style: TextStyle(
-                                              fontSize: 18,
+                                // Precio anterior (si existe)
+                                if (tienePrecioAnterior) ...[
+                                  const SizedBox(height: 4),
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 8.0),
+                                    child: Stack(
+                                      children: [
+                                        Text(
+                                          'S/ ${producto['precioAntes']}',
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            color: Colors.grey.shade700,
+                                          ),
+                                        ),
+                                        Positioned.fill(
+                                          child: Align(
+                                            alignment: Alignment.center,
+                                            child: Container(
+                                              height: 1,
                                               color: Colors.grey.shade700,
                                             ),
-                                          ),
-                                          Positioned.fill(
-                                            child: Align(
-                                              alignment: Alignment.center,
-                                              child: Container(
-                                                height: 1,
-                                                color: Colors.grey.shade700,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-
-                                  if (descuentoPorcentaje > 0) ...[
-                                    const SizedBox(width: 12),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 6,
-                                        vertical: 1,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFFF0000),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Text(
-                                        '-$descuentoPorcentaje%',
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-
-                              // Selección de color
-                              const Text(
-                                'Color:',
-                                style: TextStyle(fontSize: 16),
-                              ),
-                              const SizedBox(height: 12),
-
-                              Row(
-                                children: colores.map((color) {
-                                  bool seleccionado =
-                                      color['nombre'] == _colorSeleccionado;
-                                  return GestureDetector(
-                                    onTap: () {
-                                      setState(() {
-                                        _colorSeleccionado = color['nombre'];
-                                      });
-                                    },
-                                    child: Container(
-                                      margin: const EdgeInsets.only(right: 6),
-                                      padding: const EdgeInsets.all(1),
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                          color: seleccionado
-                                              ? Colors.black
-                                              : Colors.transparent,
-                                          width: 1,
-                                        ),
-                                      ),
-                                      child: Container(
-                                        width: 30,
-                                        height: 30,
-                                        decoration: BoxDecoration(
-                                          color: color['codigo'],
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: Colors.grey.shade500,
-                                            width: 1.5,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                }).toList(),
-                              ),
-
-                              const SizedBox(height: 16),
-
-                              // Selección de talla
-                              const Text(
-                                'Talla:',
-                                style: TextStyle(fontSize: 16),
-                              ),
-                              const SizedBox(height: 12),
-
-                              Row(
-                                children: tallas.map((talla) {
-                                  bool seleccionada =
-                                      talla == _tallaSeleccionada;
-                                  return GestureDetector(
-                                    onTap: () {
-                                      setState(() {
-                                        _tallaSeleccionada = talla;
-                                      });
-                                    },
-                                    child: Container(
-                                      margin: const EdgeInsets.only(right: 10),
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 3,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: seleccionada
-                                            ? Colors.grey.shade300
-                                            : Colors.white,
-                                        borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(
-                                          color: seleccionada
-                                              ? Colors.black
-                                              : Colors.grey.shade500,
-                                          width: 1,
-                                        ),
-                                      ),
-                                      child: Text(
-                                        talla,
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black,
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                }).toList(),
-                              ),
-
-                              const SizedBox(height: 24),
-
-                              // Descripción (opcional)
-                              Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFF7F7F7),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: const Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Descripción',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    SizedBox(height: 8),
-                                    Text(
-                                      'Jean de corte skinny en tela denim de alta calidad. Perfecto para looks casuales y elegantes. Confeccionado con materiales resistentes para mayor durabilidad.',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.grey,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-
-                              const SizedBox(height: 32),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    // ================= BARRA INFERIOR CON BOTONES =================
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border(
-                          top: BorderSide(color: Colors.black12, width: 1),
-                        ),
-                      ),
-                      padding: const EdgeInsets.all(16),
-                      child: Row(
-                        children: [
-                          // Botón "A favoritos"
-                          Expanded(
-                            child: ElevatedButton(
-                              onPressed: () {
-                                context.go('/favoritos');
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.black,
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                elevation: 0,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(Icons.favorite_border, size: 20),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    'A favoritos',
-                                    style: TextStyle(fontSize: 16),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-
-                          const SizedBox(width: 16),
-
-                          // Botón "Al carrito"
-                          Expanded(
-                            child: ElevatedButton(
-                              onPressed: () {
-                                final carritoProvider =
-                                    Provider.of<CarritoProvider>(
-                                      context,
-                                      listen: false,
-                                    );
-
-                                // Crear producto con las selecciones del usuario
-                                final productoCarrito = {
-                                  ...widget.producto,
-                                  'talla': _tallaSeleccionada,
-                                  'color': _colorSeleccionado,
-                                };
-
-                                // Agregar al carrito usando el Provider
-                                carritoProvider.agregarProducto(
-                                  productoCarrito,
-                                );
-
-                                // Mostrar mensaje de confirmación
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    backgroundColor: Colors.green,
-                                    content: Row(
-                                      children: [
-                                        Container(
-                                          padding: const EdgeInsets.all(4),
-                                          decoration: BoxDecoration(
-                                            color: Colors.white,
-                                            shape: BoxShape.circle,
-                                          ),
-                                          child: const Icon(
-                                            Icons.check,
-                                            color: Colors.green,
-                                            size: 18,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        const Text(
-                                          'Agregado al carrito',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 18,
                                           ),
                                         ),
                                       ],
                                     ),
-                                    duration: const Duration(seconds: 1),
+                                  ),
+                                ],
+
+                                if (descuentoPorcentaje > 0) ...[
+                                  const SizedBox(width: 12),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 1,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFF0000),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      '-$descuentoPorcentaje%',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+
+                            // Selección de color
+                            const Text(
+                              'Color:',
+                              style: TextStyle(fontSize: 16),
+                            ),
+                            const SizedBox(height: 12),
+
+                            Row(
+                              children: colores.map((color) {
+                                bool seleccionado =
+                                    color['nombre'] == _colorSeleccionado;
+                                return GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      _colorSeleccionado = color['nombre'];
+                                    });
+                                  },
+                                  child: Container(
+                                    margin: const EdgeInsets.only(right: 6),
+                                    padding: const EdgeInsets.all(1),
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: seleccionado
+                                            ? Colors.black
+                                            : Colors.transparent,
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Container(
+                                      width: 30,
+                                      height: 30,
+                                      decoration: BoxDecoration(
+                                        color: color['codigo'],
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: Colors.grey.shade500,
+                                          width: 1.5,
+                                        ),
+                                      ),
+                                    ),
                                   ),
                                 );
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFFF0000),
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                elevation: 0,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(
-                                    Icons.shopping_cart_outlined,
-                                    size: 20,
+                              }).toList(),
+                            ),
+
+                            const SizedBox(height: 16),
+
+                            // Selección de talla
+                            const Text(
+                              'Talla:',
+                              style: TextStyle(fontSize: 16),
+                            ),
+                            const SizedBox(height: 12),
+
+                            Row(
+                              children: tallas.map((talla) {
+                                bool seleccionada = talla == _tallaSeleccionada;
+                                return GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      _tallaSeleccionada = talla;
+                                    });
+                                  },
+                                  child: Container(
+                                    margin: const EdgeInsets.only(right: 10),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 3,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: seleccionada
+                                          ? Colors.grey.shade300
+                                          : Colors.white,
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                        color: seleccionada
+                                            ? Colors.black
+                                            : Colors.grey.shade500,
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      talla,
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black,
+                                      ),
+                                    ),
                                   ),
-                                  const SizedBox(width: 4),
+                                );
+                              }).toList(),
+                            ),
+
+                            const SizedBox(height: 24),
+
+                            // Descripción (opcional)
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF7F7F7),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
                                   Text(
-                                    'Al carrito',
-                                    style: TextStyle(fontSize: 16),
+                                    'Descripción',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  SizedBox(height: 8),
+                                  Text(
+                                    'Jean de corte skinny en tela denim de alta calidad. Perfecto para looks casuales y elegantes. Confeccionado con materiales resistentes para mayor durabilidad.',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey,
+                                    ),
                                   ),
                                 ],
                               ),
                             ),
-                          ),
-                        ],
+
+                            const SizedBox(height: 32),
+                          ],
+                        ),
                       ),
                     ),
                   ],
                 ),
+              ),
+            ),
+
+            // ================= BARRA INFERIOR CON BOTONES =================
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border(
+                  top: BorderSide(color: Colors.black12, width: 1),
+                ),
+              ),
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  // Botón "A favoritos"
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        context.go('/favoritos');
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.black,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.favorite_border, size: 20),
+                          const SizedBox(width: 4),
+                          Text('A favoritos', style: TextStyle(fontSize: 16)),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(width: 16),
+
+                  // Botón "Al carrito"
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        final carritoProvider = Provider.of<CarritoProvider>(
+                          context,
+                          listen: false,
+                        );
+
+                        // Crear producto con las selecciones del usuario
+                        final productoCarrito = {
+                          ...widget.producto,
+                          'talla': _tallaSeleccionada,
+                          'color': _colorSeleccionado,
+                        };
+
+                        // Agregar al carrito usando el Provider
+                        carritoProvider.agregarProducto(productoCarrito);
+
+                        // Mostrar mensaje de confirmación
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            backgroundColor: Colors.green,
+                            content: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.check,
+                                    color: Colors.green,
+                                    size: 18,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                const Text(
+                                  'Agregado al carrito',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            duration: const Duration(seconds: 1),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFF0000),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.shopping_cart_outlined, size: 20),
+                          const SizedBox(width: 4),
+                          Text('Al carrito', style: TextStyle(fontSize: 16)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
