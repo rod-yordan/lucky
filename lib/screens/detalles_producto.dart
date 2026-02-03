@@ -36,6 +36,71 @@ class _DetallesProductoState extends State<DetallesProducto> {
     super.dispose();
   }
 
+  // Método para mostrar el overlay de confirmación
+  void _mostrarMensajeConfirmacion(BuildContext context) {
+    final overlay = Overlay.of(context);
+    final overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        top: 0, // Posición en la parte superior
+        left: 0,
+        right: 0,
+        child: Material(
+          color: Colors.transparent,
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: Container(
+              constraints: BoxConstraints(
+                maxWidth: MediaQuery.of(context).size.width * 1,
+              ),
+              margin: const EdgeInsets.only(top: 1),
+              child: ClipRRect(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  color: Colors.green,
+                  child: Center(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.check,
+                            color: Colors.green,
+                            size: 18,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          'Agregado al carrito',
+                          style: TextStyle(fontSize: 14, color: Colors.white),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    // Mostrar el overlay
+    overlay.insert(overlayEntry);
+
+    // Ocultar automáticamente después de 2 segundos
+    Future.delayed(const Duration(seconds: 1), () {
+      overlayEntry.remove();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final producto = widget.producto;
@@ -465,37 +530,8 @@ class _DetallesProductoState extends State<DetallesProducto> {
                         // Agregar al carrito usando el Provider
                         carritoProvider.agregarProducto(productoCarrito);
 
-                        // Mostrar mensaje de confirmación
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            backgroundColor: Colors.green,
-                            content: Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(
-                                    Icons.check,
-                                    color: Colors.green,
-                                    size: 18,
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                const Text(
-                                  'Agregado al carrito',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 18,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            duration: const Duration(seconds: 1),
-                          ),
-                        );
+                        // Mostrar mensaje de confirmación usando overlay
+                        _mostrarMensajeConfirmacion(context);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFFF0000),
