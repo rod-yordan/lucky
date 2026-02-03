@@ -46,45 +46,32 @@ class _DetallesProductoState extends State<DetallesProducto> {
         right: 0,
         child: Material(
           color: Colors.transparent,
-          child: Align(
-            alignment: Alignment.topCenter,
-            child: Container(
-              constraints: BoxConstraints(
-                maxWidth: MediaQuery.of(context).size.width * 1,
-              ),
-              margin: const EdgeInsets.only(top: 1),
-              child: ClipRRect(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  color: Colors.green,
-                  child: Center(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.check,
-                            color: Colors.green,
-                            size: 18,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          'Agregado al carrito',
-                          style: TextStyle(fontSize: 14, color: Colors.white),
-                        ),
-                      ],
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            color: Colors.green,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.check,
+                      color: Colors.green,
+                      size: 18,
                     ),
                   ),
-                ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Agregado al carrito',
+                    style: TextStyle(fontSize: 14, color: Colors.white),
+                  ),
+                ],
               ),
             ),
           ),
