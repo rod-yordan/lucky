@@ -438,25 +438,68 @@ class _DetallesProductoState extends State<DetallesProducto> {
                                       );
 
                                       // Mostrar mensaje de confirmación
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        SnackBar(
-                                          content: Text(
-                                            '${widget.producto['titulo']} ($_tallaSeleccionada, $_colorSeleccionado) agregado al carrito',
-                                          ),
-                                          duration: const Duration(seconds: 2),
-                                          action: SnackBarAction(
-                                            label: 'Ver carrito',
-                                            textColor: Colors.white,
-                                            onPressed: () {
-                                              if (mounted) {
-                                                context.go('/carrito');
-                                              }
-                                            },
+                                      final overlay = Overlay.of(context);
+                                      final overlayEntry = OverlayEntry(
+                                        builder: (context) => Positioned(
+                                          top: 0, // Posición en la parte superior
+                                          left: 0,
+                                          right: 0,
+                                          child: Material(
+                                            color: Colors.transparent,
+                                            child: Align(
+                                              alignment: Alignment.topCenter,
+                                              child: Container(
+                                                constraints: BoxConstraints(
+                                                  maxWidth: MediaQuery.of(context).size.width * 0.7,
+                                                ),
+                                                margin: const EdgeInsets.only(top: 16),
+                                                child: ClipRRect(
+                                                  borderRadius: BorderRadius.circular(12),
+                                                  child: Container(
+                                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                                    color: Colors.green,
+                                                    child: Center(
+                                                      child: Row(
+                                                        mainAxisSize: MainAxisSize.min,
+                                                        children: [
+                                                          Container(
+                                                            padding: const EdgeInsets.all(4),
+                                                            decoration: BoxDecoration(
+                                                              color: Colors.white,
+                                                              shape: BoxShape.circle,
+                                                            ),
+                                                            child: const Icon(
+                                                              Icons.check,
+                                                              color: Colors.green,
+                                                              size: 18,
+                                                            ),
+                                                          ),
+                                                          const SizedBox(width: 12),
+                                                          Text(
+                                                            'Agregado al carrito',
+                                                            style: TextStyle(
+                                                              fontSize: 14,
+                                                              color: Colors.white,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
                                           ),
                                         ),
                                       );
+
+                                      // Mostrar el overlay
+                                      overlay.insert(overlayEntry);
+
+                                      // Ocultar automáticamente después de 2 segundos
+                                      Future.delayed(const Duration(seconds: 2), () {
+                                        overlayEntry.remove();
+                                      });
                                     },
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: const Color(0xFFED1C24),
@@ -502,7 +545,7 @@ class _DetallesProductoState extends State<DetallesProducto> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Descripción',
+                                    'Detalles',
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
