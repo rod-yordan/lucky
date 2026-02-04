@@ -336,17 +336,21 @@ class _ItemCarritoConCuponesState extends State<_ItemCarritoConCupones> {
                   children: [
                     // Título y botón eliminar (ícono de basura)
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Expanded(
-                          child: Text(
-                            titulo,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
+                          child: Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: Text(
+                              titulo,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         // Botón eliminar como ícono de basura
@@ -492,47 +496,50 @@ class _ItemCarritoConCuponesState extends State<_ItemCarritoConCupones> {
                           ),
                         ),
 
-                        // Botón para mostrar cupones
-                        ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              _cuponesExpandidos = !_cuponesExpandidos;
-                            });
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: Colors.black,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              side: BorderSide(
-                                color: Colors.grey.shade100,
-                                width: 1,
-                              ),
-                            ),
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 6,
-                            ),
+                        // Botón para mostrar cupones (CON EL MISMO ESTILO)
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade100,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.grey.shade300),
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                _cuponesExpandidos
-                                    ? Icons.keyboard_arrow_up
-                                    : Icons.keyboard_arrow_down,
-                                size: 16,
+                          child: TextButton(
+                            onPressed: () {
+                              setState(() {
+                                _cuponesExpandidos = !_cuponesExpandidos;
+                              });
+                            },
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.only(
+                                left: 12, // Mantener espacio a la izquierda
+                                right: 6, // REDUCIR espacio a la derecha
+                                top: 12,
+                                bottom: 12,
                               ),
-                              const SizedBox(width: 4),
-                              const Text(
-                                'Cupones',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
+                              minimumSize: Size.zero,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Text(
+                                  'Cupones',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.black,
+                                  ),
                                 ),
-                              ),
-                            ],
+                                const SizedBox(width: 4),
+                                Icon(
+                                  _cuponesExpandidos
+                                      ? Icons.keyboard_arrow_up
+                                      : Icons.keyboard_arrow_down,
+                                  size: 16,
+                                  color: Colors.black,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ],
@@ -637,7 +644,7 @@ class _ItemCupon extends StatelessWidget {
             child: Text(
               cupon['descuento'] > 0 ? '-${cupon['descuento']}%' : 'ENVÍO',
               style: TextStyle(
-                fontSize: 8,
+                fontSize: 12, // Cambiado de 8 a 12 para mejor legibilidad
                 fontWeight: FontWeight.bold,
                 color: cupon['descuento'] > 0
                     ? Color(0xFFFF0000)
