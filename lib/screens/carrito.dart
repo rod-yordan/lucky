@@ -97,7 +97,7 @@ class _CarritoState extends State<Carrito> {
                               context.go('/');
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFED1C24),
+                              backgroundColor: const Color(0xFFFF0000),
                               foregroundColor: Colors.white,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
@@ -135,11 +135,7 @@ class _CarritoState extends State<Carrito> {
                           decoration: BoxDecoration(
                             color: Colors.white,
                             border: Border(
-                              top: BorderSide(
-                                color: Colors
-                                    .black12, // <-- MISMA línea que la barra superior
-                                width: 1,
-                              ),
+                              top: BorderSide(color: Colors.black12, width: 1),
                             ),
                           ),
                           padding: const EdgeInsets.all(16),
@@ -174,7 +170,6 @@ class _CarritoState extends State<Carrito> {
                                 width: double.infinity,
                                 child: ElevatedButton(
                                   onPressed: () {
-                                    // Lógica para continuar con la compra
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
                                         content: Text('Procediendo al pago...'),
@@ -243,22 +238,6 @@ class _CarritoState extends State<Carrito> {
         : null;
     final int? descuento = producto['descuento'] as int?;
 
-    // Función para obtener el color
-    Color _getColorCodigo(String nombreColor) {
-      switch (nombreColor) {
-        case 'Azul':
-          return const Color(0xFF1E3A8A);
-        case 'Negro':
-          return Colors.black;
-        case 'Gris':
-          return const Color(0xFF6B7280);
-        case 'Blanco':
-          return Colors.white;
-        default:
-          return Colors.grey;
-      }
-    }
-
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(12),
@@ -278,8 +257,8 @@ class _CarritoState extends State<Carrito> {
         children: [
           // Imagen del producto
           Container(
-            width: 80,
-            height: 100,
+            width: 100,
+            height: 130,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
               color: Colors.grey.shade100,
@@ -290,8 +269,8 @@ class _CarritoState extends State<Carrito> {
                   ? Image.asset(
                       imagenPrincipal,
                       fit: BoxFit.cover,
-                      width: 80,
-                      height: 100,
+                      width: 100,
+                      height: 130,
                     )
                   : Center(
                       child: Icon(
@@ -309,32 +288,43 @@ class _CarritoState extends State<Carrito> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  titulo,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                // Título y botón eliminar (ícono de basura)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        titulo,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    // Botón eliminar como ícono de basura
+                    IconButton(
+                      onPressed: () {
+                        carritoProvider.eliminarProducto(index);
+                      },
+                      icon: Icon(
+                        Icons.delete_outline,
+                        size: 20,
+                        color: Color(0xFFFF0000),
+                      ),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 4),
 
                 // Color y talla
                 Row(
                   children: [
-                    Container(
-                      width: 12,
-                      height: 12,
-                      decoration: BoxDecoration(
-                        color: _getColorCodigo(color),
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.grey.shade300),
-                      ),
-                    ),
-                    const SizedBox(width: 4),
                     Text(
-                      color,
+                      'Color: $color',
                       style: const TextStyle(fontSize: 12, color: Colors.grey),
                     ),
                     const SizedBox(width: 12),
@@ -344,109 +334,103 @@ class _CarritoState extends State<Carrito> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 4),
 
-                // Precio y cantidad
+                // Precio y descuento
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'S/ ${precio.toStringAsFixed(2)}',
+                    // Precio actual
+                    Text(
+                      'S/ ${precio.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        color: Color(0xFFFF0000),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+
+                    // Espacio entre precio y descuento
+                    const SizedBox(width: 8),
+
+                    // Descuento (si existe)
+                    if (descuento != null && descuento > 0)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFF0000),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          '-$descuento%',
                           style: const TextStyle(
-                            color: Color(0xFFED1C24),
+                            color: Colors.white,
+                            fontSize: 11,
                             fontWeight: FontWeight.bold,
-                            fontSize: 16,
                           ),
                         ),
-                        if (precioAntes != null)
-                          Text(
-                            'S/ ${precioAntes.toStringAsFixed(2)}',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey.shade600,
-                              decoration: TextDecoration.lineThrough,
-                            ),
-                          ),
-                        if (descuento != null && descuento > 0)
-                          Container(
-                            margin: const EdgeInsets.only(top: 2),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 4,
-                              vertical: 1,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFED1C24),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              '-$descuento%',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-
-                    // Selector de cantidad
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.grey.shade300),
                       ),
-                      child: Row(
-                        children: [
-                          // Botón menos
-                          IconButton(
-                            onPressed: () =>
-                                carritoProvider.decrementarCantidad(index),
-                            icon: const Icon(Icons.remove, size: 16),
-                            padding: const EdgeInsets.all(4),
-                            constraints: const BoxConstraints(),
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            cantidad.toString(),
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          // Botón más
-                          IconButton(
-                            onPressed: () =>
-                                carritoProvider.incrementarCantidad(index),
-                            icon: const Icon(Icons.add, size: 16),
-                            padding: const EdgeInsets.all(4),
-                            constraints: const BoxConstraints(),
-                          ),
-                        ],
-                      ),
-                    ),
                   ],
                 ),
+                const SizedBox(height: 2),
 
-                // Botón eliminar
+                // Precio anterior (si existe)
+                if (precioAntes != null)
+                  Text(
+                    'S/ ${precioAntes.toStringAsFixed(2)}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade600,
+                      decoration: TextDecoration.lineThrough,
+                    ),
+                  ),
+                const SizedBox(height: 8),
+
+                // Selector de cantidad a la derecha
                 Align(
                   alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () {
-                      carritoProvider.eliminarProducto(index);
-                    },
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                      minimumSize: Size.zero,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.grey.shade300),
                     ),
-                    child: const Text(
-                      'Eliminar',
-                      style: TextStyle(fontSize: 12, color: Colors.red),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Botón menos
+                        IconButton(
+                          onPressed: cantidad > 1
+                              ? () => carritoProvider.decrementarCantidad(index)
+                              : null,
+                          icon: Icon(
+                            Icons.remove,
+                            size: 16,
+                            color: cantidad > 1 ? Colors.black : Colors.grey,
+                          ),
+                          padding: const EdgeInsets.all(4),
+                          constraints: const BoxConstraints(),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          cantidad.toString(),
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        // Botón más
+                        IconButton(
+                          onPressed: () =>
+                              carritoProvider.incrementarCantidad(index),
+                          icon: const Icon(Icons.add, size: 16),
+                          padding: const EdgeInsets.all(4),
+                          constraints: const BoxConstraints(),
+                        ),
+                      ],
                     ),
                   ),
                 ),

@@ -60,12 +60,8 @@ class CarritoProvider with ChangeNotifier {
     final cantidadActual = _productos[index]['cantidad'] as int;
     if (cantidadActual > 1) {
       _productos[index]['cantidad'] = cantidadActual - 1;
-    } else {
-      // Si la cantidad es 1, eliminar el producto
-      eliminarProducto(index);
-      return;
+      notifyListeners();
     }
-    notifyListeners();
   }
 
   // Método para eliminar un producto del carrito
