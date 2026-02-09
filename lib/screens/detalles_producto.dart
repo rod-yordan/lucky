@@ -42,7 +42,7 @@ class _DetallesProductoState extends State<DetallesProducto> {
     final overlay = Overlay.of(context);
     final overlayEntry = OverlayEntry(
       builder: (context) => Positioned(
-        top: 0, // Posición en la parte superior
+        top: 0,
         left: 0,
         right: 0,
         child: Material(
@@ -493,10 +493,14 @@ class _DetallesProductoState extends State<DetallesProducto> {
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.black,
-                        foregroundColor: Colors.white,
+                        backgroundColor: Colors.white,
+                        foregroundColor: Colors.black,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
+                          side: BorderSide(
+                            color: Colors.grey.shade500,
+                            width: 1,
+                          ),
                         ),
                         elevation: 0,
                         padding: const EdgeInsets.symmetric(vertical: 16),
@@ -514,9 +518,7 @@ class _DetallesProductoState extends State<DetallesProducto> {
                                     ? Icons.favorite
                                     : Icons.favorite_border,
                                 size: 20,
-                                color: esFavorito
-                                    ? Color(0xFFFF0000)
-                                    : Colors.white,
+                                color: esFavorito ? Colors.black : Colors.black,
                               ),
                               const SizedBox(width: 4),
                               Text(

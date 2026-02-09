@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucky/screens/producto_card.dart';
 import 'package:provider/provider.dart';
 import 'package:lucky/providers/carrito_provider.dart';
 
@@ -331,107 +332,12 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
 
   // ================= CARD PRODUCTO =================
   Widget _productoCard(Map<String, dynamic> p) {
-    final List<String> imagenes = List<String>.from(p['imagenes']);
-    final String imagenPrincipal = imagenes.isNotEmpty ? imagenes[0] : '';
-    int descuentoPorcentaje = p['descuento'] ?? 0;
-
-    return GestureDetector(
+    return ProductoCard(
+      producto: p,
       onTap: () {
         context.go('/detallesProducto', extra: p);
       },
-      child: Container(
-        width: 170,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(18),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(18),
-              ),
-              child: Image.asset(
-                imagenPrincipal,
-                height: 220,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    p['titulo'],
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      Text(
-                        'S/ ${p['precio']}',
-                        style: const TextStyle(
-                          color: Color(0xFFED1C24),
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      if (descuentoPorcentaje > 0) ...[
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 1,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFED1C24),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            '-$descuentoPorcentaje%',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                  if (p['precioAntes'] != null &&
-                      p['precioAntes'] != p['precio']) ...[
-                    Stack(
-                      children: [
-                        Text(
-                          'S/ ${p['precioAntes']}',
-                          style: TextStyle(
-                            color: Colors.grey.shade700,
-                            fontSize: 12,
-                          ),
-                        ),
-                        Positioned.fill(
-                          child: Align(
-                            alignment: Alignment.center,
-                            child: Container(
-                              height: 1,
-                              color: Colors.grey.shade700,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+      mostrarCorazon: false, // No mostrar corazón en página principal
     );
   }
 }
