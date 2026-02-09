@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucky/providers/favoritos_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:lucky/providers/carrito_provider.dart';
 import 'package:lucky/screens/main_layout.dart';
@@ -23,7 +24,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => CarritoProvider())],
+      providers: [
+        ChangeNotifierProvider(create: (_) => CarritoProvider()),
+        ChangeNotifierProvider(create: (_) => FavoritosProvider()),
+      ],
       child: MaterialApp.router(
         routerConfig: _router,
         title: 'Lucky',
@@ -102,6 +106,7 @@ final _router = GoRouter(
         ),
       ],
     ),
+
     // Rutas SIN barra de navegación
     GoRoute(path: '/busqueda', builder: (context, state) => const Busqueda()),
     GoRoute(

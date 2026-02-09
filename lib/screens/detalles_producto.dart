@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucky/providers/favoritos_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:lucky/providers/carrito_provider.dart';
 
@@ -474,7 +475,22 @@ class _DetallesProductoState extends State<DetallesProducto> {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
-                        context.go('/favoritos');
+                        final favoritosProvider =
+                            Provider.of<FavoritosProvider>(
+                              context,
+                              listen: false,
+                            );
+                        favoritosProvider.toggleFavorito(widget.producto);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              favoritosProvider.esFavorito(widget.producto)
+                                  ? 'Agregado a favoritos'
+                                  : 'Eliminado de favoritos',
+                            ),
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.black,
@@ -485,13 +501,31 @@ class _DetallesProductoState extends State<DetallesProducto> {
                         elevation: 0,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.favorite_border, size: 20),
-                          const SizedBox(width: 4),
-                          Text('A favoritos', style: TextStyle(fontSize: 16)),
-                        ],
+                      child: Consumer<FavoritosProvider>(
+                        builder: (context, favoritosProvider, child) {
+                          final esFavorito = favoritosProvider.esFavorito(
+                            widget.producto,
+                          );
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                esFavorito
+                                    ? Icons.favorite
+                                    : Icons.favorite_border,
+                                size: 20,
+                                color: esFavorito
+                                    ? Color(0xFFFF0000)
+                                    : Colors.white,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                esFavorito ? 'En favoritos' : 'A favoritos',
+                                style: const TextStyle(fontSize: 16),
+                              ),
+                            ],
+                          );
+                        },
                       ),
                     ),
                   ),
