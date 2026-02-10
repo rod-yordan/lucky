@@ -94,48 +94,40 @@ class Favoritos extends StatelessWidget {
 
                   return Container(
                     color: const Color(0xFFF7F7F7),
-                    child: ListView(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      children: [
-                        // Grid de 2 columnas para vista vertical
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Wrap(
-                            spacing: 16, // Espacio horizontal entre tarjetas
-                            runSpacing: 16, // Espacio vertical entre filas
-                            children: productosFavoritos.map((producto) {
-                              return SizedBox(
-                                width:
-                                    (MediaQuery.of(context).size.width - 48) /
-                                    2,
-                                child: ProductoCard(
-                                  producto: producto,
-                                  onTap: () {
-                                    context.go(
-                                      '/detallesProducto',
-                                      extra: producto,
-                                    );
-                                  },
-                                  mostrarCorazon: true,
-                                  esFavorito: true,
-                                  onCorazonTap: () {
-                                    favoritosProvider.eliminarFavorito(
-                                      producto,
-                                    );
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('Eliminado de favoritos'),
-                                        duration: const Duration(seconds: 2),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                      ],
+                    child: GridView.builder(
+                      padding: const EdgeInsets.all(16),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2, // 2 columnas
+                        crossAxisSpacing: 16, // Espacio horizontal
+                        mainAxisSpacing: 16, // Espacio vertical
+                        childAspectRatio: 170 / 320, // Ancho/Alto (170/330 ≈ 0.515)
+                      ),
+                      itemCount: productosFavoritos.length,
+                      itemBuilder: (context, index) {
+                        final producto = productosFavoritos[index];
+                        return ProductoCard(
+                          producto: producto,
+                          onTap: () {
+                            context.go(
+                              '/detallesProducto',
+                              extra: producto,
+                            );
+                          },
+                          mostrarCorazon: true,
+                          esFavorito: true,
+                          onCorazonTap: () {
+                            favoritosProvider.eliminarFavorito(
+                              producto,
+                            );
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Eliminado de favoritos'),
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                          },
+                        );
+                      },
                     ),
                   );
                 },
