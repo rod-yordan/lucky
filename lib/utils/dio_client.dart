@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 
 class DioClient {
   // Cambia esta URL por la de tu backend Laravel
-  static const String baseUrl = 'http://192.168.181.241:8000/api';
+  static const String baseUrl = 'http://127.0.0.1:8000/api';
 
   static final Dio dio = Dio(
     BaseOptions(
