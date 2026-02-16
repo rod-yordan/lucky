@@ -202,11 +202,41 @@ class _DetallesProductoState extends State<DetallesProducto> {
                             itemBuilder: (context, index) {
                               return Container(
                                 color: Colors.white,
-                                child: Image.asset(
+                                child: Image.network(
                                   imagenesProducto[index],
                                   fit: BoxFit.cover,
                                   width: double.infinity,
                                   height: double.infinity,
+                                  loadingBuilder:
+                                      (context, child, loadingProgress) {
+                                        if (loadingProgress == null)
+                                          return child;
+                                        return Center(
+                                          child: CircularProgressIndicator(
+                                            value:
+                                                loadingProgress
+                                                        .expectedTotalBytes !=
+                                                    null
+                                                ? loadingProgress
+                                                          .cumulativeBytesLoaded /
+                                                      loadingProgress
+                                                          .expectedTotalBytes!
+                                                : null,
+                                          ),
+                                        );
+                                      },
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      color: Colors.grey[200],
+                                      child: const Center(
+                                        child: Icon(
+                                          Icons.error,
+                                          size: 50,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                    );
+                                  },
                                 ),
                               );
                             },
