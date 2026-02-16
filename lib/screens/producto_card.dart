@@ -18,7 +18,7 @@ class ProductoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<String> imagenes = List<String>.from(producto['imagenes']);
+    final List<String> imagenes = List<String>.from(producto['imagenes'] ?? []);
     final String imagenPrincipal = imagenes.isNotEmpty ? imagenes[0] : '';
     int descuentoPorcentaje = producto['descuento'] ?? 0;
 
@@ -29,34 +29,71 @@ class ProductoCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withAlpha(25),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Imagen del producto
+            // Imagen del producto (AHORA USA NETWORKIMAGE)
             ClipRRect(
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(18),
               ),
-              child: Image.asset(
-                imagenPrincipal,
-                height: 220,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    height: 220,
-                    color: Colors.grey.shade100,
-                    child: Center(
-                      child: Icon(
-                        Icons.image,
-                        size: 40,
-                        color: Colors.grey.shade400,
+              child: imagenPrincipal.isNotEmpty
+                  ? Image.network(
+                      imagenPrincipal,
+                      height: 220,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Container(
+                          height: 220,
+                          color: Colors.grey.shade100,
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              value: loadingProgress.expectedTotalBytes != null
+                                  ? loadingProgress.cumulativeBytesLoaded /
+                                        loadingProgress.expectedTotalBytes!
+                                  : null,
+                              color: const Color(0xFFED1C24),
+                              strokeWidth: 2,
+                            ),
+                          ),
+                        );
+                      },
+                      errorBuilder: (context, error, stackTrace) {
+                        print('Error cargando imagen: $imagenPrincipal');
+                        return Container(
+                          height: 220,
+                          color: Colors.grey.shade100,
+                          child: Center(
+                            child: Icon(
+                              Icons.image_not_supported_outlined,
+                              size: 40,
+                              color: Colors.grey.shade400,
+                            ),
+                          ),
+                        );
+                      },
+                    )
+                  : Container(
+                      height: 220,
+                      color: Colors.grey.shade100,
+                      child: Center(
+                        child: Icon(
+                          Icons.image_not_supported_outlined,
+                          size: 40,
+                          color: Colors.grey.shade400,
+                        ),
                       ),
                     ),
-                  );
-                },
-              ),
             ),
             Padding(
               padding: const EdgeInsets.all(10),
@@ -71,10 +108,13 @@ class ProductoCard extends StatelessWidget {
                       // Título (ocupa la mayor parte del espacio)
                       Expanded(
                         child: Text(
-                          producto['titulo'],
+                          producto['titulo'] ?? 'Producto sin título',
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 14),
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
                       // Corazón a la derecha (solo si mostrarCorazon es true)
@@ -88,7 +128,9 @@ class ProductoCard extends StatelessWidget {
                                   ? Icons.favorite
                                   : Icons.favorite_border,
                               size: 20,
-                              color: esFavorito ? Colors.black : Colors.black,
+                              color: esFavorito
+                                  ? const Color(0xFFED1C24)
+                                  : Colors.grey.shade600,
                             ),
                           ),
                         ),
@@ -98,7 +140,7 @@ class ProductoCard extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        'S/ ${producto['precio']}',
+                        'S/ ${producto['precio']?.toStringAsFixed(2) ?? '0.00'}',
                         style: const TextStyle(
                           color: Color(0xFFED1C24),
                           fontWeight: FontWeight.bold,
@@ -130,10 +172,11 @@ class ProductoCard extends StatelessWidget {
                   ),
                   if (producto['precioAntes'] != null &&
                       producto['precioAntes'] != producto['precio']) ...[
+                    const SizedBox(height: 2),
                     Stack(
                       children: [
                         Text(
-                          'S/ ${producto['precioAntes']}',
+                          'S/ ${producto['precioAntes']?.toStringAsFixed(2) ?? ''}',
                           style: TextStyle(
                             color: Colors.grey.shade700,
                             fontSize: 12,
@@ -141,9 +184,10 @@ class ProductoCard extends StatelessWidget {
                         ),
                         Positioned.fill(
                           child: Align(
-                            alignment: Alignment.center,
+                            alignment: Alignment.centerLeft,
                             child: Container(
                               height: 1,
+                              width: 60,
                               color: Colors.grey.shade700,
                             ),
                           ),

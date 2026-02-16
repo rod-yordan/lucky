@@ -419,37 +419,6 @@ class _DetallesProductoState extends State<DetallesProducto> {
                               }).toList(),
                             ),
 
-                            const SizedBox(height: 24),
-
-                            // Descripción (opcional)
-                            Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF7F7F7),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Descripción',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  SizedBox(height: 8),
-                                  Text(
-                                    'Jean de corte skinny en tela denim de alta calidad. Perfecto para looks casuales y elegantes. Confeccionado con materiales resistentes para mayor durabilidad.',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-
                             const SizedBox(height: 32),
                           ],
                         ),

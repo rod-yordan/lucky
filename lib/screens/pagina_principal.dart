@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucky/models/producto_model.dart';
 import 'package:lucky/screens/producto_card.dart';
+import 'package:lucky/services/producto_service.dart';
 import 'package:provider/provider.dart';
 import 'package:lucky/providers/carrito_provider.dart';
 
@@ -17,46 +19,79 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
 
   final List<String> banners = ['assets/banner1.png', 'assets/banner2.png'];
 
-  final List<Map<String, dynamic>> productos = [
-    {
-      'imagenes': [
-        'assets/jean_mujer.png',
-        'assets/jean_mujer2.jpg',
-        'assets/jean_mujer3.jpg',
-        'assets/jean_mujer4.jpg',
-      ],
-      'titulo': 'Jean Mujer Skinny Denim',
-      'precio': 89.90,
-      'precioAntes': 179.90,
-      'descuento': 50,
-    },
-    {
-      'imagenes': [
-        'assets/jean_hombre.png',
-        'assets/jean_hombre2.png',
-        'assets/jean_hombre3.png',
-      ],
-      'titulo': 'Jean Hombre Silueta Slim',
-      'precio': 119.90,
-      'precioAntes': 159.90,
-      'descuento': 25,
-    },
-    {
-      'imagenes': [
-        'assets/casaca_hombre.png',
-        'assets/casaca_hombre2.png',
-        'assets/casaca_hombre3.png',
-        'assets/casaca_hombre4.png',
-      ],
-      'titulo': 'Casaca Hombre Knife Total Bio Blue',
-      'precio': 209.90,
-    },
-  ];
+  // Servicio de productos
+  final ProductoService _productoService = ProductoService();
+
+  // Futures para cargar datos
+  late Future<List<ProductoModel>> _recomendadosFuture;
+  late Future<List<ProductoModel>> _popularesFuture;
+
+  // Listas para almacenar los productos cargados
+  List<ProductoModel> _recomendados = [];
+  List<ProductoModel> _populares = [];
 
   @override
   void initState() {
     super.initState();
-    _autoScroll();
+    _cargarProductos();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Iniciar autoScroll después de que la vista esté construida
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _autoScroll();
+      }
+    });
+  }
+
+  void _cargarProductos() {
+    // Cargar productos recomendados
+    _recomendadosFuture = _productoService
+        .getProductosRecomendados(limit: 10)
+        .then((productos) {
+          if (mounted) {
+            setState(() {
+              _recomendados = productos;
+            });
+          }
+          return productos;
+        });
+
+    // Cargar productos populares
+    _popularesFuture = _productoService.getProductosPopulares(limit: 10).then((
+      productos,
+    ) {
+      if (mounted) {
+        setState(() {
+          _populares = productos;
+        });
+      }
+      return productos;
+    });
+  }
+
+  // Método para refrescar los productos (pull to refresh)
+  Future<void> _refrescarProductos() async {
+    ProductoService.resetPaginacion();
+    await Future.wait([
+      _productoService.getProductosRecomendados(limit: 10).then((productos) {
+        if (mounted) {
+          setState(() {
+            _recomendados = productos;
+          });
+        }
+      }),
+      _productoService.getProductosPopulares(limit: 10).then((productos) {
+        if (mounted) {
+          setState(() {
+            _populares = productos;
+          });
+        }
+      }),
+    ]);
   }
 
   void _autoScroll() async {
@@ -64,12 +99,15 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
       await Future.delayed(const Duration(seconds: 3));
       if (!mounted) return;
 
-      _paginaActual = (_paginaActual + 1) % banners.length;
-      _pageController.animateToPage(
-        _paginaActual,
-        duration: const Duration(milliseconds: 500),
-        curve: Curves.easeInOut,
-      );
+      // Verificar que el PageController está attached
+      if (_pageController.hasClients) {
+        _paginaActual = (_paginaActual + 1) % banners.length;
+        _pageController.animateToPage(
+          _paginaActual,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
+      }
     }
   }
 
@@ -103,38 +141,49 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
             Expanded(
               child: Container(
                 color: const Color(0xFFF7F7F7),
-                child: ListView(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Column(
-                        children: [
-                          const SizedBox(height: 12),
-                          _categorias(),
-                          const SizedBox(height: 14),
-                        ],
+                child: RefreshIndicator(
+                  onRefresh: _refrescarProductos,
+                  color: const Color(0xFFED1C24),
+                  child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Column(
+                          children: [
+                            const SizedBox(height: 12),
+                            _categorias(),
+                            const SizedBox(height: 14),
+                          ],
+                        ),
                       ),
-                    ),
 
-                    _bannerCarrusel(),
+                      _bannerCarrusel(),
 
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Column(
-                        children: [
-                          _seccionProductos(
-                            titulo: 'Recomendado',
-                            productos: productos,
-                          ),
-                          _seccionProductos(
-                            titulo: 'Más populares',
-                            productos: productos,
-                          ),
-                          const SizedBox(height: 24),
-                        ],
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Column(
+                          children: [
+                            // Sección de productos recomendados
+                            _buildSeccionProductos(
+                              titulo: 'Recomendado',
+                              future: _recomendadosFuture,
+                              productos: _recomendados,
+                            ),
+
+                            // Sección de productos populares
+                            _buildSeccionProductos(
+                              titulo: 'Más populares',
+                              future: _popularesFuture,
+                              productos: _populares,
+                            ),
+
+                            const SizedBox(height: 24),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -230,14 +279,38 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
 
   // ================= CATEGORIAS =================
   Widget _categorias() {
-    return const Row(
+    return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        Text('Todo', style: TextStyle(fontWeight: FontWeight.bold)),
-        Text('Mujer'),
-        Text('Hombre'),
-        Text('Promociones'),
+        _categoriaItem('Todo', true),
+        _categoriaItem('Mujer', false),
+        _categoriaItem('Hombre', false),
+        _categoriaItem('Promociones', false),
       ],
+    );
+  }
+
+  Widget _categoriaItem(String texto, bool seleccionado) {
+    return GestureDetector(
+      onTap: () {
+        // Aquí puedes navegar al catálogo con el filtro seleccionado
+        if (texto == 'Mujer') {
+          context.go('/catalogo', extra: {'genero': 'Mujer'});
+        } else if (texto == 'Hombre') {
+          context.go('/catalogo', extra: {'genero': 'Hombre'});
+        } else if (texto == 'Promociones') {
+          context.go('/catalogo', extra: {'en_oferta': true});
+        } else {
+          context.go('/catalogo');
+        }
+      },
+      child: Text(
+        texto,
+        style: TextStyle(
+          fontWeight: seleccionado ? FontWeight.bold : FontWeight.normal,
+          color: seleccionado ? const Color(0xFFED1C24) : Colors.black,
+        ),
+      ),
     );
   }
 
@@ -288,11 +361,43 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
     );
   }
 
-  // ================= SECCIÓN REUTILIZABLE =================
-  Widget _seccionProductos({
+  // ================= SECCIÓN DE PRODUCTOS CON FUTUREBUILDER =================
+  Widget _buildSeccionProductos({
     required String titulo,
-    required List<Map<String, dynamic>> productos,
+    required Future<List<ProductoModel>> future,
+    required List<ProductoModel> productos,
   }) {
+    return FutureBuilder<List<ProductoModel>>(
+      future: future,
+      builder: (context, snapshot) {
+        // Mientras carga
+        if (snapshot.connectionState == ConnectionState.waiting &&
+            productos.isEmpty) {
+          return _buildSeccionCargando(titulo);
+        }
+
+        // Si hay error
+        if (snapshot.hasError) {
+          print('Error cargando $titulo: ${snapshot.error}');
+          return _buildSeccionError(titulo);
+        }
+
+        // Si no hay productos
+        if (productos.isEmpty) {
+          return _buildSeccionVacia(titulo);
+        }
+
+        // Mostrar productos
+        return _seccionProductos(
+          titulo: titulo,
+          productos: productos.map((p) => p.toMap()).toList(),
+        );
+      },
+    );
+  }
+
+  // ================= SECCIÓN CARGANDO =================
+  Widget _buildSeccionCargando(String titulo) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -312,12 +417,201 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
             ],
           ),
         ),
+        SizedBox(
+          height: 330,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: 3, // Mostrar 3 skeletons
+            itemBuilder: (context, index) {
+              return _buildProductoSkeleton();
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ================= SKELETON PARA PRODUCTO =================
+  Widget _buildProductoSkeleton() {
+    return Container(
+      width: 170,
+      margin: const EdgeInsets.only(right: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            height: 220,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade300,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(18),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  height: 16,
+                  width: double.infinity,
+                  color: Colors.grey.shade300,
+                ),
+                const SizedBox(height: 8),
+                Container(height: 16, width: 100, color: Colors.grey.shade300),
+                const SizedBox(height: 8),
+                Container(height: 16, width: 80, color: Colors.grey.shade300),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ================= SECCIÓN ERROR =================
+  Widget _buildSeccionError(String titulo) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Text(
+            titulo,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+        ),
+        Container(
+          height: 200,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: Colors.grey.shade100,
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.error_outline,
+                  size: 40,
+                  color: Colors.grey.shade400,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Error al cargar productos',
+                  style: TextStyle(color: Colors.grey.shade600),
+                ),
+                const SizedBox(height: 8),
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      _cargarProductos();
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFED1C24),
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text('Reintentar'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ================= SECCIÓN VACÍA =================
+  Widget _buildSeccionVacia(String titulo) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Text(
+            titulo,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+        ),
+        Container(
+          height: 200,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: Colors.grey.shade100,
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.inventory_2_outlined,
+                  size: 40,
+                  color: Colors.grey.shade400,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'No hay productos disponibles',
+                  style: TextStyle(color: Colors.grey.shade600),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ================= SECCIÓN REUTILIZABLE (MANTENIENDO TU CÓDIGO ORIGINAL) =================
+  Widget _seccionProductos({
+    required String titulo,
+    required List<Map<String, dynamic>> productos,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                titulo,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  // Navegar a la lista completa según la sección
+                  if (titulo == 'Recomendado') {
+                    context.go('/catalogo', extra: {'recomendados': true});
+                  } else {
+                    context.go('/catalogo', extra: {'populares': true});
+                  }
+                },
+                child: const Text(
+                  'Ver todo',
+                  style: TextStyle(color: Colors.grey),
+                ),
+              ),
+            ],
+          ),
+        ),
         _listaProductos(productos),
       ],
     );
   }
 
-  // ================= LISTA PRODUCTOS =================
+  // ================= LISTA PRODUCTOS (MANTENIENDO TU CÓDIGO ORIGINAL) =================
   Widget _listaProductos(List<Map<String, dynamic>> lista) {
     return SizedBox(
       height: 330,
@@ -330,7 +624,7 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
     );
   }
 
-  // ================= CARD PRODUCTO =================
+  // ================= CARD PRODUCTO (MANTENIENDO TU CÓDIGO ORIGINAL) =================
   Widget _productoCard(Map<String, dynamic> p) {
     return ProductoCard(
       producto: p,

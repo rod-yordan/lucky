@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucky/providers/favoritos_provider.dart';
+import 'package:lucky/utils/dio_client.dart'; // ← IMPORTANTE: Agregar esta línea
 import 'package:provider/provider.dart';
 import 'package:lucky/providers/carrito_provider.dart';
 import 'package:lucky/screens/main_layout.dart';
@@ -15,6 +16,7 @@ import 'package:lucky/screens/pagina_principal.dart';
 import 'package:lucky/screens/registro_usuario.dart';
 
 void main() {
+  DioClient.init(); // ← AGREGAR: Inicializar Dio con interceptores
   runApp(const MyApp());
 }
 
