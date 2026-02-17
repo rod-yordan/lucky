@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucky/services/auth_service.dart';
+import 'package:lucky/models/auth_model.dart';
 
 class IniciarSesion extends StatefulWidget {
   const IniciarSesion({super.key});
@@ -10,6 +12,55 @@ class IniciarSesion extends StatefulWidget {
 
 class _IniciarSesionState extends State<IniciarSesion> {
   bool _ocultarContrasena = true;
+  bool _isLoading = false;
+  
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _authService = AuthService();
+
+  Future<void> _handleLogin() async {
+    // Validar campos
+    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+      _mostrarError('Por favor completa todos los campos');
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final request = LoginRequest(
+        correo: _emailController.text.trim(),
+        contrasena: _passwordController.text,
+      );
+
+      final response = await _authService.login(request);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('¡Bienvenido ${response.user?.nombreCompleto ?? ''}!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        
+        // Redirigir a la página principal
+        context.go('/');
+      }
+    } catch (e) {
+      _mostrarError(e.toString());
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  void _mostrarError(String mensaje) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(mensaje),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,10 +75,8 @@ class _IniciarSesionState extends State<IniciarSesion> {
               child: Column(
                 children: [
                   const SizedBox(height: 24),
-                  // Logo centrado
                   Center(child: Image.asset('logo.jpg', height: 45)),
                   const SizedBox(height: 16),
-                  // Bienvenido de vuelta centrado
                   const Text(
                     'Bienvenido de vuelta',
                     style: TextStyle(fontSize: 16),
@@ -52,6 +101,7 @@ class _IniciarSesionState extends State<IniciarSesion> {
                     _campoTexto(
                       label: 'Correo electrónico',
                       placeholder: 'ejemplo@correo.com',
+                      controller: _emailController,
                     ),
 
                     const SizedBox(height: 24),
@@ -66,7 +116,7 @@ class _IniciarSesionState extends State<IniciarSesion> {
                       alignment: Alignment.centerRight,
                       child: GestureDetector(
                         onTap: () {
-                          // Navegar a recuperar contraseña
+                          // Aquí puedes navegar a recuperar contraseña
                         },
                         child: const Text(
                           '¿Olvidaste tu contraseña?',
@@ -78,7 +128,10 @@ class _IniciarSesionState extends State<IniciarSesion> {
                     const SizedBox(height: 32),
 
                     // Botón de iniciar sesión
-                    _botonIniciarSesion(),
+                    _isLoading 
+                      ? const Center(child: CircularProgressIndicator())
+                      : _botonIniciarSesion(),
+                    
                     const Spacer(),
 
                     // Registro
@@ -91,7 +144,6 @@ class _IniciarSesionState extends State<IniciarSesion> {
                           ),
                           const SizedBox(height: 8),
 
-                          // Navegar a registro
                           TextButton(
                             onPressed: () {
                               context.go('/registroUsuario');
@@ -126,7 +178,11 @@ class _IniciarSesionState extends State<IniciarSesion> {
   }
 
   // ================= CAMPO DE TEXTO =================
-  Widget _campoTexto({required String label, required String placeholder}) {
+  Widget _campoTexto({
+    required String label, 
+    required String placeholder,
+    required TextEditingController controller,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -143,6 +199,7 @@ class _IniciarSesionState extends State<IniciarSesion> {
             border: Border.all(color: Colors.grey.shade300),
           ),
           child: TextField(
+            controller: controller,
             decoration: InputDecoration(
               hintText: placeholder,
               hintStyle: TextStyle(color: Colors.grey),
@@ -175,6 +232,7 @@ class _IniciarSesionState extends State<IniciarSesion> {
             children: [
               Expanded(
                 child: TextField(
+                  controller: _passwordController,
                   obscureText: _ocultarContrasena,
                   decoration: InputDecoration(
                     hintText: '********',
@@ -208,9 +266,7 @@ class _IniciarSesionState extends State<IniciarSesion> {
       width: double.infinity,
       height: 50,
       child: ElevatedButton(
-        onPressed: () {
-          context.go('/');
-        },
+        onPressed: _handleLogin,
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.black,
           shape: RoundedRectangleBorder(
@@ -227,5 +283,12 @@ class _IniciarSesionState extends State<IniciarSesion> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 }

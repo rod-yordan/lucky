@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucky/providers/favoritos_provider.dart';
-import 'package:lucky/utils/dio_client.dart'; // ← IMPORTANTE: Agregar esta línea
+import 'package:lucky/utils/dio_client.dart';
 import 'package:provider/provider.dart';
 import 'package:lucky/providers/carrito_provider.dart';
 import 'package:lucky/screens/main_layout.dart';
@@ -16,7 +16,7 @@ import 'package:lucky/screens/pagina_principal.dart';
 import 'package:lucky/screens/registro_usuario.dart';
 
 void main() {
-  DioClient.init(); // ← AGREGAR: Inicializar Dio con interceptores
+  ApiClient.init(); // Inicializar Dio con interceptores
   runApp(const MyApp());
 }
 
@@ -51,13 +51,11 @@ class MyApp extends StatelessWidget {
 
 final _router = GoRouter(
   routes: [
-    // Ruta principal con navegación de shell
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {
         return MainLayout(navigationShell: navigationShell);
       },
       branches: [
-        // Rama 0: Inicio
         StatefulShellBranch(
           routes: [
             GoRoute(
@@ -66,7 +64,6 @@ final _router = GoRouter(
             ),
           ],
         ),
-        // Rama 1: Catálogo
         StatefulShellBranch(
           routes: [
             GoRoute(
@@ -75,7 +72,6 @@ final _router = GoRouter(
             ),
           ],
         ),
-        // Rama 2: Cupones
         StatefulShellBranch(
           routes: [
             GoRoute(
@@ -84,7 +80,6 @@ final _router = GoRouter(
             ),
           ],
         ),
-        // Rama 3: Favoritos
         StatefulShellBranch(
           routes: [
             GoRoute(
@@ -93,7 +88,6 @@ final _router = GoRouter(
             ),
           ],
         ),
-        // Rama 4: Mi cuenta
         StatefulShellBranch(
           routes: [
             GoRoute(
@@ -109,7 +103,6 @@ final _router = GoRouter(
       ],
     ),
 
-    // Rutas SIN barra de navegación
     GoRoute(path: '/busqueda', builder: (context, state) => const Busqueda()),
     GoRoute(
       path: '/detallesProducto',

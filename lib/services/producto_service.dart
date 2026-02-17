@@ -3,7 +3,7 @@ import 'package:lucky/models/producto_model.dart';
 import 'package:lucky/utils/dio_client.dart';
 
 class ProductoService {
-  final Dio _dio = DioClient.dio;
+  final Dio _dio = ApiClient.dio;
   static int paginaActual = 0;
   static bool tieneMasPaginas = true;
   static int totalProductos = 0;

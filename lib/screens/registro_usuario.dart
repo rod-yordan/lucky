@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucky/services/auth_service.dart';
+import 'package:lucky/models/auth_model.dart';
 
 class RegistroUsuario extends StatefulWidget {
   const RegistroUsuario({super.key});
@@ -11,6 +13,85 @@ class RegistroUsuario extends StatefulWidget {
 class _RegistroUsuarioState extends State<RegistroUsuario> {
   bool _ocultarContrasena = true;
   bool _ocultarConfirmarContrasena = true;
+  bool _isLoading = false;
+
+  // Controladores para los campos de texto
+  final _nombresController = TextEditingController();
+  final _apellidosController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  
+  final _authService = AuthService();
+
+  Future<void> _handleRegister() async {
+    // Validar campos
+    if (_nombresController.text.isEmpty ||
+        _apellidosController.text.isEmpty ||
+        _emailController.text.isEmpty ||
+        _passwordController.text.isEmpty ||
+        _confirmPasswordController.text.isEmpty) {
+      _mostrarError('Por favor completa todos los campos');
+      return;
+    }
+
+    // Validar que las contraseñas coincidan
+    if (_passwordController.text != _confirmPasswordController.text) {
+      _mostrarError('Las contraseñas no coinciden');
+      return;
+    }
+
+    // Validar formato de email
+    if (!_emailController.text.contains('@')) {
+      _mostrarError('Ingresa un correo electrónico válido');
+      return;
+    }
+
+    // Validar longitud mínima de contraseña (opcional)
+    if (_passwordController.text.length < 6) {
+      _mostrarError('La contraseña debe tener al menos 6 caracteres');
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final request = RegistroRequest(
+        nombres: _nombresController.text.trim(),
+        apellidos: _apellidosController.text.trim(),
+        correo: _emailController.text.trim(),
+        contrasena: _passwordController.text,
+      );
+
+      final response = await _authService.register(request);
+      
+      if (mounted) {
+        // Mostrar mensaje de éxito
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(response.message ?? 'Registro exitoso'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        
+        // Ir a iniciar sesión después del registro exitoso
+        context.go('/iniciarSesion');
+      }
+    } catch (e) {
+      _mostrarError(e.toString());
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  void _mostrarError(String mensaje) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(mensaje),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,10 +106,8 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
               child: Column(
                 children: [
                   const SizedBox(height: 24),
-                  // Logo centrado
                   Center(child: Image.asset('logo.jpg', height: 45)),
                   const SizedBox(height: 16),
-                  // Bienvenido de vuelta centrado
                   const Text(
                     'Únete a nuestra comunidad',
                     style: TextStyle(fontSize: 16),
@@ -44,76 +123,87 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
               child: Container(
                 color: const Color(0xFFF7F7F7),
                 padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 24),
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 24),
 
-                    _campoTexto(label: 'Nombres', placeholder: 'Juan Carlos'),
+                      _campoTexto(
+                        label: 'Nombres', 
+                        placeholder: 'Juan Carlos',
+                        controller: _nombresController,
+                      ),
 
-                    const SizedBox(height: 12),
+                      const SizedBox(height: 12),
 
-                    _campoTexto(
-                      label: 'Apellidos',
-                      placeholder: 'Peréz Alvarado',
-                    ),
+                      _campoTexto(
+                        label: 'Apellidos',
+                        placeholder: 'Peréz Alvarado',
+                        controller: _apellidosController,
+                      ),
 
-                    const SizedBox(height: 12),
+                      const SizedBox(height: 12),
 
-                    _campoTexto(
-                      label: 'Correo electrónico',
-                      placeholder: 'ejemplo@correo.com',
-                    ),
+                      _campoTexto(
+                        label: 'Correo electrónico',
+                        placeholder: 'ejemplo@correo.com',
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                      ),
 
-                    const SizedBox(height: 12),
+                      const SizedBox(height: 12),
 
-                    _campoContrasena(),
+                      _campoContrasena(),
 
-                    const SizedBox(height: 12),
+                      const SizedBox(height: 12),
 
-                    _campoConfirmarContrasena(),
+                      _campoConfirmarContrasena(),
 
-                    const SizedBox(height: 44),
+                      const SizedBox(height: 32),
 
-                    // Botón de iniciar sesión
-                    _botonRegistrarse(),
-                    const Spacer(),
+                      // Botón de registrarse
+                      _isLoading 
+                        ? const Center(child: CircularProgressIndicator())
+                        : _botonRegistrarse(),
 
-                    // Registro
-                    Center(
-                      child: Column(
-                        children: [
-                          const Text(
-                            '¿Ya tienes una cuenta?',
-                            style: TextStyle(color: Colors.black, fontSize: 14),
-                          ),
-                          const SizedBox(height: 8),
+                      const SizedBox(height: 24),
 
-                          // Navegar a registro
-                          TextButton(
-                            onPressed: () {
-                              context.go('/iniciarSesion');
-                            },
-                            style: TextButton.styleFrom(
-                              padding: EdgeInsets.zero,
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              minimumSize: Size.zero,
+                      // Iniciar sesión
+                      Center(
+                        child: Column(
+                          children: [
+                            const Text(
+                              '¿Ya tienes una cuenta?',
+                              style: TextStyle(color: Colors.black, fontSize: 14),
                             ),
-                            child: const Text(
-                              'Inicia sesión',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
+                            const SizedBox(height: 8),
+
+                            TextButton(
+                              onPressed: () {
+                                context.go('/iniciarSesion');
+                              },
+                              style: TextButton.styleFrom(
+                                padding: EdgeInsets.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                minimumSize: Size.zero,
+                              ),
+                              child: const Text(
+                                'Inicia sesión',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
 
-                    const SizedBox(height: 24),
-                  ],
+                      const SizedBox(height: 24),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -124,7 +214,12 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
   }
 
   // ================= CAMPO DE TEXTO =================
-  Widget _campoTexto({required String label, required String placeholder}) {
+  Widget _campoTexto({
+    required String label, 
+    required String placeholder,
+    required TextEditingController controller,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -141,6 +236,8 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
             border: Border.all(color: Colors.grey.shade300),
           ),
           child: TextField(
+            controller: controller,
+            keyboardType: keyboardType,
             decoration: InputDecoration(
               hintText: placeholder,
               hintStyle: TextStyle(color: Colors.grey),
@@ -173,6 +270,7 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
             children: [
               Expanded(
                 child: TextField(
+                  controller: _passwordController,
                   obscureText: _ocultarContrasena,
                   decoration: InputDecoration(
                     hintText: '********',
@@ -200,6 +298,7 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
     );
   }
 
+  // ================= CAMPO CONFIRMAR CONTRASEÑA =================
   Widget _campoConfirmarContrasena() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -208,7 +307,7 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
           'Confirmar contraseña',
           style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
@@ -220,6 +319,7 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
             children: [
               Expanded(
                 child: TextField(
+                  controller: _confirmPasswordController,
                   obscureText: _ocultarConfirmarContrasena,
                   decoration: InputDecoration(
                     hintText: '********',
@@ -247,15 +347,13 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
     );
   }
 
-  // ================= BOTÓN INICIAR SESIÓN =================
+  // ================= BOTÓN REGISTRARSE =================
   Widget _botonRegistrarse() {
     return SizedBox(
       width: double.infinity,
       height: 50,
       child: ElevatedButton(
-        onPressed: () {
-          context.go('/');
-        },
+        onPressed: _handleRegister,
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.black,
           shape: RoundedRectangleBorder(
@@ -272,5 +370,15 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _nombresController.dispose();
+    _apellidosController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
   }
 }
