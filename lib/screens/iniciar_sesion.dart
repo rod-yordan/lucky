@@ -46,7 +46,7 @@ class _IniciarSesionState extends State<IniciarSesion> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 24),
 
                     // Campo de correo
                     _campoTexto(
@@ -134,7 +134,7 @@ class _IniciarSesionState extends State<IniciarSesion> {
           label,
           style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
@@ -163,7 +163,7 @@ class _IniciarSesionState extends State<IniciarSesion> {
           'Contraseña',
           style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(

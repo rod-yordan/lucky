@@ -10,6 +10,7 @@ class RegistroUsuario extends StatefulWidget {
 
 class _RegistroUsuarioState extends State<RegistroUsuario> {
   bool _ocultarContrasena = true;
+  bool _ocultarConfirmarContrasena = true;
 
   @override
   Widget build(BuildContext context) {
@@ -46,27 +47,31 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 24),
 
                     _campoTexto(label: 'Nombres', placeholder: 'Juan Carlos'),
 
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 12),
 
                     _campoTexto(
                       label: 'Apellidos',
                       placeholder: 'Peréz Alvarado',
                     ),
 
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 12),
 
                     _campoTexto(
                       label: 'Correo electrónico',
                       placeholder: 'ejemplo@correo.com',
                     ),
 
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 12),
 
                     _campoContrasena(),
+
+                    const SizedBox(height: 12),
+
+                    _campoConfirmarContrasena(),
 
                     const SizedBox(height: 44),
 
@@ -127,7 +132,7 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
           label,
           style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
@@ -156,7 +161,7 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
           'Contraseña',
           style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
@@ -184,6 +189,53 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
                 },
                 child: Icon(
                   _ocultarContrasena ? Icons.visibility_off : Icons.visibility,
+                  color: Colors.grey,
+                  size: 20,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _campoConfirmarContrasena() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Confirmar contraseña',
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade200,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: Colors.grey.shade300),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  obscureText: _ocultarConfirmarContrasena,
+                  decoration: InputDecoration(
+                    hintText: '********',
+                    hintStyle: TextStyle(color: Colors.grey),
+                    border: InputBorder.none,
+                  ),
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _ocultarConfirmarContrasena = !_ocultarConfirmarContrasena;
+                  });
+                },
+                child: Icon(
+                  _ocultarConfirmarContrasena ? Icons.visibility_off : Icons.visibility,
                   color: Colors.grey,
                   size: 20,
                 ),

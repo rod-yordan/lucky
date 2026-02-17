@@ -31,6 +31,18 @@ class _DetallesProductoState extends State<DetallesProducto> {
     {'nombre': 'Blanco', 'codigo': Colors.white},
   ];
 
+  String _formatearPrecio(dynamic precio) {
+  if (precio == null) return '';
+  
+  // Convertir a double si es necesario
+  double valor = precio is int 
+      ? precio.toDouble() 
+      : (precio is double ? precio : double.tryParse(precio.toString()) ?? 0);
+  
+  // Formatear con 2 decimales
+  return valor.toStringAsFixed(2);
+}
+
   @override
   void dispose() {
     _pageController.dispose();
@@ -148,7 +160,7 @@ class _DetallesProductoState extends State<DetallesProducto> {
                                     child: Container(
                                       padding: const EdgeInsets.all(4),
                                       decoration: const BoxDecoration(
-                                        color: Color(0xFFFF0000),
+                                        color: Color(0xFFED1C24),
                                         shape: BoxShape.circle,
                                       ),
                                       constraints: const BoxConstraints(
@@ -293,9 +305,9 @@ class _DetallesProductoState extends State<DetallesProducto> {
                             Row(
                               children: [
                                 Text(
-                                  'S/ ${producto['precio']}',
+                                  'S/ ${_formatearPrecio(producto['precio'])}',
                                   style: const TextStyle(
-                                    color: Color(0xFFFF0000),
+                                    color: Color(0xFFED1C24),
                                     fontSize: 24,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -309,7 +321,7 @@ class _DetallesProductoState extends State<DetallesProducto> {
                                     child: Stack(
                                       children: [
                                         Text(
-                                          'S/ ${producto['precioAntes']}',
+                                          'S/ ${_formatearPrecio(producto['precioAntes'])}',
                                           style: TextStyle(
                                             fontSize: 18,
                                             color: Colors.grey.shade700,
@@ -337,7 +349,7 @@ class _DetallesProductoState extends State<DetallesProducto> {
                                       vertical: 1,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFFFF0000),
+                                      color: const Color(0xFFED1C24),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Text(
@@ -556,7 +568,7 @@ class _DetallesProductoState extends State<DetallesProducto> {
                         _mostrarMensajeConfirmacion(context);
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFFF0000),
+                        backgroundColor: const Color(0xFFED1C24),
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
