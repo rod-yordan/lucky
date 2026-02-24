@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:lucky/models/producto_model.dart';
+import 'package:lucky/models/variante_model.dart';
 import 'package:lucky/utils/dio_client.dart';
 
 class ProductoService {
@@ -14,9 +15,14 @@ class ProductoService {
     int limit = 10,
     String? categoria,
     String? genero,
+    String? talla,                // ✅ NUEVO: filtro por talla
+    String? color,                 // ✅ NUEVO: filtro por color
+    double? precioMin,             // ✅ NUEVO: precio mínimo
+    double? precioMax,             // ✅ NUEVO: precio máximo
     String? busqueda,
     String? orden = 'created_at',
     String? direccion = 'desc',
+    bool soloConStock = true,      // ✅ NUEVO: solo productos con stock
   }) async {
     try {
       // Construir query parameters
@@ -25,6 +31,7 @@ class ProductoService {
         'limit': limit,
         'orden': orden,
         'direccion': direccion,
+        'con_stock': soloConStock,  // ✅ NUEVO parámetro
       };
 
       if (categoria != null && categoria.isNotEmpty) {
@@ -33,6 +40,23 @@ class ProductoService {
 
       if (genero != null && genero.isNotEmpty) {
         queryParams['genero'] = genero;
+      }
+
+      // ✅ NUEVOS filtros
+      if (talla != null && talla.isNotEmpty) {
+        queryParams['talla'] = talla;
+      }
+
+      if (color != null && color.isNotEmpty) {
+        queryParams['color'] = color;
+      }
+
+      if (precioMin != null) {
+        queryParams['precio_min'] = precioMin;
+      }
+
+      if (precioMax != null) {
+        queryParams['precio_max'] = precioMax;
       }
 
       if (busqueda != null && busqueda.isNotEmpty) {
@@ -67,6 +91,22 @@ class ProductoService {
       throw _handleError(e);
     } catch (e) {
       throw Exception('Error al cargar los productos: $e');
+    }
+  }
+
+  // ✅ NUEVO: Obtener variantes de un producto
+  Future<List<VarianteModel>> getVariantes(int productoId) async {
+    try {
+      final response = await _dio.get('/productos/$productoId/variantes');
+
+      if (response.data['success'] == true) {
+        final List<dynamic> lista = response.data['data'] ?? [];
+        return lista.map((e) => VarianteModel.fromJson(e)).toList();
+      }
+
+      return [];
+    } on DioException catch (e) {
+      throw _handleError(e);
     }
   }
 
@@ -161,6 +201,94 @@ class ProductoService {
       final response = await _dio.get(
         '/productos/buscar',
         queryParameters: {'q': query, 'page': page, 'limit': limit},
+      );
+
+      if (response.data['success'] == true) {
+        final List<ProductoModel> productos = [];
+
+        if (response.data['data'] != null) {
+          final List<dynamic> lista = response.data['data'];
+          productos.addAll(lista.map((e) => ProductoModel.fromJson(e)));
+        }
+
+        return productos;
+      }
+
+      return [];
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  // ✅ NUEVO: Filtrar por talla
+  Future<List<ProductoModel>> getProductosPorTalla(
+    String talla, {
+    int page = 0,
+    int limit = 10,
+  }) async {
+    try {
+      final response = await _dio.get(
+        '/productos/talla/$talla',
+        queryParameters: {'page': page, 'limit': limit},
+      );
+
+      if (response.data['success'] == true) {
+        final List<ProductoModel> productos = [];
+
+        if (response.data['data'] != null) {
+          final List<dynamic> lista = response.data['data'];
+          productos.addAll(lista.map((e) => ProductoModel.fromJson(e)));
+        }
+
+        return productos;
+      }
+
+      return [];
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  // ✅ NUEVO: Filtrar por color
+  Future<List<ProductoModel>> getProductosPorColor(
+    String color, {
+    int page = 0,
+    int limit = 10,
+  }) async {
+    try {
+      final response = await _dio.get(
+        '/productos/color/$color',
+        queryParameters: {'page': page, 'limit': limit},
+      );
+
+      if (response.data['success'] == true) {
+        final List<ProductoModel> productos = [];
+
+        if (response.data['data'] != null) {
+          final List<dynamic> lista = response.data['data'];
+          productos.addAll(lista.map((e) => ProductoModel.fromJson(e)));
+        }
+
+        return productos;
+      }
+
+      return [];
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  // ✅ NUEVO: Filtrar por rango de precio
+  Future<List<ProductoModel>> getProductosPorRangoPrecio({
+    required double min,
+    required double max,
+    int page = 0,
+    int limit = 10,
+  }) async {
+    try {
+      final response = await _dio.get(
+        '/productos/rango-precio',
+        queryParameters: {'min': min, 'max': max, 'page': page, 'limit': limit},
       );
 
       if (response.data['success'] == true) {

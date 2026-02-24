@@ -57,12 +57,18 @@ class RegistroRequest {
   final String apellidos;
   final String correo;
   final String contrasena;
+  final String? numeroDocumento;
+  final String? telefono;
+  final int? idTipoDocumento;
 
   RegistroRequest({
     required this.nombres,
     required this.apellidos,
     required this.correo,
     required this.contrasena,
+    this.numeroDocumento,
+    this.telefono,
+    this.idTipoDocumento,
   });
 
   Map<String, dynamic> toJson() {
@@ -71,6 +77,9 @@ class RegistroRequest {
       'apellidos': apellidos,
       'correo': correo,
       'contrasena': contrasena,
+      'numero_documento': numeroDocumento,
+      'telefono': telefono,
+      'id_tipo_documento': idTipoDocumento,
     };
   }
 }
