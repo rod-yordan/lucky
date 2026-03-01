@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucky/models/genero_model.dart';
 import 'package:lucky/models/producto_model.dart';
 import 'package:lucky/screens/producto_card.dart';
+import 'package:lucky/services/genero_service.dart';
 import 'package:lucky/services/producto_service.dart';
 import 'package:provider/provider.dart';
 import 'package:lucky/providers/carrito_provider.dart';
@@ -19,21 +21,26 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
 
   final List<String> banners = ['assets/banner1.png', 'assets/banner2.png'];
 
-  // Servicio de productos
+  // Servicios
   final ProductoService _productoService = ProductoService();
+  final GeneroService _generoService = GeneroService();
 
   // Futures para cargar datos
   late Future<List<ProductoModel>> _recomendadosFuture;
   late Future<List<ProductoModel>> _popularesFuture;
+  late Future<List<GeneroModel>> _generosFuture;
 
   // Listas para almacenar los productos cargados
   List<ProductoModel> _recomendados = [];
   List<ProductoModel> _populares = [];
+  List<GeneroModel> _generos = [];
+  int? _generoSeleccionado;
 
   @override
   void initState() {
     super.initState();
     _cargarProductos();
+    _cargarGeneros();
   }
 
   @override
@@ -73,6 +80,24 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
     });
   }
 
+  // Cargar géneros desde la API
+  void _cargarGeneros() {
+    _generosFuture = _generoService
+        .getGeneros()
+        .then((generos) {
+          if (mounted) {
+            setState(() {
+              _generos = generos;
+            });
+          }
+          return generos;
+        })
+        .catchError((error) {
+          print('Error cargando géneros: $error');
+          return <GeneroModel>[];
+        });
+  }
+
   // Método para refrescar los productos (pull to refresh)
   Future<void> _refrescarProductos() async {
     ProductoService.resetPaginacion();
@@ -88,6 +113,13 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
         if (mounted) {
           setState(() {
             _populares = productos;
+          });
+        }
+      }),
+      _generoService.getGeneros().then((generos) {
+        if (mounted) {
+          setState(() {
+            _generos = generos;
           });
         }
       }),
@@ -152,7 +184,7 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
                         child: Column(
                           children: [
                             const SizedBox(height: 12),
-                            _categorias(),
+                            _generosList(),
                             const SizedBox(height: 14),
                           ],
                         ),
@@ -277,39 +309,101 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
     );
   }
 
-  // ================= CATEGORIAS =================
-  Widget _categorias() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        _categoriaItem('Todo', true),
-        _categoriaItem('Mujer', false),
-        _categoriaItem('Hombre', false),
-        _categoriaItem('Promociones', false),
-      ],
+  Widget _generosList() {
+    return FutureBuilder<List<GeneroModel>>(
+      future: _generosFuture,
+      builder: (context, snapshot) {
+        // Mientras carga
+        if (snapshot.connectionState == ConnectionState.waiting &&
+            _generos.isEmpty) {
+          return _generosSkeleton();
+        }
+
+        // Mostrar géneros
+        return _generosChips();
+      },
     );
   }
 
-  Widget _categoriaItem(String texto, bool seleccionado) {
-    return GestureDetector(
-      onTap: () {
-        // Aquí puedes navegar al catálogo con el filtro seleccionado
-        if (texto == 'Mujer') {
-          context.go('/catalogo', extra: {'genero': 'Mujer'});
-        } else if (texto == 'Hombre') {
-          context.go('/catalogo', extra: {'genero': 'Hombre'});
-        } else if (texto == 'Promociones') {
-          context.go('/catalogo', extra: {'en_oferta': true});
-        } else {
-          context.go('/catalogo');
-        }
-      },
-      child: Text(
-        texto,
-        style: TextStyle(
-          fontWeight: seleccionado ? FontWeight.bold : FontWeight.normal,
-          color: seleccionado ? const Color(0xFFED1C24) : Colors.black,
-        ),
+  // Skeleton para géneros (mientras carga)
+  Widget _generosSkeleton() {
+    return SizedBox(
+      height: 40,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: 5,
+        itemBuilder: (context, index) {
+          return Container(
+            width: 80,
+            margin: const EdgeInsets.only(right: 8),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade300,
+              borderRadius: BorderRadius.circular(20),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  // Chips de géneros desde la API
+  Widget _generosChips() {
+    // Agregamos "Todo" al inicio de la lista
+    final List<dynamic> items = [
+      {'id': null, 'nombre': 'Todo'},
+      ..._generos,
+      {'id': null, 'nombre': 'Promociones'},
+    ];
+
+    return SizedBox(
+      height: 40,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: items.length,
+        itemBuilder: (context, index) {
+          final item = items[index];
+          final int? id = item is GeneroModel ? item.idGenero : item['id'];
+          final String nombre = item is GeneroModel
+              ? item.nombreGenero
+              : item['nombre'];
+          final seleccionado = _generoSeleccionado == id;
+
+          return Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: FilterChip(
+              label: Text(nombre),
+              selected: seleccionado,
+              onSelected: (selected) {
+                setState(() {
+                  _generoSeleccionado = selected ? id : null;
+                });
+
+                if (nombre == 'Promociones') {
+                  context.go('/catalogo', extra: {'en_oferta': true});
+                } else if (id != null) {
+                  context.go('/catalogo', extra: {'genero_id': id});
+                } else {
+                  // "Todo"
+                  context.go('/catalogo');
+                }
+              },
+              backgroundColor: Colors.white,
+              selectedColor: const Color(0xFFED1C24).withAlpha(30),
+              checkmarkColor: const Color(0xFFED1C24),
+              labelStyle: TextStyle(
+                color: seleccionado ? const Color(0xFFED1C24) : Colors.black,
+                fontWeight: seleccionado ? FontWeight.bold : FontWeight.normal,
+              ),
+              shape: StadiumBorder(
+                side: BorderSide(
+                  color: seleccionado
+                      ? const Color(0xFFED1C24)
+                      : Colors.grey.shade300,
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }

@@ -1,4 +1,3 @@
-// Modelo de Usuario (adaptado a tu tabla 'usuario' en BD)
 class UsuarioModel {
   final int id;
   final String nombres;
@@ -38,16 +37,10 @@ class LoginRequest {
   final String correo;
   final String contrasena;
 
-  LoginRequest({
-    required this.correo,
-    required this.contrasena,
-  });
+  LoginRequest({required this.correo, required this.contrasena});
 
   Map<String, dynamic> toJson() {
-    return {
-      'correo': correo,
-      'contrasena': contrasena,
-    };
+    return {'correo': correo, 'contrasena': contrasena};
   }
 }
 
@@ -90,11 +83,7 @@ class AuthResponse {
   final UsuarioModel? user;
   final String? token;
 
-  AuthResponse({
-    this.message,
-    this.user,
-    this.token,
-  });
+  AuthResponse({this.message, this.user, this.token});
 
   factory AuthResponse.fromJson(Map<String, dynamic> json) {
     return AuthResponse(

@@ -15,14 +15,14 @@ class ProductoService {
     int limit = 10,
     String? categoria,
     String? genero,
-    String? talla,                // ✅ NUEVO: filtro por talla
-    String? color,                 // ✅ NUEVO: filtro por color
-    double? precioMin,             // ✅ NUEVO: precio mínimo
-    double? precioMax,             // ✅ NUEVO: precio máximo
+    String? talla,
+    String? color,
+    double? precioMin,
+    double? precioMax,
     String? busqueda,
     String? orden = 'created_at',
     String? direccion = 'desc',
-    bool soloConStock = true,      // ✅ NUEVO: solo productos con stock
+    bool soloConStock = true,
   }) async {
     try {
       // Construir query parameters
@@ -31,7 +31,7 @@ class ProductoService {
         'limit': limit,
         'orden': orden,
         'direccion': direccion,
-        'con_stock': soloConStock,  // ✅ NUEVO parámetro
+        'con_stock': soloConStock,
       };
 
       if (categoria != null && categoria.isNotEmpty) {
@@ -42,7 +42,6 @@ class ProductoService {
         queryParams['genero'] = genero;
       }
 
-      // ✅ NUEVOS filtros
       if (talla != null && talla.isNotEmpty) {
         queryParams['talla'] = talla;
       }
@@ -94,7 +93,7 @@ class ProductoService {
     }
   }
 
-  // ✅ NUEVO: Obtener variantes de un producto
+  // Obtener variantes de un producto
   Future<List<VarianteModel>> getVariantes(int productoId) async {
     try {
       final response = await _dio.get('/productos/$productoId/variantes');
