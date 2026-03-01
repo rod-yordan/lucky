@@ -15,6 +15,7 @@ class ProductoService {
     int limit = 10,
     String? categoria,
     String? genero,
+    int? generoId,
     String? talla,
     String? color,
     double? precioMin,
@@ -23,6 +24,7 @@ class ProductoService {
     String? orden = 'created_at',
     String? direccion = 'desc',
     bool soloConStock = true,
+    bool? enOferta,
   }) async {
     try {
       // Construir query parameters
@@ -38,8 +40,14 @@ class ProductoService {
         queryParams['categoria'] = categoria;
       }
 
-      if (genero != null && genero.isNotEmpty) {
+      if (generoId != null) {
+        queryParams['genero_id'] = generoId;
+      } else if (genero != null && genero.isNotEmpty) {
         queryParams['genero'] = genero;
+      }
+
+      if (enOferta != null) {
+        queryParams['en_oferta'] = enOferta;
       }
 
       if (talla != null && talla.isNotEmpty) {
@@ -124,12 +132,24 @@ class ProductoService {
     }
   }
 
-  // Obtener productos recomendados
-  Future<List<ProductoModel>> getProductosRecomendados({int limit = 10}) async {
+  // Obtener productos recomendados con filtros
+  Future<List<ProductoModel>> getProductosRecomendados({
+    int limit = 10,
+    Map<String, dynamic>? filtros,
+  }) async {
     try {
+      final queryParams = <String, dynamic>{'limit': limit};
+
+      // Agregar filtros si existen - Convertir a String
+      if (filtros != null) {
+        filtros.forEach((key, value) {
+          queryParams[key] = value.toString();
+        });
+      }
+
       final response = await _dio.get(
         '/productos/recomendados',
-        queryParameters: {'limit': limit},
+        queryParameters: queryParams,
       );
 
       if (response.data['success'] == true) {
@@ -143,12 +163,24 @@ class ProductoService {
     }
   }
 
-  // Obtener productos populares
-  Future<List<ProductoModel>> getProductosPopulares({int limit = 10}) async {
+  // Obtener productos populares con filtros
+  Future<List<ProductoModel>> getProductosPopulares({
+    int limit = 10,
+    Map<String, dynamic>? filtros,
+  }) async {
     try {
+      final queryParams = <String, dynamic>{'limit': limit};
+
+      // Agregar filtros si existen - Convertir a String
+      if (filtros != null) {
+        filtros.forEach((key, value) {
+          queryParams[key] = value.toString();
+        });
+      }
+
       final response = await _dio.get(
         '/productos/populares',
-        queryParameters: {'limit': limit},
+        queryParameters: queryParams,
       );
 
       if (response.data['success'] == true) {
@@ -166,11 +198,21 @@ class ProductoService {
   Future<List<ProductoModel>> getProductosEnOferta({
     int page = 0,
     int limit = 10,
+    Map<String, dynamic>? filtros,
   }) async {
     try {
+      final queryParams = <String, dynamic>{'page': page, 'limit': limit};
+
+      // Agregar filtros si existen - Convertir a String
+      if (filtros != null) {
+        filtros.forEach((key, value) {
+          queryParams[key] = value.toString();
+        });
+      }
+
       final response = await _dio.get(
         '/productos/ofertas',
-        queryParameters: {'page': page, 'limit': limit},
+        queryParameters: queryParams,
       );
 
       if (response.data['success'] == true) {
@@ -195,11 +237,25 @@ class ProductoService {
     String query, {
     int page = 0,
     int limit = 10,
+    Map<String, dynamic>? filtros,
   }) async {
     try {
+      final queryParams = <String, dynamic>{
+        'q': query,
+        'page': page,
+        'limit': limit,
+      };
+
+      // Agregar filtros si existen - Convertir a String
+      if (filtros != null) {
+        filtros.forEach((key, value) {
+          queryParams[key] = value.toString();
+        });
+      }
+
       final response = await _dio.get(
         '/productos/buscar',
-        queryParameters: {'q': query, 'page': page, 'limit': limit},
+        queryParameters: queryParams,
       );
 
       if (response.data['success'] == true) {
@@ -219,16 +275,26 @@ class ProductoService {
     }
   }
 
-  // ✅ NUEVO: Filtrar por talla
+  // Filtrar por talla
   Future<List<ProductoModel>> getProductosPorTalla(
     String talla, {
     int page = 0,
     int limit = 10,
+    Map<String, dynamic>? filtros,
   }) async {
     try {
+      final queryParams = <String, dynamic>{'page': page, 'limit': limit};
+
+      // Agregar filtros si existen - Convertir a String
+      if (filtros != null) {
+        filtros.forEach((key, value) {
+          queryParams[key] = value.toString();
+        });
+      }
+
       final response = await _dio.get(
         '/productos/talla/$talla',
-        queryParameters: {'page': page, 'limit': limit},
+        queryParameters: queryParams,
       );
 
       if (response.data['success'] == true) {
@@ -248,16 +314,26 @@ class ProductoService {
     }
   }
 
-  // ✅ NUEVO: Filtrar por color
+  // Filtrar por color
   Future<List<ProductoModel>> getProductosPorColor(
     String color, {
     int page = 0,
     int limit = 10,
+    Map<String, dynamic>? filtros,
   }) async {
     try {
+      final queryParams = <String, dynamic>{'page': page, 'limit': limit};
+
+      // Agregar filtros si existen - Convertir a String
+      if (filtros != null) {
+        filtros.forEach((key, value) {
+          queryParams[key] = value.toString();
+        });
+      }
+
       final response = await _dio.get(
         '/productos/color/$color',
-        queryParameters: {'page': page, 'limit': limit},
+        queryParameters: queryParams,
       );
 
       if (response.data['success'] == true) {
@@ -277,17 +353,32 @@ class ProductoService {
     }
   }
 
-  // ✅ NUEVO: Filtrar por rango de precio
+  // Filtrar por rango de precio
   Future<List<ProductoModel>> getProductosPorRangoPrecio({
     required double min,
     required double max,
     int page = 0,
     int limit = 10,
+    Map<String, dynamic>? filtros,
   }) async {
     try {
+      final queryParams = <String, dynamic>{
+        'min': min,
+        'max': max,
+        'page': page,
+        'limit': limit,
+      };
+
+      // Agregar filtros si existen - Convertir a String
+      if (filtros != null) {
+        filtros.forEach((key, value) {
+          queryParams[key] = value.toString();
+        });
+      }
+
       final response = await _dio.get(
         '/productos/rango-precio',
-        queryParameters: {'min': min, 'max': max, 'page': page, 'limit': limit},
+        queryParameters: queryParams,
       );
 
       if (response.data['success'] == true) {

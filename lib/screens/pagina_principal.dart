@@ -34,19 +34,21 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
   List<ProductoModel> _recomendados = [];
   List<ProductoModel> _populares = [];
   List<GeneroModel> _generos = [];
+
   int? _generoSeleccionado;
+
+  bool _modoPromociones = false;
 
   @override
   void initState() {
     super.initState();
-    _cargarProductos();
     _cargarGeneros();
+    _cargarProductos();
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Iniciar autoScroll después de que la vista esté construida
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _autoScroll();
@@ -55,9 +57,18 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
   }
 
   void _cargarProductos() {
-    // Cargar productos recomendados
+    final Map<String, dynamic> filtros = {};
+
+    if (_generoSeleccionado != null && !_modoPromociones) {
+      filtros['genero_id'] = _generoSeleccionado;
+    }
+
+    if (_modoPromociones) {
+      filtros['en_oferta'] = true;
+    }
+
     _recomendadosFuture = _productoService
-        .getProductosRecomendados(limit: 10)
+        .getProductosRecomendados(limit: 10, filtros: filtros)
         .then((productos) {
           if (mounted) {
             setState(() {
@@ -67,20 +78,18 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
           return productos;
         });
 
-    // Cargar productos populares
-    _popularesFuture = _productoService.getProductosPopulares(limit: 10).then((
-      productos,
-    ) {
-      if (mounted) {
-        setState(() {
-          _populares = productos;
+    _popularesFuture = _productoService
+        .getProductosPopulares(limit: 10, filtros: filtros)
+        .then((productos) {
+          if (mounted) {
+            setState(() {
+              _populares = productos;
+            });
+          }
+          return productos;
         });
-      }
-      return productos;
-    });
   }
 
-  // Cargar géneros desde la API
   void _cargarGeneros() {
     _generosFuture = _generoService
         .getGeneros()
@@ -98,18 +107,32 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
         });
   }
 
-  // Método para refrescar los productos (pull to refresh)
   Future<void> _refrescarProductos() async {
     ProductoService.resetPaginacion();
+
+    final Map<String, dynamic> filtros = {};
+
+    if (_generoSeleccionado != null && !_modoPromociones) {
+      filtros['genero_id'] = _generoSeleccionado;
+    }
+
+    if (_modoPromociones) {
+      filtros['en_oferta'] = true;
+    }
+
     await Future.wait([
-      _productoService.getProductosRecomendados(limit: 10).then((productos) {
-        if (mounted) {
-          setState(() {
-            _recomendados = productos;
-          });
-        }
-      }),
-      _productoService.getProductosPopulares(limit: 10).then((productos) {
+      _productoService
+          .getProductosRecomendados(limit: 10, filtros: filtros)
+          .then((productos) {
+            if (mounted) {
+              setState(() {
+                _recomendados = productos;
+              });
+            }
+          }),
+      _productoService.getProductosPopulares(limit: 10, filtros: filtros).then((
+        productos,
+      ) {
         if (mounted) {
           setState(() {
             _populares = productos;
@@ -126,12 +149,19 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
     ]);
   }
 
+  void _cambiarFiltro({int? generoId, bool promociones = false}) {
+    setState(() {
+      _generoSeleccionado = generoId;
+      _modoPromociones = promociones;
+    });
+    _cargarProductos();
+  }
+
   void _autoScroll() async {
     while (mounted) {
       await Future.delayed(const Duration(seconds: 3));
       if (!mounted) return;
 
-      // Verificar que el PageController está attached
       if (_pageController.hasClients) {
         _paginaActual = (_paginaActual + 1) % banners.length;
         _pageController.animateToPage(
@@ -150,7 +180,7 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
       body: SafeArea(
         child: Column(
           children: [
-            // ================= BARRA SUPERIOR =================
+            // Barra superior
             Container(
               color: Colors.white,
               child: Column(
@@ -169,7 +199,7 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
               ),
             ),
 
-            // ================= CONTENIDO =================
+            // Contenido
             Expanded(
               child: Container(
                 color: const Color(0xFFF7F7F7),
@@ -183,9 +213,9 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Column(
                           children: [
-                            const SizedBox(height: 12),
+                            const SizedBox(height: 4),
                             _generosList(),
-                            const SizedBox(height: 14),
+                            const SizedBox(height: 6),
                           ],
                         ),
                       ),
@@ -196,14 +226,11 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Column(
                           children: [
-                            // Sección de productos recomendados
                             _buildSeccionProductos(
                               titulo: 'Recomendado',
                               future: _recomendadosFuture,
                               productos: _recomendados,
                             ),
-
-                            // Sección de productos populares
                             _buildSeccionProductos(
                               titulo: 'Más populares',
                               future: _popularesFuture,
@@ -313,97 +340,88 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
     return FutureBuilder<List<GeneroModel>>(
       future: _generosFuture,
       builder: (context, snapshot) {
-        // Mientras carga
         if (snapshot.connectionState == ConnectionState.waiting &&
             _generos.isEmpty) {
           return _generosSkeleton();
         }
-
-        // Mostrar géneros
         return _generosChips();
       },
     );
   }
 
-  // Skeleton para géneros (mientras carga)
+  // Skeleton para géneros
   Widget _generosSkeleton() {
-    return SizedBox(
-      height: 40,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: 5,
-        itemBuilder: (context, index) {
+    return Center(
+      child: Wrap(
+        spacing: 8,
+        children: List.generate(5, (index) {
           return Container(
-            width: 80,
-            margin: const EdgeInsets.only(right: 8),
+            width: 50,
+            height: 30,
             decoration: BoxDecoration(
               color: Colors.grey.shade300,
               borderRadius: BorderRadius.circular(20),
             ),
           );
-        },
+        }),
       ),
     );
   }
 
-  // Chips de géneros desde la API
+  // Géneros SIN SCROLL
   Widget _generosChips() {
-    // Agregamos "Todo" al inicio de la lista
     final List<dynamic> items = [
       {'id': null, 'nombre': 'Todo'},
       ..._generos,
       {'id': null, 'nombre': 'Promociones'},
     ];
 
-    return SizedBox(
-      height: 40,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: items.length,
-        itemBuilder: (context, index) {
-          final item = items[index];
+    return Center(
+      child: Wrap(
+        spacing: 8, // Espacio horizontal entre chips
+        runSpacing: 0,
+        alignment: WrapAlignment.center,
+        children: items.map((item) {
           final int? id = item is GeneroModel ? item.idGenero : item['id'];
           final String nombre = item is GeneroModel
               ? item.nombreGenero
               : item['nombre'];
-          final seleccionado = _generoSeleccionado == id;
 
-          return Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: FilterChip(
-              label: Text(nombre),
-              selected: seleccionado,
-              onSelected: (selected) {
-                setState(() {
-                  _generoSeleccionado = selected ? id : null;
-                });
+          // Lógica de selección
+          bool seleccionado;
+          if (nombre == 'Promociones') {
+            seleccionado = _modoPromociones;
+          } else if (id == null) {
+            seleccionado = !_modoPromociones && _generoSeleccionado == null;
+          } else {
+            seleccionado = !_modoPromociones && _generoSeleccionado == id;
+          }
 
-                if (nombre == 'Promociones') {
-                  context.go('/catalogo', extra: {'en_oferta': true});
-                } else if (id != null) {
-                  context.go('/catalogo', extra: {'genero_id': id});
-                } else {
-                  // "Todo"
-                  context.go('/catalogo');
-                }
-              },
-              backgroundColor: Colors.white,
-              selectedColor: const Color(0xFFED1C24).withAlpha(30),
-              checkmarkColor: const Color(0xFFED1C24),
-              labelStyle: TextStyle(
-                color: seleccionado ? const Color(0xFFED1C24) : Colors.black,
-                fontWeight: seleccionado ? FontWeight.bold : FontWeight.normal,
-              ),
-              shape: StadiumBorder(
-                side: BorderSide(
-                  color: seleccionado
-                      ? const Color(0xFFED1C24)
-                      : Colors.grey.shade300,
+          return GestureDetector(
+            onTap: () {
+              if (nombre == 'Promociones') {
+                _cambiarFiltro(promociones: true);
+              } else if (id == null) {
+                _cambiarFiltro(generoId: null);
+              } else {
+                _cambiarFiltro(generoId: id);
+              }
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              child: Text(
+                nombre,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: seleccionado
+                      ? FontWeight.bold
+                      : FontWeight.normal,
+                  color: Colors.black,
                 ),
               ),
             ),
           );
-        },
+        }).toList(),
       ),
     );
   }
@@ -515,7 +533,7 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
           height: 330,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            itemCount: 3, // Mostrar 3 skeletons
+            itemCount: 3,
             itemBuilder: (context, index) {
               return _buildProductoSkeleton();
             },
@@ -568,7 +586,7 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
     );
   }
 
-  // ================= SECCIÓN ERROR =================
+  // error al cargar productos
   Widget _buildSeccionError(String titulo) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -587,34 +605,10 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
             color: Colors.grey.shade100,
             borderRadius: BorderRadius.circular(18),
           ),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.error_outline,
-                  size: 40,
-                  color: Colors.grey.shade400,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Error al cargar productos',
-                  style: TextStyle(color: Colors.grey.shade600),
-                ),
-                const SizedBox(height: 8),
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      _cargarProductos();
-                    });
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFED1C24),
-                    foregroundColor: Colors.white,
-                  ),
-                  child: const Text('Reintentar'),
-                ),
-              ],
+          child: const Center(
+            child: Text(
+              'Error al cargar productos',
+              style: TextStyle(color: Colors.grey),
             ),
           ),
         ),
@@ -622,7 +616,7 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
     );
   }
 
-  // ================= SECCIÓN VACÍA =================
+  // cuando no hay productos
   Widget _buildSeccionVacia(String titulo) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -641,21 +635,10 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
             color: Colors.grey.shade100,
             borderRadius: BorderRadius.circular(18),
           ),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.inventory_2_outlined,
-                  size: 40,
-                  color: Colors.grey.shade400,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'No hay productos disponibles',
-                  style: TextStyle(color: Colors.grey.shade600),
-                ),
-              ],
+          child: const Center(
+            child: Text(
+              'No hay productos disponibles',
+              style: TextStyle(color: Colors.grey),
             ),
           ),
         ),
@@ -663,7 +646,7 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
     );
   }
 
-  // ================= SECCIÓN REUTILIZABLE (MANTENIENDO TU CÓDIGO ORIGINAL) =================
+  // ================= SECCIÓN REUTILIZABLE =================
   Widget _seccionProductos({
     required String titulo,
     required List<Map<String, dynamic>> productos,
@@ -685,12 +668,14 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
               ),
               GestureDetector(
                 onTap: () {
-                  // Navegar a la lista completa según la sección
-                  if (titulo == 'Recomendado') {
-                    context.go('/catalogo', extra: {'recomendados': true});
-                  } else {
-                    context.go('/catalogo', extra: {'populares': true});
+                  // Navegar al catálogo completo con el filtro actual
+                  final Map<String, dynamic> extra = {};
+                  if (_modoPromociones) {
+                    extra['en_oferta'] = true;
+                  } else if (_generoSeleccionado != null) {
+                    extra['genero_id'] = _generoSeleccionado;
                   }
+                  context.go('/catalogo', extra: extra);
                 },
                 child: const Text(
                   'Ver todo',
@@ -705,7 +690,7 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
     );
   }
 
-  // ================= LISTA PRODUCTOS (MANTENIENDO TU CÓDIGO ORIGINAL) =================
+  // ================= LISTA PRODUCTOS =================
   Widget _listaProductos(List<Map<String, dynamic>> lista) {
     return SizedBox(
       height: 330,
@@ -718,14 +703,14 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
     );
   }
 
-  // ================= CARD PRODUCTO (MANTENIENDO TU CÓDIGO ORIGINAL) =================
+  // ================= CARD PRODUCTO =================
   Widget _productoCard(Map<String, dynamic> p) {
     return ProductoCard(
       producto: p,
       onTap: () {
         context.go('/detallesProducto', extra: p);
       },
-      mostrarCorazon: false, // No mostrar corazón en página principal
+      mostrarCorazon: false,
     );
   }
 }

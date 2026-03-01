@@ -14,28 +14,6 @@ class ApiClient {
       sendTimeout: const Duration(seconds: 10),
     ),
   );
-
-  static void init() {
-    dio.interceptors.add(
-      InterceptorsWrapper(
-        onRequest: (options, handler) {
-          print('📤 REQUEST[${options.method}] => PATH: ${options.path}');
-          print('📦 BODY: ${options.data}');
-          return handler.next(options);
-        },
-        onResponse: (response, handler) {
-          print(
-            '📥 RESPONSE[${response.statusCode}] => DATA: ${response.data}',
-          );
-          return handler.next(response);
-        },
-        onError: (DioException e, handler) {
-          print('❌ ERROR[${e.response?.statusCode}] => ${e.message}');
-          return handler.next(e);
-        },
-      ),
-    );
-  }
 }
 
 // Cliente para autenticación (con manejo de token)
