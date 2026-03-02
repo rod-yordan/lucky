@@ -708,7 +708,7 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
     return ProductoCard(
       producto: p,
       onTap: () {
-        context.go('/detallesProducto', extra: p);
+        context.push('/detallesProducto', extra: p);
       },
       mostrarCorazon: false,
     );
