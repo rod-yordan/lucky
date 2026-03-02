@@ -1,4 +1,4 @@
-import 'variante_model.dart';  // <-- IMPORTAR NUEVO MODELO
+import 'variante_model.dart';
 
 class ProductoModel {
   final int id;
@@ -19,7 +19,7 @@ class ProductoModel {
   final String? sku;
   final bool disponible;
   final bool enOferta;
-  final List<VarianteModel> variantes;  // <-- NUEVO CAMPO
+  final List<VarianteModel> variantes;
 
   ProductoModel({
     required this.id,
@@ -40,10 +40,19 @@ class ProductoModel {
     this.sku,
     required this.disponible,
     required this.enOferta,
-    required this.variantes,  // <-- NUEVO PARÁMETRO
+    required this.variantes,
   });
 
   factory ProductoModel.fromJson(Map<String, dynamic> json) {
+    // Función auxiliar para convertir a double
+    double toDouble(dynamic value) {
+      if (value == null) return 0.0;
+      if (value is double) return value;
+      if (value is int) return value.toDouble();
+      if (value is String) return double.tryParse(value) ?? 0.0;
+      return 0.0;
+    }
+
     // Procesar variantes
     List<VarianteModel> variantes = [];
     if (json['variantes'] != null) {
@@ -53,17 +62,38 @@ class ProductoModel {
     }
 
     return ProductoModel(
-      id: json['id'] ?? 0,
-      titulo: json['titulo'] ?? '',
+      // Aceptar tanto 'id_producto' como 'id'
+      id: json['id_producto'] ?? json['id'] ?? 0,
+
+      // Aceptar tanto 'nombre_producto' como 'titulo'
+      titulo: json['nombre_producto'] ?? json['titulo'] ?? '',
+
       descripcion: json['descripcion'] ?? '',
-      precio: (json['precio'] ?? 0).toDouble(),
-      precioAntes: json['precio_antes']?.toDouble(),
+
+      // Convertir precio correctamente
+      precio: toDouble(json['precio'] ?? 0),
+
+      // Aceptar tanto 'precio_oferta' como 'precio_antes'
+      precioAntes: toDouble(json['precio_oferta'] ?? json['precio_antes']),
+
       descuento: json['descuento'],
-      imagenes: List<String>.from(json['imagenes'] ?? []),
-      imagenPrincipal: json['imagen_principal'] ?? '',
-      categoria: json['categoria'],
-      categoriaId: json['categoria_id'],
-      genero: json['genero'],
+
+      // Aceptar tanto array de imagenes como imagen única
+      imagenes: json['imagenes'] != null
+          ? List<String>.from(json['imagenes'])
+          : (json['imagen'] != null ? [json['imagen']] : []),
+
+      imagenPrincipal: json['imagen_principal'] ?? json['imagen'] ?? '',
+
+      // Aceptar tanto 'categoria_nombre' como 'categoria'
+      categoria: json['categoria_nombre'] ?? json['categoria'],
+
+      // Aceptar tanto 'id_categoria' como 'categoria_id'
+      categoriaId: json['id_categoria'] ?? json['categoria_id'],
+
+      // Aceptar tanto 'genero_nombre' como 'genero'
+      genero: json['genero_nombre'] ?? json['genero'],
+
       tallas: List<String>.from(json['tallas'] ?? []),
       colores: List<String>.from(json['colores'] ?? []),
       marca: json['marca'],
@@ -71,7 +101,7 @@ class ProductoModel {
       sku: json['sku'],
       disponible: json['disponible'] ?? true,
       enOferta: json['en_oferta'] ?? false,
-      variantes: variantes,  // <-- NUEVO CAMPO
+      variantes: variantes,
     );
   }
 
@@ -95,7 +125,7 @@ class ProductoModel {
       'sku': sku,
       'disponible': disponible,
       'en_oferta': enOferta,
-      'variantes': variantes.map((v) => v.toJson()).toList(),  // <-- NUEVO
+      'variantes': variantes.map((v) => v.toJson()).toList(),
     };
   }
 
@@ -120,7 +150,7 @@ class ProductoModel {
       'sku': sku,
       'disponible': disponible,
       'en_oferta': enOferta,
-      'variantes': variantes.map((v) => v.toJson()).toList(),  // <-- NUEVO
+      'variantes': variantes.map((v) => v.toJson()).toList(),
     };
   }
 

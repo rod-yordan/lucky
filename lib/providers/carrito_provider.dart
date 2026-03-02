@@ -1,78 +1,226 @@
+// providers/carrito_provider.dart
 import 'package:flutter/material.dart';
+import 'package:lucky/models/carrito_model.dart';
+import 'package:lucky/services/carrito_service.dart';
+import 'package:lucky/providers/auth_provider.dart';
+import 'package:provider/provider.dart';
 
 class CarritoProvider with ChangeNotifier {
-  // Lista de productos en el carrito
-  List<Map<String, dynamic>> _productos = [];
+  // === SERVICIO ===
+  final CarritoService _service = CarritoService();
 
-  // Getter para acceder a los productos
-  List<Map<String, dynamic>> get productos => _productos;
+  // === ESTADO CON MODELOS ===
+  CarritoModel? _carrito;
+  bool _isLoading = false;
+  String? _error;
 
-  // Getter para calcular el total
-  double get total {
-    return _productos.fold(0, (sum, producto) {
-      final precio = producto['precio'] is int
-          ? (producto['precio'] as int).toDouble()
-          : producto['precio'] as double;
-      final cantidad = producto['cantidad'] as int;
-      return sum + (precio * cantidad);
-    });
+  // === GETTERS PARA UI ===
+  CarritoModel? get carrito => _carrito;
+  bool get isLoading => _isLoading;
+  String? get error => _error;
+
+  // === COMPATIBILIDAD CON UI ACTUAL (usando Map) ===
+  List<Map<String, dynamic>> get productos {
+    if (_carrito == null) return [];
+    return _carrito!.items.map((item) => item.toMap()).toList();
   }
 
-  // Getter para la cantidad total de items
-  int get cantidadTotal {
-    return _productos.fold(
-      0,
-      (sum, producto) => sum + (producto['cantidad'] as int),
-    );
-  }
+  double get total => _carrito?.total ?? 0;
 
-  // Método para agregar un producto al carrito
-  void agregarProducto(Map<String, dynamic> producto) {
-    // Verificar si el producto ya está en el carrito (mismo título, talla y color)
-    final index = _productos.indexWhere(
-      (p) =>
-          p['titulo'] == producto['titulo'] &&
-          p['talla'] == producto['talla'] &&
-          p['color'] == producto['color'],
-    );
+  int get cantidadTotal => _carrito?.cantidadTotal ?? 0;
 
-    if (index != -1) {
-      // Si ya existe, incrementar cantidad
-      _productos[index]['cantidad'] =
-          (_productos[index]['cantidad'] as int) + 1;
-    } else {
-      // Si no existe, agregarlo con cantidad 1
-      _productos.add({...producto, 'cantidad': 1});
+  // ==================== CARGAR CARRITO ====================
+  Future<void> cargarCarrito(BuildContext context) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+    if (!authProvider.isLoggedIn) {
+      _carrito = null;
+      notifyListeners();
+      return;
     }
 
-    // Notificar a todos los widgets que están escuchando
-    notifyListeners();
-  }
+    final idUsuario = authProvider.usuario!.id;
+    if (idUsuario <= 0) {
+      print('🔴 ID de usuario inválido: $idUsuario');
+      _error = 'Usuario inválido';
+      notifyListeners();
+      return;
+    }
 
-  // Método para incrementar cantidad de un producto
-  void incrementarCantidad(int index) {
-    _productos[index]['cantidad'] = (_productos[index]['cantidad'] as int) + 1;
+    _isLoading = true;
+    _error = null;
     notifyListeners();
-  }
 
-  // Método para decrementar cantidad de un producto
-  void decrementarCantidad(int index) {
-    final cantidadActual = _productos[index]['cantidad'] as int;
-    if (cantidadActual > 1) {
-      _productos[index]['cantidad'] = cantidadActual - 1;
+    try {
+      print('🟡 Cargando carrito para usuario: $idUsuario');
+      _carrito = await _service.obtenerCarrito(idUsuario);
+      print('✅ Carrito cargado: ${_carrito?.items.length} items');
+    } catch (e) {
+      print('🔴 Error cargando carrito: $e');
+      _error = e.toString();
+    } finally {
+      _isLoading = false;
       notifyListeners();
     }
   }
 
-  // Método para eliminar un producto del carrito
-  void eliminarProducto(int index) {
-    _productos.removeAt(index);
+  // ==================== AGREGAR PRODUCTO ====================
+  Future<void> agregarProducto(
+    BuildContext context,
+    Map<String, dynamic> productoMap,
+  ) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+    if (!authProvider.isLoggedIn) {
+      print('🔴 Usuario no logueado');
+      _error = 'Debes iniciar sesión para agregar al carrito';
+      notifyListeners();
+      return;
+    }
+
+    final idUsuario = authProvider.usuario!.id;
+    if (idUsuario <= 0) {
+      print('🔴 ID de usuario inválido: $idUsuario');
+      _error = 'Usuario inválido';
+      notifyListeners();
+      return;
+    }
+
+    _isLoading = true;
     notifyListeners();
+
+    try {
+      final idVariante = productoMap['id_variante'];
+
+      if (idVariante == null) {
+        throw Exception('Error: El producto no tiene ID de variante');
+      }
+
+      print(
+        '🟡 Agregando producto - Usuario: $idUsuario, Variante: $idVariante',
+      );
+
+      _carrito = await _service.agregarProducto(
+        idUsuario: idUsuario,
+        idVariante: idVariante,
+        cantidad: productoMap['cantidad'] ?? 1,
+      );
+
+      print('🟡 Items en carrito AHORA: ${_carrito?.items.length}');
+      print('✅ Producto agregado correctamente');
+      _error = null;
+    } catch (e) {
+      print('🔴 Error agregando producto: $e');
+      _error = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
-  // Método para limpiar todo el carrito
-  void limpiarCarrito() {
-    _productos.clear();
+  // ==================== INCREMENTAR CANTIDAD ====================
+  Future<void> incrementarCantidad(BuildContext context, int index) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+    if (!authProvider.isLoggedIn || _carrito == null) return;
+
+    final idUsuario = authProvider.usuario!.id;
+    if (idUsuario <= 0) return;
+
+    final item = _carrito!.items[index];
+
+    try {
+      print('🟡 Incrementando cantidad: ${item.idDetalle}');
+      _carrito = await _service.actualizarCantidad(
+        idUsuario: idUsuario,
+        idDetalleCarrito: item.idDetalle,
+        cantidad: item.cantidad + 1,
+      );
+      notifyListeners();
+    } catch (e) {
+      print('🔴 Error incrementando: $e');
+      _error = e.toString();
+      notifyListeners();
+    }
+  }
+
+  // ==================== DECREMENTAR CANTIDAD ====================
+  Future<void> decrementarCantidad(BuildContext context, int index) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+    if (!authProvider.isLoggedIn || _carrito == null) return;
+
+    final idUsuario = authProvider.usuario!.id;
+    if (idUsuario <= 0) return;
+
+    final item = _carrito!.items[index];
+    if (item.cantidad <= 1) return;
+
+    try {
+      print('🟡 Decrementando cantidad: ${item.idDetalle}');
+      _carrito = await _service.actualizarCantidad(
+        idUsuario: idUsuario,
+        idDetalleCarrito: item.idDetalle,
+        cantidad: item.cantidad - 1,
+      );
+      notifyListeners();
+    } catch (e) {
+      print('🔴 Error decrementando: $e');
+      _error = e.toString();
+      notifyListeners();
+    }
+  }
+
+  // ==================== ELIMINAR PRODUCTO ====================
+  Future<void> eliminarProducto(BuildContext context, int index) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+    if (!authProvider.isLoggedIn || _carrito == null) return;
+
+    final idUsuario = authProvider.usuario!.id;
+    if (idUsuario <= 0) return;
+
+    final item = _carrito!.items[index];
+
+    try {
+      print('🟡 Eliminando producto: ${item.idDetalle}');
+      _carrito = await _service.eliminarProducto(
+        idUsuario: idUsuario,
+        idDetalleCarrito: item.idDetalle,
+      );
+      notifyListeners();
+    } catch (e) {
+      print('🔴 Error eliminando: $e');
+      _error = e.toString();
+      notifyListeners();
+    }
+  }
+
+  // ==================== LIMPIAR CARRITO ====================
+  Future<void> limpiarCarrito(BuildContext context) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+    if (!authProvider.isLoggedIn || _carrito == null) return;
+
+    final idUsuario = authProvider.usuario!.id;
+    if (idUsuario <= 0) return;
+
+    try {
+      print('🟡 Limpiando carrito');
+      await _service.limpiarCarrito(idUsuario);
+      _carrito = null;
+      notifyListeners();
+    } catch (e) {
+      print('🔴 Error limpiando: $e');
+      _error = e.toString();
+      notifyListeners();
+    }
+  }
+
+  // ==================== CERRAR SESIÓN ====================
+  void cerrarSesion() {
+    _carrito = null;
+    _error = null;
     notifyListeners();
   }
 }

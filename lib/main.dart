@@ -1,5 +1,7 @@
+// main.dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucky/providers/auth_provider.dart';
 import 'package:lucky/providers/favoritos_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:lucky/providers/carrito_provider.dart';
@@ -13,8 +15,14 @@ import 'package:lucky/screens/favoritos.dart';
 import 'package:lucky/screens/iniciar_sesion.dart';
 import 'package:lucky/screens/pagina_principal.dart';
 import 'package:lucky/screens/registro_usuario.dart';
+import 'package:lucky/services/pref_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final prefService = PrefService();
+  await prefService.init(); // ← INICIALIZAR SHARED PREFERENCES
+
   runApp(const MyApp());
 }
 
@@ -25,6 +33,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider(
+          create: (_) => AuthProvider(),
+        ), // ← YA NO NECESITA VERIFICACIÓN MANUAL
         ChangeNotifierProvider(create: (_) => CarritoProvider()),
         ChangeNotifierProvider(create: (_) => FavoritosProvider()),
       ],
@@ -58,7 +69,28 @@ final _router = GoRouter(
           routes: [
             GoRoute(
               path: '/',
+              name: 'home',
               builder: (context, state) => const PaginaPrincipal(),
+              routes: [
+                GoRoute(
+                  path: 'detallesProducto',
+                  name: 'detalle',
+                  builder: (context, state) {
+                    final producto = state.extra as Map<String, dynamic>;
+                    return DetallesProducto(producto: producto);
+                  },
+                ),
+                GoRoute(
+                  path: 'carrito',
+                  name: 'carrito',
+                  builder: (context, state) => const Carrito(),
+                ),
+                GoRoute(
+                  path: 'busqueda',
+                  name: 'busqueda',
+                  builder: (context, state) => const Busqueda(),
+                ),
+              ],
             ),
           ],
         ),
@@ -66,7 +98,18 @@ final _router = GoRouter(
           routes: [
             GoRoute(
               path: '/catalogo',
+              name: 'catalogo',
               builder: (context, state) => const Catalogo(),
+              routes: [
+                GoRoute(
+                  path: 'detallesProducto',
+                  name: 'detalleCatalogo',
+                  builder: (context, state) {
+                    final producto = state.extra as Map<String, dynamic>;
+                    return DetallesProducto(producto: producto);
+                  },
+                ),
+              ],
             ),
           ],
         ),
@@ -74,6 +117,7 @@ final _router = GoRouter(
           routes: [
             GoRoute(
               path: '/cupones',
+              name: 'cupones',
               builder: (context, state) => const Cupones(),
             ),
           ],
@@ -82,7 +126,18 @@ final _router = GoRouter(
           routes: [
             GoRoute(
               path: '/favoritos',
+              name: 'favoritos',
               builder: (context, state) => const Favoritos(),
+              routes: [
+                GoRoute(
+                  path: 'detallesProducto',
+                  name: 'detalleFavorito',
+                  builder: (context, state) {
+                    final producto = state.extra as Map<String, dynamic>;
+                    return DetallesProducto(producto: producto);
+                  },
+                ),
+              ],
             ),
           ],
         ),
@@ -90,25 +145,17 @@ final _router = GoRouter(
           routes: [
             GoRoute(
               path: '/iniciarSesion',
+              name: 'login',
               builder: (context, state) => const IniciarSesion(),
             ),
             GoRoute(
               path: '/registroUsuario',
+              name: 'registro',
               builder: (context, state) => const RegistroUsuario(),
             ),
           ],
         ),
       ],
     ),
-
-    GoRoute(path: '/busqueda', builder: (context, state) => const Busqueda()),
-    GoRoute(
-      path: '/detallesProducto',
-      builder: (context, state) {
-        final producto = state.extra as Map<String, dynamic>;
-        return DetallesProducto(producto: producto);
-      },
-    ),
-    GoRoute(path: '/carrito', builder: (context, state) => const Carrito()),
   ],
 );

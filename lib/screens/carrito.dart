@@ -1,3 +1,4 @@
+// screens/carrito.dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -61,6 +62,11 @@ class _CarritoState extends State<Carrito> {
             Expanded(
               child: Consumer<CarritoProvider>(
                 builder: (context, carritoProvider, child) {
+                  print(
+                    '🟡 Productos en carrito: ${carritoProvider.productos.length}',
+                  );
+                  print('🟡 UI Carrito - Total: ${carritoProvider.total}');
+
                   final productos = carritoProvider.productos;
                   final total = carritoProvider.total;
 
@@ -224,10 +230,8 @@ class _ItemCarritoConCupones extends StatefulWidget {
 }
 
 class _ItemCarritoConCuponesState extends State<_ItemCarritoConCupones> {
-  // Estado para controlar si el dropdown de cupones está expandido
   bool _cuponesExpandidos = false;
 
-  // Lista de cupones disponibles (ejemplo)
   final List<Map<String, dynamic>> _cuponesDisponibles = [
     {
       'codigo': 'DESC20',
@@ -261,13 +265,11 @@ class _ItemCarritoConCuponesState extends State<_ItemCarritoConCupones> {
     final producto = widget.producto;
     final index = widget.index;
 
-    // Obtener la primera imagen del array
     final List<String> imagenes = producto['imagenes'] != null
         ? List<String>.from(producto['imagenes'])
         : [];
     final String imagenPrincipal = imagenes.isNotEmpty ? imagenes[0] : '';
 
-    // Obtener datos del producto
     final String titulo = producto['titulo'] ?? '';
     final double precio = producto['precio'] is int
         ? (producto['precio'] as int).toDouble()
@@ -301,7 +303,6 @@ class _ItemCarritoConCuponesState extends State<_ItemCarritoConCupones> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Imagen del producto
               Container(
                 width: 100,
                 height: 130,
@@ -329,12 +330,10 @@ class _ItemCarritoConCuponesState extends State<_ItemCarritoConCupones> {
               ),
               const SizedBox(width: 12),
 
-              // Información del producto
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Título y botón eliminar (ícono de basura)
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -353,10 +352,9 @@ class _ItemCarritoConCuponesState extends State<_ItemCarritoConCupones> {
                             ),
                           ),
                         ),
-                        // Botón eliminar como ícono de basura
                         IconButton(
                           onPressed: () {
-                            carritoProvider.eliminarProducto(index);
+                            carritoProvider.eliminarProducto(context, index);
                           },
                           icon: Icon(
                             Icons.delete_outline,
@@ -370,7 +368,6 @@ class _ItemCarritoConCuponesState extends State<_ItemCarritoConCupones> {
                     ),
                     const SizedBox(height: 4),
 
-                    // Color y talla
                     Row(
                       children: [
                         Text(
@@ -392,10 +389,8 @@ class _ItemCarritoConCuponesState extends State<_ItemCarritoConCupones> {
                     ),
                     const SizedBox(height: 4),
 
-                    // Precio y descuento
                     Row(
                       children: [
-                        // Precio actual
                         Text(
                           'S/ ${precio.toStringAsFixed(2)}',
                           style: const TextStyle(
@@ -405,10 +400,8 @@ class _ItemCarritoConCuponesState extends State<_ItemCarritoConCupones> {
                           ),
                         ),
 
-                        // Espacio entre precio y descuento
                         const SizedBox(width: 8),
 
-                        // Descuento (si existe)
                         if (descuento != null && descuento > 0)
                           Container(
                             padding: const EdgeInsets.symmetric(
@@ -432,7 +425,6 @@ class _ItemCarritoConCuponesState extends State<_ItemCarritoConCupones> {
                     ),
                     const SizedBox(height: 2),
 
-                    // Precio anterior (si existe)
                     if (precioAntes != null)
                       Text(
                         'S/ ${precioAntes.toStringAsFixed(2)}',
@@ -444,11 +436,9 @@ class _ItemCarritoConCuponesState extends State<_ItemCarritoConCupones> {
                       ),
                     const SizedBox(height: 8),
 
-                    // Selector de cantidad y botón de cupones en la misma fila
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        // Selector de cantidad
                         Container(
                           decoration: BoxDecoration(
                             color: Colors.grey.shade100,
@@ -458,10 +448,10 @@ class _ItemCarritoConCuponesState extends State<_ItemCarritoConCupones> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              // Botón menos
                               IconButton(
                                 onPressed: cantidad > 1
                                     ? () => carritoProvider.decrementarCantidad(
+                                        context,
                                         index,
                                       )
                                     : null,
@@ -484,10 +474,9 @@ class _ItemCarritoConCuponesState extends State<_ItemCarritoConCupones> {
                                 ),
                               ),
                               const SizedBox(width: 4),
-                              // Botón más
                               IconButton(
-                                onPressed: () =>
-                                    carritoProvider.incrementarCantidad(index),
+                                onPressed: () => carritoProvider
+                                    .incrementarCantidad(context, index),
                                 icon: const Icon(Icons.add, size: 16),
                                 padding: const EdgeInsets.all(4),
                                 constraints: const BoxConstraints(),
@@ -496,7 +485,6 @@ class _ItemCarritoConCuponesState extends State<_ItemCarritoConCupones> {
                           ),
                         ),
 
-                        // Botón para mostrar cupones (CON EL MISMO ESTILO)
                         Container(
                           decoration: BoxDecoration(
                             color: Colors.grey.shade100,
@@ -511,8 +499,8 @@ class _ItemCarritoConCuponesState extends State<_ItemCarritoConCupones> {
                             },
                             style: TextButton.styleFrom(
                               padding: const EdgeInsets.only(
-                                left: 12, // Mantener espacio a la izquierda
-                                right: 6, // REDUCIR espacio a la derecha
+                                left: 12,
+                                right: 6,
                                 top: 12,
                                 bottom: 12,
                               ),
@@ -550,13 +538,11 @@ class _ItemCarritoConCuponesState extends State<_ItemCarritoConCupones> {
             ],
           ),
 
-          // Lista desplegable de cupones
           if (_cuponesExpandidos) ...[
             const SizedBox(height: 12),
             Divider(color: Colors.grey.shade300, height: 1),
             const SizedBox(height: 12),
 
-            // Título de la sección de cupones
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: Row(
@@ -579,20 +565,17 @@ class _ItemCarritoConCuponesState extends State<_ItemCarritoConCupones> {
               ),
             ),
 
-            // Lista de cupones
             Column(
               children: _cuponesDisponibles.map((cupon) {
                 return _ItemCupon(
                   cupon: cupon,
                   onSeleccionar: () {
-                    // Lógica para aplicar cupón
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text('Cupón ${cupon['codigo']} aplicado'),
                         duration: const Duration(seconds: 2),
                       ),
                     );
-                    // Cerrar el dropdown después de seleccionar
                     setState(() {
                       _cuponesExpandidos = false;
                     });
@@ -607,7 +590,6 @@ class _ItemCarritoConCuponesState extends State<_ItemCarritoConCupones> {
   }
 }
 
-// Widget para mostrar cada cupón individual
 class _ItemCupon extends StatelessWidget {
   final Map<String, dynamic> cupon;
   final VoidCallback onSeleccionar;
@@ -626,7 +608,6 @@ class _ItemCupon extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Badge de descuento
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
@@ -644,7 +625,7 @@ class _ItemCupon extends StatelessWidget {
             child: Text(
               cupon['descuento'] > 0 ? '-${cupon['descuento']}%' : 'ENVÍO',
               style: TextStyle(
-                fontSize: 12, // Cambiado de 8 a 12 para mejor legibilidad
+                fontSize: 12,
                 fontWeight: FontWeight.bold,
                 color: cupon['descuento'] > 0
                     ? Color(0xFFFF0000)
@@ -654,7 +635,6 @@ class _ItemCupon extends StatelessWidget {
           ),
           const SizedBox(width: 12),
 
-          // Información del cupón
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -682,7 +662,6 @@ class _ItemCupon extends StatelessWidget {
             ),
           ),
 
-          // Botón para aplicar cupón
           TextButton(
             onPressed: onSeleccionar,
             style: TextButton.styleFrom(

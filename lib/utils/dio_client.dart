@@ -4,7 +4,7 @@ import 'package:dio/dio.dart';
 class ApiClient {
   static final Dio dio = Dio(
     BaseOptions(
-      baseUrl: 'http://127.0.0.1:8000/api',
+      baseUrl: 'http://localhost:8000/api',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -20,7 +20,7 @@ class ApiClient {
 class AuthClient {
   static final Dio dio = Dio(
     BaseOptions(
-      baseUrl: 'http://127.0.0.1:8000/api',
+      baseUrl: 'http://localhost:8000/api',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',

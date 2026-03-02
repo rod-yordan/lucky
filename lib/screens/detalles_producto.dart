@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucky/providers/auth_provider.dart'; // ← AGREGAR
 import 'package:lucky/providers/favoritos_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:lucky/providers/carrito_provider.dart';
-import 'package:lucky/models/producto_model.dart'; // <-- IMPORTAR MODELO
+import 'package:lucky/models/producto_model.dart';
+import 'package:lucky/models/variante_model.dart'; // ← AGREGAR
 
 class DetallesProducto extends StatefulWidget {
   final Map<String, dynamic> producto;
@@ -22,6 +24,7 @@ class _DetallesProductoState extends State<DetallesProducto> {
 
   // Convertir el Map a ProductoModel para facilitar el acceso
   late ProductoModel _producto;
+  VarianteModel? _varianteSeleccionada; // ← AGREGAR
 
   // Listas dinámicas basadas en las variantes del producto
   List<String> get _tallasDisponibles {
@@ -41,13 +44,13 @@ class _DetallesProductoState extends State<DetallesProducto> {
   // Verificar si la combinación talla/color tiene stock
   bool get _combinacionDisponible {
     if (_tallaSeleccionada == null) return false;
-    
-    final variante = _producto.getVariante(
+
+    _varianteSeleccionada = _producto.getVariante(
       talla: _tallaSeleccionada!,
       color: _colorSeleccionado,
     );
-    
-    return variante != null && variante.disponible;
+
+    return _varianteSeleccionada != null && _varianteSeleccionada!.disponible;
   }
 
   @override
@@ -55,11 +58,11 @@ class _DetallesProductoState extends State<DetallesProducto> {
     super.initState();
     // Inicializar el modelo
     _producto = ProductoModel.fromJson(widget.producto);
-    
+
     // Seleccionar primera talla disponible por defecto
     if (_producto.tallas.isNotEmpty) {
       _tallaSeleccionada = _producto.tallas.first;
-      
+
       // Seleccionar primer color disponible para esa talla
       final colores = _producto.getColoresPorTalla(_tallaSeleccionada!);
       if (colores.isNotEmpty) {
@@ -74,11 +77,11 @@ class _DetallesProductoState extends State<DetallesProducto> {
 
   String _formatearPrecio(dynamic precio) {
     if (precio == null) return '';
-    
-    double valor = precio is int 
-        ? precio.toDouble() 
+
+    double valor = precio is int
+        ? precio.toDouble()
         : (precio is double ? precio : double.tryParse(precio.toString()) ?? 0);
-    
+
     return valor.toStringAsFixed(2);
   }
 
@@ -137,6 +140,51 @@ class _DetallesProductoState extends State<DetallesProducto> {
     });
   }
 
+  // Método para verificar si el usuario está logueado
+  void _verificarUsuarioYAgregarCarrito(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+    if (!authProvider.isLoggedIn) {
+      // Mostrar mensaje y redirigir al login
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Debes iniciar sesión para agregar al carrito'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      context.push('/iniciarSesion');
+      return;
+    }
+
+    // Si está logueado, agregar al carrito
+    _agregarAlCarrito(context);
+  }
+
+  void _agregarAlCarrito(BuildContext context) {
+    final carritoProvider = Provider.of<CarritoProvider>(
+      context,
+      listen: false,
+    );
+
+    // Crear producto con las selecciones del usuario y el ID de variante
+    final productoCarrito = {
+      'id': _producto.id,
+      'id_variante': _varianteSeleccionada?.id, // ← IMPORTANTE
+      'titulo': _producto.titulo,
+      'precio': _producto.precio,
+      'precioAntes': _producto.precioAntes,
+      'descuento': _producto.descuento,
+      'imagenes': _producto.imagenes,
+      'imagen_principal': _producto.imagenPrincipal,
+      'talla': _tallaSeleccionada,
+      'color': _colorSeleccionado,
+      'cantidad': 1,
+    };
+
+    carritoProvider.agregarProducto(context, productoCarrito);
+    _mostrarMensajeConfirmacion(context);
+  }
+
   @override
   Widget build(BuildContext context) {
     int descuentoPorcentaje = _producto.descuento ?? 0;
@@ -162,7 +210,7 @@ class _DetallesProductoState extends State<DetallesProducto> {
                       children: [
                         GestureDetector(
                           onTap: () {
-                            context.pop(); // Volver a la página anterior
+                            context.pop();
                           },
                           child: const Icon(
                             Icons.arrow_back,
@@ -401,12 +449,18 @@ class _DetallesProductoState extends State<DetallesProducto> {
                             if (_producto.descripcion.isNotEmpty) ...[
                               const Text(
                                 'Descripción:',
-                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                               const SizedBox(height: 8),
                               Text(
                                 _producto.descripcion,
-                                style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey[700],
+                                ),
                               ),
                               const SizedBox(height: 16),
                             ],
@@ -422,18 +476,25 @@ class _DetallesProductoState extends State<DetallesProducto> {
                               Wrap(
                                 spacing: 8,
                                 children: _coloresPorTalla.map((colorNombre) {
-                                  bool seleccionado = colorNombre == _colorSeleccionado;
-                                  bool tieneStock = _producto.getVariante(
-                                    talla: _tallaSeleccionada ?? '',
-                                    color: colorNombre,
-                                  )?.disponible ?? false;
+                                  bool seleccionado =
+                                      colorNombre == _colorSeleccionado;
+                                  bool tieneStock =
+                                      _producto
+                                          .getVariante(
+                                            talla: _tallaSeleccionada ?? '',
+                                            color: colorNombre,
+                                          )
+                                          ?.disponible ??
+                                      false;
 
                                   return GestureDetector(
-                                    onTap: tieneStock ? () {
-                                      setState(() {
-                                        _colorSeleccionado = colorNombre;
-                                      });
-                                    } : null,
+                                    onTap: tieneStock
+                                        ? () {
+                                            setState(() {
+                                              _colorSeleccionado = colorNombre;
+                                            });
+                                          }
+                                        : null,
                                     child: Container(
                                       padding: const EdgeInsets.symmetric(
                                         horizontal: 16,
@@ -447,14 +508,18 @@ class _DetallesProductoState extends State<DetallesProducto> {
                                         border: Border.all(
                                           color: seleccionado
                                               ? Colors.black
-                                              : (tieneStock ? Colors.grey.shade500 : Colors.grey.shade300),
+                                              : (tieneStock
+                                                    ? Colors.grey.shade500
+                                                    : Colors.grey.shade300),
                                           width: 1,
                                         ),
                                       ),
                                       child: Text(
                                         colorNombre,
                                         style: TextStyle(
-                                          color: tieneStock ? Colors.black : Colors.grey.shade400,
+                                          color: tieneStock
+                                              ? Colors.black
+                                              : Colors.grey.shade400,
                                         ),
                                       ),
                                     ),
@@ -475,24 +540,33 @@ class _DetallesProductoState extends State<DetallesProducto> {
                               Wrap(
                                 spacing: 8,
                                 children: _tallasDisponibles.map((talla) {
-                                  bool seleccionada = talla == _tallaSeleccionada;
-                                  bool tieneStock = _producto.tieneStockTalla(talla);
+                                  bool seleccionada =
+                                      talla == _tallaSeleccionada;
+                                  bool tieneStock = _producto.tieneStockTalla(
+                                    talla,
+                                  );
 
                                   return GestureDetector(
-                                    onTap: tieneStock ? () {
-                                      setState(() {
-                                        _tallaSeleccionada = talla;
-                                        // Resetear color si el actual no está disponible para esta talla
-                                        if (_colorSeleccionado != null) {
-                                          final coloresTalla = _producto.getColoresPorTalla(talla);
-                                          if (!coloresTalla.contains(_colorSeleccionado)) {
-                                            _colorSeleccionado = coloresTalla.isNotEmpty 
-                                                ? coloresTalla.first 
-                                                : null;
+                                    onTap: tieneStock
+                                        ? () {
+                                            setState(() {
+                                              _tallaSeleccionada = talla;
+                                              // Resetear color si el actual no está disponible para esta talla
+                                              if (_colorSeleccionado != null) {
+                                                final coloresTalla = _producto
+                                                    .getColoresPorTalla(talla);
+                                                if (!coloresTalla.contains(
+                                                  _colorSeleccionado,
+                                                )) {
+                                                  _colorSeleccionado =
+                                                      coloresTalla.isNotEmpty
+                                                      ? coloresTalla.first
+                                                      : null;
+                                                }
+                                              }
+                                            });
                                           }
-                                        }
-                                      });
-                                    } : null,
+                                        : null,
                                     child: Container(
                                       padding: const EdgeInsets.symmetric(
                                         horizontal: 16,
@@ -506,14 +580,18 @@ class _DetallesProductoState extends State<DetallesProducto> {
                                         border: Border.all(
                                           color: seleccionada
                                               ? Colors.black
-                                              : (tieneStock ? Colors.grey.shade500 : Colors.grey.shade300),
+                                              : (tieneStock
+                                                    ? Colors.grey.shade500
+                                                    : Colors.grey.shade300),
                                           width: 1,
                                         ),
                                       ),
                                       child: Text(
                                         talla,
                                         style: TextStyle(
-                                          color: tieneStock ? Colors.black : Colors.grey.shade400,
+                                          color: tieneStock
+                                              ? Colors.black
+                                              : Colors.grey.shade400,
                                         ),
                                       ),
                                     ),
@@ -620,25 +698,15 @@ class _DetallesProductoState extends State<DetallesProducto> {
                   // Botón "Al carrito"
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: _combinacionDisponible ? () {
-                        final carritoProvider = Provider.of<CarritoProvider>(
-                          context,
-                          listen: false,
-                        );
-
-                        // Crear producto con las selecciones del usuario
-                        final productoCarrito = {
-                          ...widget.producto,
-                          'talla': _tallaSeleccionada,
-                          'color': _colorSeleccionado,
-                        };
-
-                        carritoProvider.agregarProducto(productoCarrito);
-                        _mostrarMensajeConfirmacion(context);
-                      } : null, // Deshabilitar si no hay combinación disponible
+                      onPressed: _combinacionDisponible
+                          ? () =>
+                                _verificarUsuarioYAgregarCarrito(
+                                  context,
+                                ) // ← ACTUALIZADO
+                          : null,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: _combinacionDisponible 
-                            ? const Color(0xFFED1C24) 
+                        backgroundColor: _combinacionDisponible
+                            ? const Color(0xFFED1C24)
                             : Colors.grey.shade400,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(

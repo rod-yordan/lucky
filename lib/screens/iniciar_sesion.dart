@@ -1,7 +1,9 @@
+// iniciar_sesion.dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lucky/services/auth_service.dart';
-import 'package:lucky/models/auth_model.dart';
+import 'package:lucky/providers/auth_provider.dart';
+import 'package:lucky/providers/carrito_provider.dart'; // ← AGREGAR
+import 'package:provider/provider.dart';
 
 class IniciarSesion extends StatefulWidget {
   const IniciarSesion({super.key});
@@ -12,11 +14,9 @@ class IniciarSesion extends StatefulWidget {
 
 class _IniciarSesionState extends State<IniciarSesion> {
   bool _ocultarContrasena = true;
-  bool _isLoading = false;
-  
+
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _authService = AuthService();
 
   Future<void> _handleLogin() async {
     // Validar campos
@@ -25,40 +25,39 @@ class _IniciarSesionState extends State<IniciarSesion> {
       return;
     }
 
-    setState(() => _isLoading = true);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final carritoProvider = Provider.of<CarritoProvider>(
+      context,
+      listen: false,
+    ); // ← AGREGAR
 
     try {
-      final request = LoginRequest(
-        correo: _emailController.text.trim(),
-        contrasena: _passwordController.text,
+      final success = await authProvider.login(
+        _emailController.text.trim(),
+        _passwordController.text,
       );
 
-      final response = await _authService.login(request);
-      
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('¡Bienvenido ${response.user?.nombreCompleto ?? ''}!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        
-        // Redirigir a la página principal
-        context.go('/');
+      if (success && mounted) {
+        // ✅ CARGAR CARRITO DEL USUARIO DESPUÉS DEL LOGIN
+        await carritoProvider.cargarCarrito(context);
+
+        // ✅ Volver a la pantalla anterior o ir al home
+        if (context.canPop()) {
+          context.pop(); // ← Volver a la pantalla anterior (detalles producto)
+        } else {
+          context.go('/'); // ← Ir al home si no hay para atrás
+        }
+      } else if (mounted) {
+        _mostrarError(authProvider.error ?? 'Error al iniciar sesión');
       }
     } catch (e) {
       _mostrarError(e.toString());
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   void _mostrarError(String mensaje) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(mensaje),
-        backgroundColor: Colors.red,
-      ),
+      SnackBar(content: Text(mensaje), backgroundColor: Colors.red),
     );
   }
 
@@ -67,111 +66,122 @@ class _IniciarSesionState extends State<IniciarSesion> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Column(
-          children: [
-            // ================= BARRA SUPERIOR =================
-            Container(
-              color: Colors.white,
-              child: Column(
-                children: [
-                  const SizedBox(height: 24),
-                  Center(child: Image.asset('logo.jpg', height: 45)),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Bienvenido de vuelta',
-                    style: TextStyle(fontSize: 16),
-                  ),
-                  const SizedBox(height: 16),
-                  Container(height: 1, color: Colors.black12),
-                ],
-              ),
-            ),
-
-            // ================= CONTENIDO
-            Expanded(
-              child: Container(
-                color: const Color(0xFFF7F7F7),
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 24),
-
-                    // Campo de correo
-                    _campoTexto(
-                      label: 'Correo electrónico',
-                      placeholder: 'ejemplo@correo.com',
-                      controller: _emailController,
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // Campo de contraseña
-                    _campoContrasena(),
-
-                    const SizedBox(height: 12),
-
-                    // Olvidaste contraseña
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: GestureDetector(
-                        onTap: () {
-                          // Aquí puedes navegar a recuperar contraseña
-                        },
-                        child: const Text(
-                          '¿Olvidaste tu contraseña?',
-                          style: TextStyle(color: Colors.black, fontSize: 14),
-                        ),
+        child: Consumer<AuthProvider>(
+          builder: (context, authProvider, child) {
+            return Column(
+              children: [
+                // ================= BARRA SUPERIOR =================
+                Container(
+                  color: Colors.white,
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 24),
+                      Center(child: Image.asset('logo.jpg', height: 45)),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Bienvenido de vuelta',
+                        style: TextStyle(fontSize: 16),
                       ),
-                    ),
+                      const SizedBox(height: 16),
+                      Container(height: 1, color: Colors.black12),
+                    ],
+                  ),
+                ),
 
-                    const SizedBox(height: 32),
+                // ================= CONTENIDO
+                Expanded(
+                  child: Container(
+                    color: const Color(0xFFF7F7F7),
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 24),
 
-                    // Botón de iniciar sesión
-                    _isLoading 
-                      ? const Center(child: CircularProgressIndicator())
-                      : _botonIniciarSesion(),
-                    
-                    const Spacer(),
+                        // Campo de correo
+                        _campoTexto(
+                          label: 'Correo electrónico',
+                          placeholder: 'ejemplo@correo.com',
+                          controller: _emailController,
+                        ),
 
-                    // Registro
-                    Center(
-                      child: Column(
-                        children: [
-                          const Text(
-                            '¿No tienes una cuenta?',
-                            style: TextStyle(color: Colors.black, fontSize: 14),
-                          ),
-                          const SizedBox(height: 8),
+                        const SizedBox(height: 24),
 
-                          TextButton(
-                            onPressed: () {
-                              context.go('/registroUsuario');
+                        // Campo de contraseña
+                        _campoContrasena(),
+
+                        const SizedBox(height: 12),
+
+                        // Olvidaste contraseña
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: GestureDetector(
+                            onTap: () {
+                              // Aquí puedes navegar a recuperar contraseña
                             },
-                            style: TextButton.styleFrom(
-                              padding: EdgeInsets.zero,
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              minimumSize: Size.zero,
-                            ),
                             child: const Text(
-                              'Regístrate',
+                              '¿Olvidaste tu contraseña?',
                               style: TextStyle(
                                 color: Colors.black,
                                 fontSize: 14,
-                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
-                        ],
-                      ),
-                    ),
+                        ),
 
-                    const SizedBox(height: 24),
-                  ],
+                        const SizedBox(height: 32),
+
+                        // Botón de iniciar sesión
+                        authProvider.isLoading
+                            ? const Center(child: CircularProgressIndicator())
+                            : _botonIniciarSesion(),
+
+                        const Spacer(),
+
+                        // Registro
+                        Center(
+                          child: Column(
+                            children: [
+                              const Text(
+                                '¿No tienes una cuenta?',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+
+                              TextButton(
+                                onPressed: () {
+                                  context.go('/registroUsuario');
+                                },
+                                style: TextButton.styleFrom(
+                                  padding: EdgeInsets.zero,
+                                  tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                  minimumSize: Size.zero,
+                                ),
+                                child: const Text(
+                                  'Regístrate',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 24),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          ],
+              ],
+            );
+          },
         ),
       ),
     );
@@ -179,7 +189,7 @@ class _IniciarSesionState extends State<IniciarSesion> {
 
   // ================= CAMPO DE TEXTO =================
   Widget _campoTexto({
-    required String label, 
+    required String label,
     required String placeholder,
     required TextEditingController controller,
   }) {
