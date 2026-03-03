@@ -18,9 +18,26 @@ class ProductoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<String> imagenes = List<String>.from(producto['imagenes'] ?? []);
-    final String imagenPrincipal = imagenes.isNotEmpty ? imagenes[0] : '';
+    // 🔵 DEBUG: Ver qué contiene el mapa completo
+    print('🔵 ProductoMap completo en ProductoCard: $producto');
+
+    // ✅ CORREGIDO: Obtener la imagen principal y transformar la URL
+    String imagenOriginal =
+        producto['imagen_principal']?.toString().trim() ?? '';
+
+    // 🔥 TRANSFORMAR LA URL: De /productos/ a /api/imagen/
+    final String imagenPrincipal = imagenOriginal.replaceFirst(
+      'http://localhost:8000/productos/',
+      'http://localhost:8000/api/imagen/',
+    );
+
     int descuentoPorcentaje = producto['descuento'] ?? 0;
+
+    // 🔵 DEBUG: Ver qué URL se está intentando cargar
+    print('🔵 URL imagen original: "$imagenOriginal"');
+    print(
+      '🔵 URL imagen transformada: "$imagenPrincipal" (longitud: ${imagenPrincipal.length})',
+    );
 
     return GestureDetector(
       onTap: onTap,
@@ -40,7 +57,7 @@ class ProductoCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Imagen del producto (AHORA USA NETWORKIMAGE)
+            // Imagen del producto
             ClipRRect(
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(18),
@@ -69,13 +86,14 @@ class ProductoCard extends StatelessWidget {
                         );
                       },
                       errorBuilder: (context, error, stackTrace) {
-                        print('Error cargando imagen: $imagenPrincipal');
+                        print('🔴 Error cargando imagen: $imagenPrincipal');
+                        print('🔴 Detalle del error: $error');
                         return Container(
                           height: 220,
                           color: Colors.grey.shade100,
                           child: Center(
                             child: Icon(
-                              Icons.image_not_supported_outlined,
+                              Icons.broken_image,
                               size: 40,
                               color: Colors.grey.shade400,
                             ),

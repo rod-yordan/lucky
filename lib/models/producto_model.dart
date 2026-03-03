@@ -44,6 +44,11 @@ class ProductoModel {
   });
 
   factory ProductoModel.fromJson(Map<String, dynamic> json) {
+    print(
+      '🔵 Procesando producto: ${json['nombre_producto'] ?? json['titulo']}',
+    );
+    print('   imagen_principal: ${json['imagen_principal']}');
+    print('   imagen: ${json['imagen']}');
     // Función auxiliar para convertir a double
     double toDouble(dynamic value) {
       if (value == null) return 0.0;

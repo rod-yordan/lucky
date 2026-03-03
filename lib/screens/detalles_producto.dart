@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lucky/providers/auth_provider.dart'; // ← AGREGAR
+import 'package:lucky/providers/auth_provider.dart';
 import 'package:lucky/providers/favoritos_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:lucky/providers/carrito_provider.dart';
 import 'package:lucky/models/producto_model.dart';
-import 'package:lucky/models/variante_model.dart'; // ← AGREGAR
+import 'package:lucky/models/variante_model.dart';
 
 class DetallesProducto extends StatefulWidget {
   final Map<String, dynamic> producto;
@@ -24,7 +24,7 @@ class _DetallesProductoState extends State<DetallesProducto> {
 
   // Convertir el Map a ProductoModel para facilitar el acceso
   late ProductoModel _producto;
-  VarianteModel? _varianteSeleccionada; // ← AGREGAR
+  VarianteModel? _varianteSeleccionada;
 
   // Listas dinámicas basadas en las variantes del producto
   List<String> get _tallasDisponibles {
@@ -71,8 +71,42 @@ class _DetallesProductoState extends State<DetallesProducto> {
     }
   }
 
+  // 🔥 GETTER CORREGIDO - Incluye imagen principal y galería
   List<String> get imagenesProducto {
-    return _producto.imagenes;
+    List<String> todasLasImagenes = [];
+
+    // 1. Agregar imagen principal (si existe)
+    if (_producto.imagenPrincipal.isNotEmpty) {
+      String imgPrincipal = _producto.imagenPrincipal.replaceFirst(
+        'http://localhost:8000/productos/',
+        'http://localhost:8000/api/imagen/',
+      );
+      todasLasImagenes.add(imgPrincipal);
+      print('📸 Imagen principal agregada: $imgPrincipal');
+    }
+
+    // 2. Agregar imágenes de galería (sin duplicar la principal)
+    for (var url in _producto.imagenes) {
+      String urlTransformada = url.replaceFirst(
+        'http://localhost:8000/productos/',
+        'http://localhost:8000/api/imagen/',
+      );
+      if (!todasLasImagenes.contains(urlTransformada)) {
+        todasLasImagenes.add(urlTransformada);
+        print('📸 Imagen galería agregada: $urlTransformada');
+      }
+    }
+
+    print('📸 Total imágenes a mostrar: ${todasLasImagenes.length}');
+    return todasLasImagenes;
+  }
+
+  // 🔥 TRANSFORMAR IMAGEN PRINCIPAL (por si se usa)
+  String get imagenPrincipalTransformada {
+    return _producto.imagenPrincipal.replaceFirst(
+      'http://localhost:8000/productos/',
+      'http://localhost:8000/api/imagen/',
+    );
   }
 
   String _formatearPrecio(dynamic precio) {
@@ -169,13 +203,21 @@ class _DetallesProductoState extends State<DetallesProducto> {
     // Crear producto con las selecciones del usuario y el ID de variante
     final productoCarrito = {
       'id': _producto.id,
-      'id_variante': _varianteSeleccionada?.id, // ← IMPORTANTE
+      'id_variante': _varianteSeleccionada?.id,
       'titulo': _producto.titulo,
       'precio': _producto.precio,
       'precioAntes': _producto.precioAntes,
       'descuento': _producto.descuento,
-      'imagenes': _producto.imagenes,
-      'imagen_principal': _producto.imagenPrincipal,
+      'imagenes': _producto.imagenes.map((url) {
+        return url.replaceFirst(
+          'http://localhost:8000/productos/',
+          'http://localhost:8000/api/imagen/',
+        );
+      }).toList(),
+      'imagen_principal': _producto.imagenPrincipal.replaceFirst(
+        'http://localhost:8000/productos/',
+        'http://localhost:8000/api/imagen/',
+      ),
       'talla': _tallaSeleccionada,
       'color': _colorSeleccionado,
       'cantidad': 1,
@@ -699,10 +741,7 @@ class _DetallesProductoState extends State<DetallesProducto> {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: _combinacionDisponible
-                          ? () =>
-                                _verificarUsuarioYAgregarCarrito(
-                                  context,
-                                ) // ← ACTUALIZADO
+                          ? () => _verificarUsuarioYAgregarCarrito(context)
                           : null,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: _combinacionDisponible

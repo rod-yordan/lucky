@@ -21,7 +21,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final prefService = PrefService();
-  await prefService.init(); // ← INICIALIZAR SHARED PREFERENCES
+  await prefService.init();
 
   runApp(const MyApp());
 }
@@ -33,9 +33,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(
-          create: (_) => AuthProvider(),
-        ), // ← YA NO NECESITA VERIFICACIÓN MANUAL
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => CarritoProvider()),
         ChangeNotifierProvider(create: (_) => FavoritosProvider()),
       ],
@@ -65,6 +63,7 @@ final _router = GoRouter(
         return MainLayout(navigationShell: navigationShell);
       },
       branches: [
+        // Branch: Home
         StatefulShellBranch(
           routes: [
             GoRoute(
@@ -72,14 +71,6 @@ final _router = GoRouter(
               name: 'home',
               builder: (context, state) => const PaginaPrincipal(),
               routes: [
-                GoRoute(
-                  path: 'detallesProducto',
-                  name: 'detalle',
-                  builder: (context, state) {
-                    final producto = state.extra as Map<String, dynamic>;
-                    return DetallesProducto(producto: producto);
-                  },
-                ),
                 GoRoute(
                   path: 'carrito',
                   name: 'carrito',
@@ -94,25 +85,17 @@ final _router = GoRouter(
             ),
           ],
         ),
+        // Branch: Catálogo
         StatefulShellBranch(
           routes: [
             GoRoute(
               path: '/catalogo',
               name: 'catalogo',
               builder: (context, state) => const Catalogo(),
-              routes: [
-                GoRoute(
-                  path: 'detallesProducto',
-                  name: 'detalleCatalogo',
-                  builder: (context, state) {
-                    final producto = state.extra as Map<String, dynamic>;
-                    return DetallesProducto(producto: producto);
-                  },
-                ),
-              ],
             ),
           ],
         ),
+        // Branch: Cupones
         StatefulShellBranch(
           routes: [
             GoRoute(
@@ -122,25 +105,17 @@ final _router = GoRouter(
             ),
           ],
         ),
+        // Branch: Favoritos
         StatefulShellBranch(
           routes: [
             GoRoute(
               path: '/favoritos',
               name: 'favoritos',
               builder: (context, state) => const Favoritos(),
-              routes: [
-                GoRoute(
-                  path: 'detallesProducto',
-                  name: 'detalleFavorito',
-                  builder: (context, state) {
-                    final producto = state.extra as Map<String, dynamic>;
-                    return DetallesProducto(producto: producto);
-                  },
-                ),
-              ],
             ),
           ],
         ),
+        // Branch: Cuenta
         StatefulShellBranch(
           routes: [
             GoRoute(
@@ -156,6 +131,15 @@ final _router = GoRouter(
           ],
         ),
       ],
+    ),
+    // 🔥 RUTA DE DETALLES FUERA DEL SHELL (SIN BARRA INFERIOR)
+    GoRoute(
+      path: '/detallesProducto',
+      name: 'detalle',
+      builder: (context, state) {
+        final producto = state.extra as Map<String, dynamic>;
+        return DetallesProducto(producto: producto);
+      },
     ),
   ],
 );

@@ -1,3 +1,4 @@
+// screens/pagina_principal.dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucky/models/genero_model.dart';
@@ -499,10 +500,24 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
           return _buildSeccionVacia(titulo);
         }
 
-        // Mostrar productos
+        // 🔴 AGREGAR ESTE PRINT
+        print('🎯 Productos para $titulo:');
+        for (var p in productos) {
+          print('   - ${p.titulo}: ${p.imagenPrincipal}');
+        }
+
+        // Mostrar productos - AHORA CON MAPEO CORREGIDO
         return _seccionProductos(
           titulo: titulo,
-          productos: productos.map((p) => p.toMap()).toList(),
+          productos: productos
+              .map(
+                (p) => {
+                  ...p.toMap(),
+                  'imagenes': p.imagenes,
+                  'imagen_principal': p.imagenPrincipal,
+                },
+              )
+              .toList(),
         );
       },
     );
@@ -705,6 +720,11 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
 
   // ================= CARD PRODUCTO =================
   Widget _productoCard(Map<String, dynamic> p) {
+    // 🔵 DEBUG: Ver qué datos llegan a la card
+    print('🔵 Datos completos del producto en card: ${p.keys}');
+    print('🔵 imagen_principal en card: ${p['imagen_principal']}');
+    print('🔵 imagenes en card: ${p['imagenes']}');
+
     return ProductoCard(
       producto: p,
       onTap: () {
