@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucky/providers/auth_provider.dart';
 import 'package:lucky/providers/favoritos_provider.dart';
+import 'package:lucky/providers/generos_provider.dart';
+import 'package:lucky/screens/catalogo_parte2.dart';
 import 'package:lucky/screens/informacion_compra.dart';
 import 'package:provider/provider.dart';
 import 'package:lucky/providers/carrito_provider.dart';
@@ -38,6 +40,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => CarritoProvider()),
         ChangeNotifierProvider(create: (_) => FavoritosProvider()),
+        ChangeNotifierProvider(create: (_) => GenerosProvider()),
       ],
       child: MaterialApp.router(
         routerConfig: _router,
@@ -167,6 +170,17 @@ final _router = GoRouter(
       path: '/informacionCompra',
       name: 'informacionCompra',
       builder: (context, state) => const InformacionCompra(),
+    ),
+    GoRoute(
+      path: '/catalogo-parte2',
+      name: 'catalogoParte2',
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>;
+        return CatalogoParte2(
+          genero: extra['genero'],
+          generoId: extra['generoId'],
+        );
+      },
     ),
   ],
 );
