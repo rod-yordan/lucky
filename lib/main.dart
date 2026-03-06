@@ -8,7 +8,7 @@ import 'package:lucky/providers/carrito_provider.dart';
 import 'package:lucky/screens/main_layout.dart';
 import 'package:lucky/screens/busqueda.dart';
 import 'package:lucky/screens/carrito.dart';
-import 'package:lucky/screens/catalogo.dart';
+import 'package:lucky/screens/catalogo_parte1.dart';
 import 'package:lucky/screens/cupones.dart';
 import 'package:lucky/screens/detalles_producto.dart';
 import 'package:lucky/screens/favoritos.dart';
@@ -92,7 +92,7 @@ final _router = GoRouter(
             GoRoute(
               path: '/catalogo',
               name: 'catalogo',
-              builder: (context, state) => const Catalogo(),
+              builder: (context, state) => const CatalogoParte1(),
             ),
           ],
         ),
