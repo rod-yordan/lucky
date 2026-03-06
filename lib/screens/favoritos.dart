@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucky/screens/producto_card.dart';
 import 'package:provider/provider.dart';
 import 'package:lucky/providers/favoritos_provider.dart';
+import 'package:lucky/providers/carrito_provider.dart';
 
 class Favoritos extends StatelessWidget {
   const Favoritos({super.key});
@@ -22,7 +23,8 @@ class Favoritos extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
-                      vertical: 16,
+                      vertical:
+                          7, // Padding vertical reducido a 7 como en el ejemplo
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -35,15 +37,52 @@ class Favoritos extends StatelessWidget {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        IconButton(
-                          onPressed: () {
-                            // Opcional: menú de opciones
+                        // Icono de carrito con Consumer
+                        Consumer<CarritoProvider>(
+                          builder: (context, carritoProvider, child) {
+                            final cantidadTotal = carritoProvider.cantidadTotal;
+                            return Stack(
+                              children: [
+                                IconButton(
+                                  onPressed: () {
+                                    context.go('/carrito');
+                                  },
+                                  icon: const Icon(
+                                    Icons.shopping_cart_outlined,
+                                    size: 28,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                if (cantidadTotal > 0)
+                                  Positioned(
+                                    right: 0,
+                                    top: 0,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(4),
+                                      decoration: const BoxDecoration(
+                                        color: Color(0xFFED1C24),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      constraints: const BoxConstraints(
+                                        minWidth: 20,
+                                        minHeight: 20,
+                                      ),
+                                      child: Text(
+                                        cantidadTotal > 9
+                                            ? '9+'
+                                            : cantidadTotal.toString(),
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            );
                           },
-                          icon: const Icon(
-                            Icons.more_vert,
-                            size: 24,
-                            color: Colors.black,
-                          ),
                         ),
                       ],
                     ),

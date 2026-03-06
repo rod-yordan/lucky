@@ -27,10 +27,11 @@ class _CuponesState extends State<Cupones> {
                   Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
-                      vertical: 16,
+                      vertical: 7, // Cambiado a 7 como en el ejemplo
                     ),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment
+                          .spaceBetween, // Cambiado a spaceBetween
                       children: [
                         GestureDetector(
                           onTap: () {
@@ -50,7 +51,6 @@ class _CuponesState extends State<Cupones> {
                             color: Colors.black,
                           ),
                         ),
-                        const SizedBox(width: 8),
                         const Text(
                           'Cupones',
                           style: TextStyle(
@@ -58,54 +58,55 @@ class _CuponesState extends State<Cupones> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const Spacer(),
                         // Icono de carrito con Consumer
                         Consumer<CarritoProvider>(
                           builder: (context, carritoProvider, child) {
                             final cantidadTotal = carritoProvider.cantidadTotal;
-                            return Container(
-                              margin: const EdgeInsets.only(right: 8),
-                              child: IconButton(
-                                onPressed: () {
-                                  context.go('/carrito');
-                                },
-                                icon: Stack(
-                                  children: [
-                                    const Icon(
-                                      Icons.shopping_cart_outlined,
-                                      size: 24,
-                                      color: Colors.black,
-                                    ),
-                                    if (cantidadTotal > 0)
-                                      Positioned(
-                                        right: 0,
-                                        top: 0,
-                                        child: Container(
-                                          padding: const EdgeInsets.all(2),
-                                          decoration: const BoxDecoration(
-                                            color: Color(0xFFFF0000),
-                                            shape: BoxShape.circle,
-                                          ),
-                                          constraints: const BoxConstraints(
-                                            minWidth: 16,
-                                            minHeight: 16,
-                                          ),
-                                          child: Text(
-                                            cantidadTotal > 9
-                                                ? '9+'
-                                                : cantidadTotal.toString(),
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                            textAlign: TextAlign.center,
-                                          ),
-                                        ),
-                                      ),
-                                  ],
+                            return Stack(
+                              children: [
+                                IconButton(
+                                  onPressed: () {
+                                    context.go('/carrito');
+                                  },
+                                  icon: const Icon(
+                                    Icons.shopping_cart_outlined,
+                                    size: 28, // Tamaño 28 como en el ejemplo
+                                    color: Colors.black,
+                                  ),
                                 ),
-                              ),
+                                if (cantidadTotal > 0)
+                                  Positioned(
+                                    right: 0,
+                                    top: 0,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(
+                                        4,
+                                      ), // Padding 4 como en el ejemplo
+                                      decoration: const BoxDecoration(
+                                        color: Color(
+                                          0xFFED1C24,
+                                        ), // Color rojo como en el ejemplo
+                                        shape: BoxShape.circle,
+                                      ),
+                                      constraints: const BoxConstraints(
+                                        minWidth:
+                                            20, // Tamaño mínimo 20 como en el ejemplo
+                                        minHeight: 20,
+                                      ),
+                                      child: Text(
+                                        cantidadTotal > 9
+                                            ? '9+'
+                                            : cantidadTotal.toString(),
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  ),
+                              ],
                             );
                           },
                         ),
