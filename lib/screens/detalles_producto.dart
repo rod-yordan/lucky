@@ -186,7 +186,7 @@ class _DetallesProductoState extends State<DetallesProducto> {
           duration: Duration(seconds: 2),
         ),
       );
-      context.push('/iniciarSesion');
+      context.go('/cuenta/iniciarSesion');
       return;
     }
 

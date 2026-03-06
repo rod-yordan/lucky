@@ -21,7 +21,7 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  
+
   final _authService = AuthService();
 
   Future<void> _handleRegister() async {
@@ -64,7 +64,7 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
       );
 
       final response = await _authService.register(request);
-      
+
       if (mounted) {
         // Mostrar mensaje de éxito
         ScaffoldMessenger.of(context).showSnackBar(
@@ -73,9 +73,9 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
             backgroundColor: Colors.green,
           ),
         );
-        
+
         // Ir a iniciar sesión después del registro exitoso
-        context.go('/iniciarSesion');
+        context.go('/usuario/iniciarSesion');
       }
     } catch (e) {
       _mostrarError(e.toString());
@@ -86,10 +86,7 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
 
   void _mostrarError(String mensaje) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(mensaje),
-        backgroundColor: Colors.red,
-      ),
+      SnackBar(content: Text(mensaje), backgroundColor: Colors.red),
     );
   }
 
@@ -130,7 +127,7 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
                       const SizedBox(height: 24),
 
                       _campoTexto(
-                        label: 'Nombres', 
+                        label: 'Nombres',
                         placeholder: 'Juan Carlos',
                         controller: _nombresController,
                       ),
@@ -163,9 +160,9 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
                       const SizedBox(height: 32),
 
                       // Botón de registrarse
-                      _isLoading 
-                        ? const Center(child: CircularProgressIndicator())
-                        : _botonRegistrarse(),
+                      _isLoading
+                          ? const Center(child: CircularProgressIndicator())
+                          : _botonRegistrarse(),
 
                       const SizedBox(height: 24),
 
@@ -175,7 +172,10 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
                           children: [
                             const Text(
                               '¿Ya tienes una cuenta?',
-                              style: TextStyle(color: Colors.black, fontSize: 14),
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 14,
+                              ),
                             ),
                             const SizedBox(height: 8),
 
@@ -215,7 +215,7 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
 
   // ================= CAMPO DE TEXTO =================
   Widget _campoTexto({
-    required String label, 
+    required String label,
     required String placeholder,
     required TextEditingController controller,
     TextInputType keyboardType = TextInputType.text,
@@ -335,7 +335,9 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
                   });
                 },
                 child: Icon(
-                  _ocultarConfirmarContrasena ? Icons.visibility_off : Icons.visibility,
+                  _ocultarConfirmarContrasena
+                      ? Icons.visibility_off
+                      : Icons.visibility,
                   color: Colors.grey,
                   size: 20,
                 ),

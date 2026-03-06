@@ -15,6 +15,7 @@ import 'package:lucky/screens/favoritos.dart';
 import 'package:lucky/screens/iniciar_sesion.dart';
 import 'package:lucky/screens/pagina_principal.dart';
 import 'package:lucky/screens/registro_usuario.dart';
+import 'package:lucky/screens/perfil.dart';
 import 'package:lucky/services/pref_service.dart';
 
 void main() async {
@@ -115,24 +116,45 @@ final _router = GoRouter(
             ),
           ],
         ),
-        // Branch: Cuenta
+        // Branch: Cuenta - CORREGIDO CON REDIRECT
         StatefulShellBranch(
           routes: [
             GoRoute(
-              path: '/iniciarSesion',
-              name: 'login',
-              builder: (context, state) => const IniciarSesion(),
-            ),
-            GoRoute(
-              path: '/registroUsuario',
-              name: 'registro',
-              builder: (context, state) => const RegistroUsuario(),
+              path: '/cuenta',
+              name: 'cuenta',
+              redirect: (context, state) {
+                final authProvider = Provider.of<AuthProvider>(
+                  context,
+                  listen: false,
+                );
+                if (!authProvider.isLoggedIn) {
+                  return '/cuenta/iniciarSesion';
+                }
+                return '/cuenta/perfil';
+              },
+              routes: [
+                GoRoute(
+                  path: 'perfil',
+                  name: 'perfil',
+                  builder: (context, state) => const Perfil(),
+                ),
+                GoRoute(
+                  path: 'iniciarSesion',
+                  name: 'login',
+                  builder: (context, state) => const IniciarSesion(),
+                ),
+                GoRoute(
+                  path: 'registroUsuario',
+                  name: 'registro',
+                  builder: (context, state) => const RegistroUsuario(),
+                ),
+              ],
             ),
           ],
         ),
       ],
     ),
-    // 🔥 RUTA DE DETALLES FUERA DEL SHELL (SIN BARRA INFERIOR)
+    // RUTA DE DETALLES FUERA DEL SHELL (SIN BARRA INFERIOR)
     GoRoute(
       path: '/detallesProducto',
       name: 'detalle',

@@ -259,16 +259,38 @@ class _ItemCarritoConCuponesState extends State<_ItemCarritoConCupones> {
     },
   ];
 
+  // 🔥 Función para construir URL completa de imágenes
+  String _construirUrlImagen(String? nombreArchivo) {
+    if (nombreArchivo == null || nombreArchivo.isEmpty) return '';
+
+    // Si ya es una URL completa, transformarla
+    if (nombreArchivo.startsWith('http')) {
+      return nombreArchivo.replaceFirst(
+        RegExp(r'http://localhost:8000/productos/'),
+        'http://localhost:8000/api/imagen/',
+      );
+    }
+
+    // Si solo es el nombre del archivo, construir la URL completa
+    return 'http://localhost:8000/api/imagen/$nombreArchivo';
+  }
+
   @override
   Widget build(BuildContext context) {
     final carritoProvider = Provider.of<CarritoProvider>(context);
     final producto = widget.producto;
     final index = widget.index;
 
-    final List<String> imagenes = producto['imagenes'] != null
-        ? List<String>.from(producto['imagenes'])
-        : [];
-    final String imagenPrincipal = imagenes.isNotEmpty ? imagenes[0] : '';
+    // 🔥 CORREGIDO: Usar función para construir URL
+    final String imagenPrincipal = _construirUrlImagen(
+      producto['imagen_principal'],
+    );
+
+    // Debug
+    print(
+      '🔵 URL imagen en carrito - original: ${producto['imagen_principal']}',
+    );
+    print('🔵 URL imagen en carrito - construida: $imagenPrincipal');
 
     final String titulo = producto['titulo'] ?? '';
     final double precio = producto['precio'] is int
@@ -278,9 +300,7 @@ class _ItemCarritoConCuponesState extends State<_ItemCarritoConCupones> {
     final String talla = producto['talla'] ?? '';
     final String color = producto['color'] ?? '';
     final double? precioAntes = producto['precioAntes'] != null
-        ? (producto['precioAntes'] is int
-              ? (producto['precioAntes'] as int).toDouble()
-              : producto['precioAntes'] as double)
+        ? (producto['precioAntes'] as num).toDouble()
         : null;
     final int? descuento = producto['descuento'] as int?;
 
@@ -303,6 +323,7 @@ class _ItemCarritoConCuponesState extends State<_ItemCarritoConCupones> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Imagen del producto
               Container(
                 width: 100,
                 height: 130,
@@ -313,11 +334,25 @@ class _ItemCarritoConCuponesState extends State<_ItemCarritoConCupones> {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: imagenPrincipal.isNotEmpty
-                      ? Image.asset(
+                      ? Image.network(
                           imagenPrincipal,
                           fit: BoxFit.cover,
                           width: 100,
                           height: 130,
+                          errorBuilder: (context, error, stackTrace) {
+                            print(
+                              '🔴 Error cargando imagen en carrito: $imagenPrincipal',
+                            );
+                            print('🔴 Error details: $error');
+                            return Container(
+                              color: Colors.grey.shade200,
+                              child: Icon(
+                                Icons.broken_image,
+                                size: 40,
+                                color: Colors.grey.shade400,
+                              ),
+                            );
+                          },
                         )
                       : Center(
                           child: Icon(
@@ -330,10 +365,12 @@ class _ItemCarritoConCuponesState extends State<_ItemCarritoConCupones> {
               ),
               const SizedBox(width: 12),
 
+              // Información del producto
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Título y botón eliminar
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -368,6 +405,7 @@ class _ItemCarritoConCuponesState extends State<_ItemCarritoConCupones> {
                     ),
                     const SizedBox(height: 4),
 
+                    // Color y talla
                     Row(
                       children: [
                         Text(
@@ -389,6 +427,7 @@ class _ItemCarritoConCuponesState extends State<_ItemCarritoConCupones> {
                     ),
                     const SizedBox(height: 4),
 
+                    // Precio y descuento
                     Row(
                       children: [
                         Text(
@@ -399,9 +438,7 @@ class _ItemCarritoConCuponesState extends State<_ItemCarritoConCupones> {
                             fontSize: 16,
                           ),
                         ),
-
                         const SizedBox(width: 8),
-
                         if (descuento != null && descuento > 0)
                           Container(
                             padding: const EdgeInsets.symmetric(
@@ -425,6 +462,7 @@ class _ItemCarritoConCuponesState extends State<_ItemCarritoConCupones> {
                     ),
                     const SizedBox(height: 2),
 
+                    // Precio anterior
                     if (precioAntes != null)
                       Text(
                         'S/ ${precioAntes.toStringAsFixed(2)}',
@@ -436,9 +474,11 @@ class _ItemCarritoConCuponesState extends State<_ItemCarritoConCupones> {
                       ),
                     const SizedBox(height: 8),
 
+                    // Selector de cantidad y botón de cupones
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
+                        // Selector de cantidad
                         Container(
                           decoration: BoxDecoration(
                             color: Colors.grey.shade100,
@@ -485,6 +525,7 @@ class _ItemCarritoConCuponesState extends State<_ItemCarritoConCupones> {
                           ),
                         ),
 
+                        // Botón para mostrar cupones
                         Container(
                           decoration: BoxDecoration(
                             color: Colors.grey.shade100,
@@ -538,6 +579,7 @@ class _ItemCarritoConCuponesState extends State<_ItemCarritoConCupones> {
             ],
           ),
 
+          // Lista desplegable de cupones
           if (_cuponesExpandidos) ...[
             const SizedBox(height: 12),
             Divider(color: Colors.grey.shade300, height: 1),
@@ -590,6 +632,7 @@ class _ItemCarritoConCuponesState extends State<_ItemCarritoConCupones> {
   }
 }
 
+// Widget para mostrar cada cupón individual
 class _ItemCupon extends StatelessWidget {
   final Map<String, dynamic> cupon;
   final VoidCallback onSeleccionar;

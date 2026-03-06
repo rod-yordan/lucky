@@ -147,14 +147,13 @@ class ProductoCard extends StatelessWidget {
                                   : Icons.favorite_border,
                               size: 20,
                               color: esFavorito
-                                  ? const Color(0xFFED1C24)
+                                  ? Colors.black
                                   : Colors.grey.shade600,
                             ),
                           ),
                         ),
                     ],
                   ),
-                  const SizedBox(height: 6),
                   Row(
                     children: [
                       Text(

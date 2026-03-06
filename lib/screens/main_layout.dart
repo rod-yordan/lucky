@@ -1,3 +1,4 @@
+// main_layout.dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucky/screens/barra_navegacion.dart';
@@ -19,10 +20,18 @@ class _MainLayoutState extends State<MainLayout> {
       bottomNavigationBar: BarraNavegacion(
         currentIndex: widget.navigationShell.currentIndex,
         onTap: (index) {
-          widget.navigationShell.goBranch(
-            index,
-            initialLocation: index == widget.navigationShell.currentIndex,
-          );
+          // 🔥 Lógica especial para el índice de Mi cuenta (índice 4)
+          if (index == 4) {
+            widget.navigationShell.goBranch(
+              4,
+              initialLocation: true, // Siempre ir a la rama 4
+            );
+          } else {
+            widget.navigationShell.goBranch(
+              index,
+              initialLocation: index == widget.navigationShell.currentIndex,
+            );
+          }
         },
       ),
       body: SafeArea(child: widget.navigationShell),

@@ -96,29 +96,26 @@ class Favoritos extends StatelessWidget {
                     color: const Color(0xFFF7F7F7),
                     child: GridView.builder(
                       padding: const EdgeInsets.all(16),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2, // 2 columnas
-                        crossAxisSpacing: 16, // Espacio horizontal
-                        mainAxisSpacing: 16, // Espacio vertical
-                        childAspectRatio: 170 / 320, // Ancho/Alto (170/330 ≈ 0.515)
-                      ),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2, // 2 columnas
+                            crossAxisSpacing: 16, // Espacio horizontal
+                            mainAxisSpacing: 16, // Espacio vertical
+                            childAspectRatio:
+                                170 / 320, // Ancho/Alto (170/330 ≈ 0.515)
+                          ),
                       itemCount: productosFavoritos.length,
                       itemBuilder: (context, index) {
                         final producto = productosFavoritos[index];
                         return ProductoCard(
                           producto: producto,
                           onTap: () {
-                            context.go(
-                              '/detallesProducto',
-                              extra: producto,
-                            );
+                            context.push('/detallesProducto', extra: producto);
                           },
                           mostrarCorazon: true,
                           esFavorito: true,
                           onCorazonTap: () {
-                            favoritosProvider.eliminarFavorito(
-                              producto,
-                            );
+                            favoritosProvider.eliminarFavorito(producto);
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text('Eliminado de favoritos'),

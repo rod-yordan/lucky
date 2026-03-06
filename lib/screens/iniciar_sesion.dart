@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucky/providers/auth_provider.dart';
-import 'package:lucky/providers/carrito_provider.dart'; // ← AGREGAR
+import 'package:lucky/providers/carrito_provider.dart';
 import 'package:provider/provider.dart';
 
 class IniciarSesion extends StatefulWidget {
@@ -19,7 +19,6 @@ class _IniciarSesionState extends State<IniciarSesion> {
   final _passwordController = TextEditingController();
 
   Future<void> _handleLogin() async {
-    // Validar campos
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
       _mostrarError('Por favor completa todos los campos');
       return;
@@ -29,7 +28,7 @@ class _IniciarSesionState extends State<IniciarSesion> {
     final carritoProvider = Provider.of<CarritoProvider>(
       context,
       listen: false,
-    ); // ← AGREGAR
+    );
 
     try {
       final success = await authProvider.login(
@@ -37,21 +36,21 @@ class _IniciarSesionState extends State<IniciarSesion> {
         _passwordController.text,
       );
 
-      if (success && mounted) {
-        // ✅ CARGAR CARRITO DEL USUARIO DESPUÉS DEL LOGIN
-        await carritoProvider.cargarCarrito(context);
-
-        // ✅ Volver a la pantalla anterior o ir al home
-        if (context.canPop()) {
-          context.pop(); // ← Volver a la pantalla anterior (detalles producto)
-        } else {
-          context.go('/'); // ← Ir al home si no hay para atrás
+      if (success) {
+        // ✅ Usar pushReplacement para reemplazar la pantalla actual con home
+        if (mounted) {
+          context.pushReplacement('/');
         }
+
+        // ✅ Cargar carrito en segundo plano (no bloquea la navegación)
+        carritoProvider.cargarCarrito(context);
       } else if (mounted) {
         _mostrarError(authProvider.error ?? 'Error al iniciar sesión');
       }
     } catch (e) {
-      _mostrarError(e.toString());
+      if (mounted) {
+        _mostrarError(e.toString());
+      }
     }
   }
 
@@ -153,7 +152,7 @@ class _IniciarSesionState extends State<IniciarSesion> {
 
                               TextButton(
                                 onPressed: () {
-                                  context.go('/registroUsuario');
+                                  context.go('/cuenta/registroUsuario');
                                 },
                                 style: TextButton.styleFrom(
                                   padding: EdgeInsets.zero,
