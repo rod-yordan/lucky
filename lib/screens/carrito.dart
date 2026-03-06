@@ -34,7 +34,12 @@ class _CarritoState extends State<Carrito> {
                       children: [
                         GestureDetector(
                           onTap: () {
-                            context.go('/');
+                            // ✅ Lógica mejorada con canPop()
+                            if (context.canPop()) {
+                              context.pop(); // Si puede regresar, hace pop
+                            } else {
+                              context.go('/'); // Si no, va al home
+                            }
                           },
                           child: const Icon(
                             Icons.arrow_back,
@@ -96,20 +101,6 @@ class _CarritoState extends State<Carrito> {
                               fontSize: 14,
                               color: Colors.grey.shade500,
                             ),
-                          ),
-                          const SizedBox(height: 24),
-                          ElevatedButton(
-                            onPressed: () {
-                              context.go('/');
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFFF0000),
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            child: const Text('Ver productos'),
                           ),
                         ],
                       ),
@@ -175,12 +166,7 @@ class _CarritoState extends State<Carrito> {
                                 width: double.infinity,
                                 child: ElevatedButton(
                                   onPressed: () {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('Procediendo al pago...'),
-                                        duration: Duration(seconds: 2),
-                                      ),
-                                    );
+                                    context.push('/informacionCompra');
                                   },
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.black,

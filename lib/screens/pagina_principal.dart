@@ -268,7 +268,7 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
                   children: [
                     IconButton(
                       onPressed: () {
-                        context.go('/carrito');
+                        context.push('/carrito');
                       },
                       icon: const Icon(
                         Icons.shopping_cart_outlined,

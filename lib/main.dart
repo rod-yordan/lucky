@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucky/providers/auth_provider.dart';
 import 'package:lucky/providers/favoritos_provider.dart';
+import 'package:lucky/screens/informacion_compra.dart';
 import 'package:provider/provider.dart';
 import 'package:lucky/providers/carrito_provider.dart';
 import 'package:lucky/screens/main_layout.dart';
@@ -71,18 +72,7 @@ final _router = GoRouter(
               path: '/',
               name: 'home',
               builder: (context, state) => const PaginaPrincipal(),
-              routes: [
-                GoRoute(
-                  path: 'carrito',
-                  name: 'carrito',
-                  builder: (context, state) => const Carrito(),
-                ),
-                GoRoute(
-                  path: 'busqueda',
-                  name: 'busqueda',
-                  builder: (context, state) => const Busqueda(),
-                ),
-              ],
+              // Elimina las rutas hijas de aquí
             ),
           ],
         ),
@@ -116,7 +106,7 @@ final _router = GoRouter(
             ),
           ],
         ),
-        // Branch: Cuenta - CORREGIDO CON REDIRECT
+        // Branch: Cuenta
         StatefulShellBranch(
           routes: [
             GoRoute(
@@ -154,7 +144,17 @@ final _router = GoRouter(
         ),
       ],
     ),
-    // RUTA DE DETALLES FUERA DEL SHELL (SIN BARRA INFERIOR)
+    // RUTAS FUERA DEL SHELL (SIN BARRA INFERIOR)
+    GoRoute(
+      path: '/carrito',
+      name: 'carrito',
+      builder: (context, state) => const Carrito(),
+    ),
+    GoRoute(
+      path: '/busqueda',
+      name: 'busqueda',
+      builder: (context, state) => const Busqueda(),
+    ),
     GoRoute(
       path: '/detallesProducto',
       name: 'detalle',
@@ -162,6 +162,11 @@ final _router = GoRouter(
         final producto = state.extra as Map<String, dynamic>;
         return DetallesProducto(producto: producto);
       },
+    ),
+    GoRoute(
+      path: '/informacionCompra',
+      name: 'informacionCompra',
+      builder: (context, state) => const InformacionCompra(),
     ),
   ],
 );
