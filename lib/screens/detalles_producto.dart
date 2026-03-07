@@ -1,3 +1,4 @@
+// screens/detalles_producto.dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucky/providers/auth_provider.dart';
@@ -71,7 +72,7 @@ class _DetallesProductoState extends State<DetallesProducto> {
     }
   }
 
-  // 🔥 GETTER CORREGIDO - Incluye imagen principal y galería
+  // GETTER - Incluye imagen principal y galería
   List<String> get imagenesProducto {
     List<String> todasLasImagenes = [];
 
@@ -82,7 +83,6 @@ class _DetallesProductoState extends State<DetallesProducto> {
         'http://localhost:8000/api/imagen/',
       );
       todasLasImagenes.add(imgPrincipal);
-      print('📸 Imagen principal agregada: $imgPrincipal');
     }
 
     // 2. Agregar imágenes de galería (sin duplicar la principal)
@@ -93,15 +93,13 @@ class _DetallesProductoState extends State<DetallesProducto> {
       );
       if (!todasLasImagenes.contains(urlTransformada)) {
         todasLasImagenes.add(urlTransformada);
-        print('📸 Imagen galería agregada: $urlTransformada');
       }
     }
 
-    print('📸 Total imágenes a mostrar: ${todasLasImagenes.length}');
     return todasLasImagenes;
   }
 
-  // 🔥 TRANSFORMAR IMAGEN PRINCIPAL (por si se usa)
+  // TRANSFORMAR IMAGEN PRINCIPAL (por si se usa)
   String get imagenPrincipalTransformada {
     return _producto.imagenPrincipal.replaceFirst(
       'http://localhost:8000/productos/',
@@ -156,7 +154,7 @@ class _DetallesProductoState extends State<DetallesProducto> {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  Text(
+                  const Text(
                     'Agregado al carrito',
                     style: TextStyle(fontSize: 14, color: Colors.white),
                   ),

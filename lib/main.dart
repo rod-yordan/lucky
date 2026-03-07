@@ -75,7 +75,6 @@ final _router = GoRouter(
               path: '/',
               name: 'home',
               builder: (context, state) => const PaginaPrincipal(),
-              // Elimina las rutas hijas de aquí
             ),
           ],
         ),
@@ -116,10 +115,16 @@ final _router = GoRouter(
               path: '/cuenta',
               name: 'cuenta',
               redirect: (context, state) {
+                // 🔹 IMPORTANTE: No redirigir si está yendo a registroUsuario
+                if (state.fullPath == '/cuenta/registroUsuario') {
+                  return null; // Permite la navegación a registro
+                }
+
                 final authProvider = Provider.of<AuthProvider>(
                   context,
                   listen: false,
                 );
+
                 if (!authProvider.isLoggedIn) {
                   return '/cuenta/iniciarSesion';
                 }

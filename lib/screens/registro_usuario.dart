@@ -74,8 +74,8 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
           ),
         );
 
-        // Ir a iniciar sesión después del registro exitoso
-        context.go('/usuario/iniciarSesion');
+        // ✅ CORREGIDO: Ir a iniciar sesión después del registro exitoso
+        context.go('/cuenta/iniciarSesion');
       }
     } catch (e) {
       _mostrarError(e.toString());
@@ -181,7 +181,8 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
 
                             TextButton(
                               onPressed: () {
-                                context.go('/iniciarSesion');
+                                // ✅ CORREGIDO: Navegar a iniciar sesión
+                                context.go('/cuenta/iniciarSesion');
                               },
                               style: TextButton.styleFrom(
                                 padding: EdgeInsets.zero,
