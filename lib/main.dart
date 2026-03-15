@@ -1,4 +1,3 @@
-// main.dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucky/providers/auth_provider.dart';
@@ -20,12 +19,31 @@ import 'package:lucky/screens/pagina_principal.dart';
 import 'package:lucky/screens/registro_usuario.dart';
 import 'package:lucky/screens/perfil.dart';
 import 'package:lucky/services/pref_service.dart';
+import 'package:pusher_beams/pusher_beams.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final prefService = PrefService();
   await prefService.init();
+
+  const instanceID = 'c5190994-49a1-4d86-ab48-70fca28a4704';
+
+  try {
+    await PusherBeams.instance.start(instanceID);
+    await PusherBeams.instance.addDeviceInterest('ofertas');
+    await PusherBeams.instance.addDeviceInterest('lanzamientos');
+
+    final isLoggedIn = prefService.getLoginStatus();
+    if (isLoggedIn) {
+      final userId = prefService.getUserId();
+      if (userId != null) {
+        await PusherBeams.instance.addDeviceInterest('carrito-$userId');
+      }
+    }
+  } catch (e) {
+    // Errores
+  }
 
   runApp(const MyApp());
 }
@@ -68,7 +86,6 @@ final _router = GoRouter(
         return MainLayout(navigationShell: navigationShell);
       },
       branches: [
-        // Branch: Home
         StatefulShellBranch(
           routes: [
             GoRoute(
@@ -78,7 +95,6 @@ final _router = GoRouter(
             ),
           ],
         ),
-        // Branch: Catálogo
         StatefulShellBranch(
           routes: [
             GoRoute(
@@ -88,7 +104,6 @@ final _router = GoRouter(
             ),
           ],
         ),
-        // Branch: Cupones
         StatefulShellBranch(
           routes: [
             GoRoute(
@@ -98,7 +113,6 @@ final _router = GoRouter(
             ),
           ],
         ),
-        // Branch: Favoritos
         StatefulShellBranch(
           routes: [
             GoRoute(
@@ -108,16 +122,14 @@ final _router = GoRouter(
             ),
           ],
         ),
-        // Branch: Cuenta
         StatefulShellBranch(
           routes: [
             GoRoute(
               path: '/cuenta',
               name: 'cuenta',
               redirect: (context, state) {
-                // 🔹 IMPORTANTE: No redirigir si está yendo a registroUsuario
                 if (state.fullPath == '/cuenta/registroUsuario') {
-                  return null; // Permite la navegación a registro
+                  return null;
                 }
 
                 final authProvider = Provider.of<AuthProvider>(
@@ -152,7 +164,6 @@ final _router = GoRouter(
         ),
       ],
     ),
-    // RUTAS FUERA DEL SHELL (SIN BARRA INFERIOR)
     GoRoute(
       path: '/carrito',
       name: 'carrito',
