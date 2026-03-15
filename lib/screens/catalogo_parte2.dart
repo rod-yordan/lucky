@@ -1,4 +1,3 @@
-// screens/catalogo_parte2.dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucky/screens/categoria_card.dart';
@@ -9,7 +8,6 @@ class CatalogoParte2 extends StatelessWidget {
 
   const CatalogoParte2({super.key, required this.genero, this.generoId});
 
-  // Lista de categorías disponibles
   final List<Map<String, dynamic>> _categorias = const [
     {'titulo': 'Pantalones', 'imagen': 'assets/categoria_pantalones.jpg'},
     {'titulo': 'Casacas', 'imagen': 'assets/categoria_casacas.jpg'},
@@ -25,7 +23,7 @@ class CatalogoParte2 extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            // ================= BARRA SUPERIOR =================
+            // BARRA SUPERIOR
             Container(
               color: Colors.white,
               child: Column(
@@ -67,7 +65,7 @@ class CatalogoParte2 extends StatelessWidget {
               ),
             ),
 
-            // ================= CONTENIDO PRINCIPAL =================
+            // CONTENIDO PRINCIPAL
             Expanded(
               child: Container(
                 color: const Color(0xFFF7F7F7),
@@ -76,7 +74,6 @@ class CatalogoParte2 extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Grid de categorías usando CategoriaCard
                       Expanded(
                         child: GridView.builder(
                           gridDelegate:
@@ -93,9 +90,6 @@ class CatalogoParte2 extends StatelessWidget {
                               titulo: categoria['titulo'],
                               imagenPath: categoria['imagen'],
                               onTap: () {
-                                print(
-                                  'Navegar a ${categoria['titulo']} de $genero',
-                                );
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text(

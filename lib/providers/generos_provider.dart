@@ -1,4 +1,3 @@
-// providers/generos_provider.dart
 import 'package:flutter/material.dart';
 import 'package:lucky/models/genero_model.dart';
 import 'package:lucky/services/genero_service.dart';
@@ -9,7 +8,6 @@ class GenerosProvider extends ChangeNotifier {
   bool _cargados = false;
   String? _error;
 
-  // ✅ AHORA DEVUELVE TODOS LOS GÉNEROS
   List<GeneroModel> get generos => _generos;
   bool get cargando => _cargando;
   bool get cargados => _cargados;
@@ -29,7 +27,6 @@ class GenerosProvider extends ChangeNotifier {
       _cargados = true;
     } catch (e) {
       _error = e.toString();
-      print('Error cargando géneros: $e');
     } finally {
       _cargando = false;
       notifyListeners();

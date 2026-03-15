@@ -1,4 +1,3 @@
-// screens/carrito.dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -19,7 +18,7 @@ class _CarritoState extends State<Carrito> {
       body: SafeArea(
         child: Column(
           children: [
-            // ================= BARRA SUPERIOR =================
+            // BARRA SUPERIOR
             Container(
               color: Colors.white,
               child: Column(
@@ -34,11 +33,10 @@ class _CarritoState extends State<Carrito> {
                       children: [
                         GestureDetector(
                           onTap: () {
-                            // ✅ Lógica mejorada con canPop()
                             if (context.canPop()) {
-                              context.pop(); // Si puede regresar, hace pop
+                              context.pop();
                             } else {
-                              context.go('/'); // Si no, va al home
+                              context.go('/');
                             }
                           },
                           child: const Icon(
@@ -63,15 +61,10 @@ class _CarritoState extends State<Carrito> {
               ),
             ),
 
-            // ================= CONTENIDO =================
+            // CONTENIDO
             Expanded(
               child: Consumer<CarritoProvider>(
                 builder: (context, carritoProvider, child) {
-                  print(
-                    '🟡 Productos en carrito: ${carritoProvider.productos.length}',
-                  );
-                  print('🟡 UI Carrito - Total: ${carritoProvider.total}');
-
                   final productos = carritoProvider.productos;
                   final total = carritoProvider.total;
 
@@ -245,7 +238,7 @@ class _ItemCarritoConCuponesState extends State<_ItemCarritoConCupones> {
     },
   ];
 
-  // 🔥 Función para construir URL completa de imágenes
+  // Función para construir URL completa de imágenes
   String _construirUrlImagen(String? nombreArchivo) {
     if (nombreArchivo == null || nombreArchivo.isEmpty) return '';
 
@@ -267,16 +260,10 @@ class _ItemCarritoConCuponesState extends State<_ItemCarritoConCupones> {
     final producto = widget.producto;
     final index = widget.index;
 
-    // 🔥 CORREGIDO: Usar función para construir URL
+    // Usar función para construir URL
     final String imagenPrincipal = _construirUrlImagen(
       producto['imagen_principal'],
     );
-
-    // Debug
-    print(
-      '🔵 URL imagen en carrito - original: ${producto['imagen_principal']}',
-    );
-    print('🔵 URL imagen en carrito - construida: $imagenPrincipal');
 
     final String titulo = producto['titulo'] ?? '';
     final double precio = producto['precio'] is int
@@ -326,10 +313,6 @@ class _ItemCarritoConCuponesState extends State<_ItemCarritoConCupones> {
                           width: 100,
                           height: 130,
                           errorBuilder: (context, error, stackTrace) {
-                            print(
-                              '🔴 Error cargando imagen en carrito: $imagenPrincipal',
-                            );
-                            print('🔴 Error details: $error');
                             return Container(
                               color: Colors.grey.shade200,
                               child: Icon(

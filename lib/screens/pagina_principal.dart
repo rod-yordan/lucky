@@ -1,4 +1,3 @@
-// screens/pagina_principal.dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucky/models/genero_model.dart';
@@ -22,16 +21,13 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
 
   final List<String> banners = ['assets/banner1.png', 'assets/banner2.png'];
 
-  // Servicios
   final ProductoService _productoService = ProductoService();
   final GeneroService _generoService = GeneroService();
 
-  // Futures para cargar datos
   late Future<List<ProductoModel>> _recomendadosFuture;
   late Future<List<ProductoModel>> _popularesFuture;
   late Future<List<GeneroModel>> _generosFuture;
 
-  // Listas para almacenar los productos cargados
   List<ProductoModel> _recomendados = [];
   List<ProductoModel> _populares = [];
   List<GeneroModel> _generos = [];
@@ -103,7 +99,6 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
           return generos;
         })
         .catchError((error) {
-          print('Error cargando géneros: $error');
           return <GeneroModel>[];
         });
   }
@@ -369,7 +364,7 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
     );
   }
 
-  // Géneros SIN SCROLL
+  // Géneros
   Widget _generosChips() {
     final List<dynamic> items = [
       {'id': null, 'nombre': 'Todo'},
@@ -379,7 +374,7 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
 
     return Center(
       child: Wrap(
-        spacing: 8, // Espacio horizontal entre chips
+        spacing: 8,
         runSpacing: 0,
         alignment: WrapAlignment.center,
         children: items.map((item) {
@@ -388,7 +383,6 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
               ? item.nombreGenero
               : item['nombre'];
 
-          // Lógica de selección
           bool seleccionado;
           if (nombre == 'Promociones') {
             seleccionado = _modoPromociones;
@@ -427,7 +421,7 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
     );
   }
 
-  // ================= BANNER =================
+  // BANNER
   Widget _bannerCarrusel() {
     return SizedBox(
       height: 170,
@@ -474,7 +468,7 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
     );
   }
 
-  // ================= SECCIÓN DE PRODUCTOS CON FUTUREBUILDER =================
+  // SECCIÓN DE PRODUCTOS CON FUTUREBUILDER
   Widget _buildSeccionProductos({
     required String titulo,
     required Future<List<ProductoModel>> future,
@@ -483,30 +477,16 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
     return FutureBuilder<List<ProductoModel>>(
       future: future,
       builder: (context, snapshot) {
-        // Mientras carga
         if (snapshot.connectionState == ConnectionState.waiting &&
             productos.isEmpty) {
           return _buildSeccionCargando(titulo);
         }
-
-        // Si hay error
         if (snapshot.hasError) {
-          print('Error cargando $titulo: ${snapshot.error}');
           return _buildSeccionError(titulo);
         }
-
-        // Si no hay productos
         if (productos.isEmpty) {
           return _buildSeccionVacia(titulo);
         }
-
-        // 🔴 AGREGAR ESTE PRINT
-        print('🎯 Productos para $titulo:');
-        for (var p in productos) {
-          print('   - ${p.titulo}: ${p.imagenPrincipal}');
-        }
-
-        // Mostrar productos - AHORA CON MAPEO CORREGIDO
         return _seccionProductos(
           titulo: titulo,
           productos: productos
@@ -523,7 +503,7 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
     );
   }
 
-  // ================= SECCIÓN CARGANDO =================
+  // SECCIÓN CARGANDO
   Widget _buildSeccionCargando(String titulo) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -558,7 +538,7 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
     );
   }
 
-  // ================= SKELETON PARA PRODUCTO =================
+  // SKELETON PARA PRODUCTO
   Widget _buildProductoSkeleton() {
     return Container(
       width: 170,
@@ -661,7 +641,7 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
     );
   }
 
-  // ================= SECCIÓN REUTILIZABLE =================
+  // SECCIÓN REUTILIZABLE
   Widget _seccionProductos({
     required String titulo,
     required List<Map<String, dynamic>> productos,
@@ -683,7 +663,7 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
               ),
               GestureDetector(
                 onTap: () {
-                  // Navegar al catálogo completo con el filtro actual
+                  // Navegar al catálogo con el filtro actual
                   final Map<String, dynamic> extra = {};
                   if (_modoPromociones) {
                     extra['en_oferta'] = true;
@@ -705,7 +685,7 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
     );
   }
 
-  // ================= LISTA PRODUCTOS =================
+  // LISTA PRODUCTOS
   Widget _listaProductos(List<Map<String, dynamic>> lista) {
     return SizedBox(
       height: 330,
@@ -718,13 +698,8 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
     );
   }
 
-  // ================= CARD PRODUCTO =================
+  // CARD PRODUCTO
   Widget _productoCard(Map<String, dynamic> p) {
-    // 🔵 DEBUG: Ver qué datos llegan a la card
-    print('🔵 Datos completos del producto en card: ${p.keys}');
-    print('🔵 imagen_principal en card: ${p['imagen_principal']}');
-    print('🔵 imagenes en card: ${p['imagenes']}');
-
     return ProductoCard(
       producto: p,
       onTap: () {

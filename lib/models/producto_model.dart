@@ -44,12 +44,6 @@ class ProductoModel {
   });
 
   factory ProductoModel.fromJson(Map<String, dynamic> json) {
-    print(
-      '🔵 Procesando producto: ${json['nombre_producto'] ?? json['titulo']}',
-    );
-    print('   imagen_principal: ${json['imagen_principal']}');
-    print('   imagen: ${json['imagen']}');
-    // Función auxiliar para convertir a double
     double toDouble(dynamic value) {
       if (value == null) return 0.0;
       if (value is double) return value;
@@ -58,7 +52,6 @@ class ProductoModel {
       return 0.0;
     }
 
-    // Procesar variantes
     List<VarianteModel> variantes = [];
     if (json['variantes'] != null) {
       variantes = (json['variantes'] as List)
@@ -67,36 +60,28 @@ class ProductoModel {
     }
 
     return ProductoModel(
-      // Aceptar tanto 'id_producto' como 'id'
       id: json['id_producto'] ?? json['id'] ?? 0,
 
-      // Aceptar tanto 'nombre_producto' como 'titulo'
       titulo: json['nombre_producto'] ?? json['titulo'] ?? '',
 
       descripcion: json['descripcion'] ?? '',
 
-      // Convertir precio correctamente
       precio: toDouble(json['precio'] ?? 0),
 
-      // Aceptar tanto 'precio_oferta' como 'precio_antes'
       precioAntes: toDouble(json['precio_oferta'] ?? json['precio_antes']),
 
       descuento: json['descuento'],
 
-      // Aceptar tanto array de imagenes como imagen única
       imagenes: json['imagenes'] != null
           ? List<String>.from(json['imagenes'])
           : (json['imagen'] != null ? [json['imagen']] : []),
 
       imagenPrincipal: json['imagen_principal'] ?? json['imagen'] ?? '',
 
-      // Aceptar tanto 'categoria_nombre' como 'categoria'
       categoria: json['categoria_nombre'] ?? json['categoria'],
 
-      // Aceptar tanto 'id_categoria' como 'categoria_id'
       categoriaId: json['id_categoria'] ?? json['categoria_id'],
 
-      // Aceptar tanto 'genero_nombre' como 'genero'
       genero: json['genero_nombre'] ?? json['genero'],
 
       tallas: List<String>.from(json['tallas'] ?? []),
@@ -134,7 +119,6 @@ class ProductoModel {
     };
   }
 
-  // Para compatibilidad con ProductoCard y código existente
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -159,7 +143,6 @@ class ProductoModel {
     };
   }
 
-  // ✅ MÉTODO UTIL: Obtener variante por talla y color
   VarianteModel? getVariante({required String talla, String? color}) {
     try {
       return variantes.firstWhere(
@@ -170,12 +153,10 @@ class ProductoModel {
     }
   }
 
-  // ✅ MÉTODO UTIL: Verificar si hay stock para una talla específica
   bool tieneStockTalla(String talla) {
     return variantes.any((v) => v.talla == talla && v.stock > 0);
   }
 
-  // ✅ MÉTODO UTIL: Obtener colores disponibles para una talla específica
   List<String> getColoresPorTalla(String talla) {
     return variantes
         .where((v) => v.talla == talla && v.stock > 0 && v.color != null)

@@ -18,26 +18,15 @@ class ProductoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 🔵 DEBUG: Ver qué contiene el mapa completo
-    print('🔵 ProductoMap completo en ProductoCard: $producto');
-
-    // ✅ CORREGIDO: Obtener la imagen principal y transformar la URL
     String imagenOriginal =
         producto['imagen_principal']?.toString().trim() ?? '';
 
-    // 🔥 TRANSFORMAR LA URL: De /productos/ a /api/imagen/
     final String imagenPrincipal = imagenOriginal.replaceFirst(
       'http://localhost:8000/productos/',
       'http://localhost:8000/api/imagen/',
     );
 
     int descuentoPorcentaje = producto['descuento'] ?? 0;
-
-    // 🔵 DEBUG: Ver qué URL se está intentando cargar
-    print('🔵 URL imagen original: "$imagenOriginal"');
-    print(
-      '🔵 URL imagen transformada: "$imagenPrincipal" (longitud: ${imagenPrincipal.length})',
-    );
 
     return GestureDetector(
       onTap: onTap,
@@ -86,8 +75,6 @@ class ProductoCard extends StatelessWidget {
                         );
                       },
                       errorBuilder: (context, error, stackTrace) {
-                        print('🔴 Error cargando imagen: $imagenPrincipal');
-                        print('🔴 Detalle del error: $error');
                         return Container(
                           height: 220,
                           color: Colors.grey.shade100,
@@ -118,12 +105,10 @@ class ProductoCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Título y corazón a la derecha
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // Título (ocupa la mayor parte del espacio)
                       Expanded(
                         child: Text(
                           producto['titulo'] ?? 'Producto sin título',
@@ -135,7 +120,6 @@ class ProductoCard extends StatelessWidget {
                           ),
                         ),
                       ),
-                      // Corazón a la derecha (solo si mostrarCorazon es true)
                       if (mostrarCorazon)
                         GestureDetector(
                           onTap: onCorazonTap,

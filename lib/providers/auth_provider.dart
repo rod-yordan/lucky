@@ -1,4 +1,3 @@
-// providers/auth_provider.dart
 import 'package:flutter/material.dart';
 import 'package:lucky/models/auth_model.dart';
 import 'package:lucky/services/auth_service.dart';
@@ -12,21 +11,17 @@ class AuthProvider extends ChangeNotifier {
   String? _error;
   bool _isChecking = true;
 
-  // Getters
   UsuarioModel? get usuario => _usuario;
   String? get token => _token;
   bool get isLoading => _isLoading;
   String? get error => _error;
-  bool get isLoggedIn =>
-      _usuario != null && (_usuario?.id ?? 0) > 0; // ← MEJORADO
+  bool get isLoggedIn => _usuario != null && (_usuario?.id ?? 0) > 0;
   bool get isChecking => _isChecking;
 
-  // ==================== CONSTRUCTOR ====================
   AuthProvider() {
     _checkAuthStatus();
   }
 
-  // ==================== VERIFICAR SESIÓN GUARDADA ====================
   Future<void> _checkAuthStatus() async {
     _isChecking = true;
     notifyListeners();
@@ -39,16 +34,12 @@ class AuthProvider extends ChangeNotifier {
         final token = await _authService.getStoredToken();
 
         if (usuario.id > 0) {
-          // ← VERIFICAR ID VÁLIDO
           _usuario = usuario;
           _token = token;
-          print('✅ Sesión recuperada: ${usuario.nombres} (ID: ${usuario.id})');
         } else {
-          print('❌ ID de usuario inválido: ${usuario.id}');
           await _authService.logout();
         }
       } catch (e) {
-        print('❌ Error recuperando sesión: $e');
         await _authService.logout();
       }
     }
@@ -57,7 +48,6 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ==================== LOGIN ====================
   Future<bool> login(String correo, String contrasena) async {
     _isLoading = true;
     _error = null;
@@ -68,16 +58,14 @@ class AuthProvider extends ChangeNotifier {
       final response = await _authService.login(request);
 
       if (response.user != null && response.token != null) {
-        // Verificar que el ID sea válido
         if (response.user!.id <= 0) {
-          throw Exception('ID de usuario inválido: ${response.user!.id}');
+          throw Exception('ID de usuario inválido');
         }
 
         _usuario = response.user;
         _token = response.token;
         _isLoading = false;
         notifyListeners();
-        print('✅ Login exitoso: ${_usuario?.nombres} (ID: ${_usuario?.id})');
         return true;
       } else {
         _error = response.message ?? 'Error al iniciar sesión';
@@ -93,7 +81,6 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  // ==================== REGISTRO ====================
   Future<bool> register(RegistroRequest request) async {
     _isLoading = true;
     _error = null;
@@ -103,12 +90,10 @@ class AuthProvider extends ChangeNotifier {
       final response = await _authService.register(request);
 
       if (response.user != null) {
-        // Verificar que el ID sea válido
         if (response.user!.id <= 0) {
-          throw Exception('ID de usuario inválido: ${response.user!.id}');
+          throw Exception('ID de usuario inválido');
         }
 
-        // Si el registro devuelve usuario y token (login automático)
         if (response.token != null) {
           _usuario = response.user;
           _token = response.token;
@@ -130,7 +115,6 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  // ==================== CARGAR PERFIL ====================
   Future<bool> cargarPerfil() async {
     if (!isLoggedIn) return false;
 
@@ -141,7 +125,7 @@ class AuthProvider extends ChangeNotifier {
       final usuario = await _authService.getPerfil();
 
       if (usuario.id <= 0) {
-        throw Exception('ID de usuario inválido: ${usuario.id}');
+        throw Exception('ID de usuario inválido');
       }
 
       _usuario = usuario;
@@ -156,7 +140,6 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  // ==================== LOGOUT ====================
   Future<void> logout() async {
     await _authService.logout();
     _usuario = null;
@@ -164,7 +147,6 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ==================== LIMPIAR ERROR ====================
   void clearError() {
     _error = null;
     notifyListeners();
