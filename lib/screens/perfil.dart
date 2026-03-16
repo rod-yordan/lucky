@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:lucky/providers/auth_provider.dart';
 import 'package:lucky/providers/carrito_provider.dart';
+import 'package:lucky/providers/favoritos_provider.dart'; // 👈 IMPORTAR
 
 class Perfil extends StatelessWidget {
   const Perfil({super.key});
@@ -209,6 +210,11 @@ class Perfil extends StatelessWidget {
             context,
             listen: false,
           );
+          final favoritosProvider = Provider.of<FavoritosProvider>(
+            // 👈 AGREGAR
+            context,
+            listen: false,
+          );
 
           // Mostrar diálogo de confirmación
           final confirm = await showDialog<bool>(
@@ -238,6 +244,7 @@ class Perfil extends StatelessWidget {
             // Cerrar sesión
             await authProvider.logout();
             carritoProvider.cerrarSesion();
+            favoritosProvider.cerrarSesion(); // 👈 LIMPIAR FAVORITOS
 
             if (context.mounted) {
               context.go('/');

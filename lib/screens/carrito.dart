@@ -238,33 +238,13 @@ class _ItemCarritoConCuponesState extends State<_ItemCarritoConCupones> {
     },
   ];
 
-  // Función para construir URL completa de imágenes
-  String _construirUrlImagen(String? nombreArchivo) {
-    if (nombreArchivo == null || nombreArchivo.isEmpty) return '';
-
-    // Si ya es una URL completa, transformarla
-    if (nombreArchivo.startsWith('http')) {
-      return nombreArchivo.replaceFirst(
-        RegExp(r'http://localhost:8000/productos/'),
-        'http://localhost:8000/api/imagen/',
-      );
-    }
-
-    // Si solo es el nombre del archivo, construir la URL completa
-    return 'http://localhost:8000/api/imagen/$nombreArchivo';
-  }
-
   @override
   Widget build(BuildContext context) {
     final carritoProvider = Provider.of<CarritoProvider>(context);
     final producto = widget.producto;
     final index = widget.index;
 
-    // Usar función para construir URL
-    final String imagenPrincipal = _construirUrlImagen(
-      producto['imagen_principal'],
-    );
-
+    final String imagenPrincipal = producto['imagen_principal'] ?? '';
     final String titulo = producto['titulo'] ?? '';
     final double precio = producto['precio'] is int
         ? (producto['precio'] as int).toDouble()

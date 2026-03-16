@@ -61,29 +61,18 @@ class ProductoModel {
 
     return ProductoModel(
       id: json['id_producto'] ?? json['id'] ?? 0,
-
       titulo: json['nombre_producto'] ?? json['titulo'] ?? '',
-
       descripcion: json['descripcion'] ?? '',
-
       precio: toDouble(json['precio'] ?? 0),
-
       precioAntes: toDouble(json['precio_oferta'] ?? json['precio_antes']),
-
       descuento: json['descuento'],
-
       imagenes: json['imagenes'] != null
           ? List<String>.from(json['imagenes'])
           : (json['imagen'] != null ? [json['imagen']] : []),
-
       imagenPrincipal: json['imagen_principal'] ?? json['imagen'] ?? '',
-
       categoria: json['categoria_nombre'] ?? json['categoria'],
-
       categoriaId: json['id_categoria'] ?? json['categoria_id'],
-
       genero: json['genero_nombre'] ?? json['genero'],
-
       tallas: List<String>.from(json['tallas'] ?? []),
       colores: List<String>.from(json['colores'] ?? []),
       marca: json['marca'],

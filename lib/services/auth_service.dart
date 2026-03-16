@@ -1,37 +1,31 @@
-// services/auth_service.dart
 import 'package:dio/dio.dart';
 import 'package:lucky/models/auth_model.dart';
 import 'package:lucky/utils/dio_client.dart';
-import 'package:lucky/services/pref_service.dart'; // ← AGREGAR
+import 'package:lucky/services/pref_service.dart';
 
 class AuthService {
-  final Dio _dio = AuthClient.dio;
-  final PrefService _prefs = PrefService(); // ← AGREGAR
+  final Dio _dio = ApiClient.dio;
+  final PrefService _prefs = PrefService();
 
-  // Guardar token
   Future<void> _saveToken(String token) async {
-    await _prefs.setString('token', token); // ← GUARDAR EN SHARED PREFERENCES
-    AuthClient.setAuthToken(token);
+    await _prefs.setString('token', token);
+    ApiClient.setAuthToken(token);
   }
 
-  // Obtener token guardado
   Future<String?> getStoredToken() async {
-    return _prefs.getString('token', defaultValue: ''); // ← RECUPERAR
+    return _prefs.getString('token', defaultValue: '');
   }
 
-  // Eliminar token (logout)
   Future<void> removeToken() async {
-    await _prefs.remove('token'); // ← ELIMINAR
-    AuthClient.removeAuthToken();
+    await _prefs.remove('token');
+    ApiClient.removeAuthToken();
   }
 
-  // Verificar si hay sesión activa
   Future<bool> isLoggedIn() async {
     final token = await getStoredToken();
     return token != null && token.isNotEmpty;
   }
 
-  // Iniciar sesión
   Future<AuthResponse> login(LoginRequest request) async {
     try {
       final response = await _dio.post('/login', data: request.toJson());
@@ -39,9 +33,8 @@ class AuthService {
       if (response.statusCode == 200) {
         final authResponse = AuthResponse.fromJson(response.data);
 
-        // Guardar token si existe
         if (authResponse.token != null) {
-          await _saveToken(authResponse.token!); // ← AHORA USA _saveToken
+          await _saveToken(authResponse.token!);
         }
 
         return authResponse;
@@ -53,7 +46,6 @@ class AuthService {
     }
   }
 
-  // Registrar usuario
   Future<AuthResponse> register(RegistroRequest request) async {
     try {
       final response = await _dio.post('/register', data: request.toJson());
@@ -61,7 +53,6 @@ class AuthService {
       if (response.statusCode == 201) {
         final authResponse = AuthResponse.fromJson(response.data);
 
-        // Si el registro devuelve token (login automático)
         if (authResponse.token != null) {
           await _saveToken(authResponse.token!);
         }
@@ -75,7 +66,6 @@ class AuthService {
     }
   }
 
-  // Obtener perfil del usuario autenticado
   Future<UsuarioModel> getPerfil() async {
     try {
       final response = await _dio.get('/perfil');
@@ -90,22 +80,18 @@ class AuthService {
     }
   }
 
-  // Cerrar sesión
   Future<void> logout() async {
-    await removeToken(); // ← AHORA USA removeToken
+    await removeToken();
   }
 
-  // Manejo de errores
   String _handleError(DioException e) {
     if (e.response != null) {
       final data = e.response?.data;
 
-      // Si el error es un mapa con mensaje
       if (data is Map && data['message'] != null) {
         return data['message'].toString();
       }
 
-      // Errores de validación
       if (data is Map && data['errors'] != null) {
         final errors = data['errors'] as Map;
         if (errors.isNotEmpty) {

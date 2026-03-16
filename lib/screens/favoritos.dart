@@ -3,10 +3,29 @@ import 'package:go_router/go_router.dart';
 import 'package:lucky/screens/producto_card.dart';
 import 'package:provider/provider.dart';
 import 'package:lucky/providers/favoritos_provider.dart';
+import 'package:lucky/providers/auth_provider.dart';
 import 'package:lucky/providers/carrito_provider.dart';
 
-class Favoritos extends StatelessWidget {
+class Favoritos extends StatefulWidget {
   const Favoritos({super.key});
+
+  @override
+  State<Favoritos> createState() => _FavoritosState();
+}
+
+class _FavoritosState extends State<Favoritos> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final favoritosProvider = Provider.of<FavoritosProvider>(
+        context,
+        listen: false,
+      );
+      favoritosProvider.cargarFavoritos(authProvider);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +34,7 @@ class Favoritos extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            // ================= BARRA SUPERIOR =================
+            // BARRA SUPERIOR
             Container(
               color: Colors.white,
               child: Column(
@@ -23,13 +42,12 @@ class Favoritos extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
-                      vertical:
-                          7, // Padding vertical reducido a 7 como en el ejemplo
+                      vertical: 7,
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const SizedBox(width: 40), // Espacio para centrar
+                        const SizedBox(width: 40),
                         const Text(
                           'Mis Favoritos',
                           style: TextStyle(
@@ -37,7 +55,6 @@ class Favoritos extends StatelessWidget {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        // Icono de carrito con Consumer
                         Consumer<CarritoProvider>(
                           builder: (context, carritoProvider, child) {
                             final cantidadTotal = carritoProvider.cantidadTotal;
@@ -94,8 +111,8 @@ class Favoritos extends StatelessWidget {
 
             // ================= CONTENIDO =================
             Expanded(
-              child: Consumer<FavoritosProvider>(
-                builder: (context, favoritosProvider, child) {
+              child: Consumer2<FavoritosProvider, AuthProvider>(
+                builder: (context, favoritosProvider, authProvider, child) {
                   final productosFavoritos =
                       favoritosProvider.productosFavoritos;
 
@@ -137,11 +154,10 @@ class Favoritos extends StatelessWidget {
                       padding: const EdgeInsets.all(16),
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2, // 2 columnas
-                            crossAxisSpacing: 16, // Espacio horizontal
-                            mainAxisSpacing: 16, // Espacio vertical
-                            childAspectRatio:
-                                170 / 320, // Ancho/Alto (170/330 ≈ 0.515)
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 16,
+                            mainAxisSpacing: 16,
+                            childAspectRatio: 170 / 320,
                           ),
                       itemCount: productosFavoritos.length,
                       itemBuilder: (context, index) {
@@ -153,8 +169,11 @@ class Favoritos extends StatelessWidget {
                           },
                           mostrarCorazon: true,
                           esFavorito: true,
-                          onCorazonTap: () {
-                            favoritosProvider.eliminarFavorito(producto);
+                          onCorazonTap: () async {
+                            await favoritosProvider.eliminarFavorito(
+                              producto,
+                              authProvider,
+                            );
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text('Eliminado de favoritos'),

@@ -1,41 +1,30 @@
-// models/item_carrito_model.dart
 import 'package:lucky/models/producto_model.dart';
 import 'package:lucky/models/variante_model.dart';
 
 class ItemCarritoModel {
   final int idDetalle;
-  final int idCarrito;
-  final ProductoModel producto;
-  final VarianteModel variante;
   final int cantidad;
+  final VarianteModel variante;
 
   ItemCarritoModel({
     required this.idDetalle,
-    required this.idCarrito,
-    required this.producto,
-    required this.variante,
     required this.cantidad,
+    required this.variante,
   });
 
   factory ItemCarritoModel.fromJson(Map<String, dynamic> json) {
     return ItemCarritoModel(
-      idDetalle:
-          json['id_detalle_carrito'] ??
-          0, // ← CAMBIADO de 'id_detalle' a 'id_detalle_carrito'
-      idCarrito: json['id_carrito'] ?? 0,
-      producto: ProductoModel.fromJson(
-        json['variante']['producto'] ?? {},
-      ), // ← AHORA VIENE DENTRO DE 'variante'
-      variante: VarianteModel.fromJson(json['variante'] ?? {}),
+      idDetalle: json['id_detalle'] ?? 0,
       cantidad: json['cantidad'] ?? 1,
+      variante: VarianteModel.fromJson(json['variante'] ?? {}),
     );
   }
 
-  // ✅ MÉTODO toMap() para compatibilidad con UI actual
+  ProductoModel get producto => variante.producto;
+
   Map<String, dynamic> toMap() {
     return {
       'id_detalle': idDetalle,
-      'id_carrito': idCarrito,
       'id_variante': variante.id,
       'id_producto': producto.id,
       'titulo': producto.titulo,
@@ -56,7 +45,6 @@ class ItemCarritoModel {
     };
   }
 
-  // Propiedades útiles
   double get subtotal => (producto.precio * cantidad);
   String get titulo => producto.titulo;
   String get talla => variante.talla;

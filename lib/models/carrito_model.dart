@@ -20,11 +20,9 @@ class CarritoModel {
     return CarritoModel(
       idCarrito: json['id_carrito'] ?? 0,
       idUsuario: json['id_usuario'] ?? 0,
-      items:
-          (json['detalles'] as List? ??
-                  []) // ← CAMBIADO de 'items' a 'detalles'
-              .map((item) => ItemCarritoModel.fromJson(item))
-              .toList(),
+      items: (json['items'] as List? ?? [])
+          .map((item) => ItemCarritoModel.fromJson(item))
+          .toList(),
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'])
           : null,

@@ -1,12 +1,23 @@
 import 'package:dio/dio.dart';
 import 'package:lucky/models/carrito_model.dart';
 import 'package:lucky/utils/dio_client.dart';
+import 'package:lucky/services/auth_service.dart';
 
 class CarritoService {
   final Dio _dio = ApiClient.dio;
+  final AuthService _authService = AuthService();
+
+  Future<void> _ensureToken() async {
+    final token = await _authService.getStoredToken();
+    if (token != null && token.isNotEmpty) {
+      _dio.options.headers['Authorization'] = 'Bearer $token';
+    }
+  }
 
   Future<CarritoModel> obtenerCarrito(int idUsuario) async {
     try {
+      await _ensureToken();
+
       final response = await _dio.get(
         '/carrito',
         queryParameters: {'id_usuario': idUsuario},
@@ -24,6 +35,8 @@ class CarritoService {
 
   Future<CarritoModel> crearCarrito(int idUsuario) async {
     try {
+      await _ensureToken();
+
       final response = await _dio.post(
         '/carrito/crear',
         data: {'id_usuario': idUsuario},
@@ -45,6 +58,8 @@ class CarritoService {
     int cantidad = 1,
   }) async {
     try {
+      await _ensureToken();
+
       final response = await _dio.post(
         '/carrito/agregar',
         data: {
@@ -70,6 +85,8 @@ class CarritoService {
     required int cantidad,
   }) async {
     try {
+      await _ensureToken();
+
       final response = await _dio.put(
         '/carrito/actualizar',
         data: {
@@ -96,6 +113,8 @@ class CarritoService {
     required int idDetalleCarrito,
   }) async {
     try {
+      await _ensureToken();
+
       final response = await _dio.delete(
         '/carrito/eliminar',
         data: {'id_usuario': idUsuario, 'id_detalle_carrito': idDetalleCarrito},
@@ -113,6 +132,8 @@ class CarritoService {
 
   Future<bool> limpiarCarrito(int idUsuario) async {
     try {
+      await _ensureToken();
+
       final response = await _dio.delete(
         '/carrito/limpiar',
         data: {'id_usuario': idUsuario},
@@ -139,6 +160,8 @@ class CarritoService {
 
   Future<double> obtenerTotal(int idCarrito) async {
     try {
+      await _ensureToken();
+
       final response = await _dio.get('/carrito/$idCarrito/total');
       return (response.data['total'] ?? 0).toDouble();
     } on DioException catch (e) {

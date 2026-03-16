@@ -16,6 +16,23 @@ class ProductoCard extends StatelessWidget {
     this.onCorazonTap,
   });
 
+  // Función para formatear precio de manera segura
+  String _formatearPrecio(dynamic precio) {
+    if (precio == null) return '0.00';
+
+    // Si ya es número
+    if (precio is int) return precio.toStringAsFixed(2);
+    if (precio is double) return precio.toStringAsFixed(2);
+
+    // Si es string, intentar convertirlo
+    if (precio is String) {
+      final numero = double.tryParse(precio);
+      return numero?.toStringAsFixed(2) ?? '0.00';
+    }
+
+    return '0.00';
+  }
+
   @override
   Widget build(BuildContext context) {
     String imagenOriginal =
@@ -141,7 +158,7 @@ class ProductoCard extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        'S/ ${producto['precio']?.toStringAsFixed(2) ?? '0.00'}',
+                        'S/ ${_formatearPrecio(producto['precio'])}', // 👈 CORREGIDO
                         style: const TextStyle(
                           color: Color(0xFFED1C24),
                           fontWeight: FontWeight.bold,
@@ -177,7 +194,7 @@ class ProductoCard extends StatelessWidget {
                     Stack(
                       children: [
                         Text(
-                          'S/ ${producto['precioAntes']?.toStringAsFixed(2) ?? ''}',
+                          'S/ ${_formatearPrecio(producto['precioAntes'])}', // 👈 CORREGIDO
                           style: TextStyle(
                             color: Colors.grey.shade700,
                             fontSize: 12,

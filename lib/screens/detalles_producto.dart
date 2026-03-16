@@ -676,17 +676,26 @@ class _DetallesProductoState extends State<DetallesProducto> {
                   // Botón "A favoritos"
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () {
+                      onPressed: () async {
                         final favoritosProvider =
                             Provider.of<FavoritosProvider>(
                               context,
                               listen: false,
                             );
-                        favoritosProvider.toggleFavorito(widget.producto);
+                        final authProvider = Provider.of<AuthProvider>(
+                          context,
+                          listen: false,
+                        );
+
+                        final seAgrego = await favoritosProvider.toggleFavorito(
+                          widget.producto,
+                          authProvider,
+                        );
+
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(
-                              favoritosProvider.esFavorito(widget.producto)
+                              seAgrego
                                   ? 'Agregado a favoritos'
                                   : 'Eliminado de favoritos',
                             ),

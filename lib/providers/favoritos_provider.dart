@@ -1,47 +1,113 @@
 import 'package:flutter/material.dart';
+import 'package:lucky/services/favorito_service.dart';
+import 'package:lucky/providers/auth_provider.dart';
 
 class FavoritosProvider with ChangeNotifier {
-  // Lista de productos favoritos
+  final FavoritoService _service = FavoritoService();
+
   List<Map<String, dynamic>> _productosFavoritos = [];
+  int? _idUsuarioActual;
 
-  // Getter para acceder a los favoritos
   List<Map<String, dynamic>> get productosFavoritos => _productosFavoritos;
-
-  // Getter para saber si hay favoritos
   bool get tieneFavoritos => _productosFavoritos.isNotEmpty;
 
-  // Método para verificar si un producto ya está en favoritos
-  bool esFavorito(Map<String, dynamic> producto) {
-    return _productosFavoritos.any((p) => p['titulo'] == producto['titulo']);
+  // Cargar favoritos del usuario actual
+  Future<void> cargarFavoritos(AuthProvider authProvider) async {
+    if (!authProvider.isLoggedIn) {
+      _productosFavoritos = [];
+      _idUsuarioActual = null;
+      notifyListeners();
+      return;
+    }
+
+    final idUsuario = authProvider.usuario!.id;
+    if (idUsuario <= 0) return;
+
+    // Si es el mismo usuario, no recargar
+    if (_idUsuarioActual == idUsuario && _productosFavoritos.isNotEmpty) {
+      return;
+    }
+
+    final favoritos = await _service.obtenerFavoritos(idUsuario);
+    _productosFavoritos = favoritos;
+    _idUsuarioActual = idUsuario;
+    notifyListeners();
   }
 
-  // Método para agregar un producto a favoritos
-  void agregarFavorito(Map<String, dynamic> producto) {
-    // Verificar si ya está en favoritos
-    if (!esFavorito(producto)) {
+  bool esFavorito(Map<String, dynamic> producto) {
+    final idProducto = producto['id'];
+    if (idProducto == null) return false;
+    return _productosFavoritos.any((p) => p['id'] == idProducto);
+  }
+
+  Future<void> agregarFavorito(
+    Map<String, dynamic> producto,
+    AuthProvider authProvider,
+  ) async {
+    if (!authProvider.isLoggedIn) return;
+
+    final idUsuario = authProvider.usuario!.id;
+    final idProducto = producto['id'];
+
+    if (idProducto == null) {
+      print('Error: Producto sin ID');
+      return;
+    }
+
+    final success = await _service.agregarFavorito(idUsuario, idProducto);
+    if (success) {
       _productosFavoritos.add({...producto, 'esFavorito': true});
       notifyListeners();
     }
   }
 
-  // Método para eliminar un producto de favoritos
-  void eliminarFavorito(Map<String, dynamic> producto) {
-    _productosFavoritos.removeWhere((p) => p['titulo'] == producto['titulo']);
-    notifyListeners();
-  }
+  Future<void> eliminarFavorito(
+    Map<String, dynamic> producto,
+    AuthProvider authProvider,
+  ) async {
+    if (!authProvider.isLoggedIn) return;
 
-  // Método para alternar favorito (agregar/eliminar)
-  void toggleFavorito(Map<String, dynamic> producto) {
-    if (esFavorito(producto)) {
-      eliminarFavorito(producto);
-    } else {
-      agregarFavorito(producto);
+    final idUsuario = authProvider.usuario!.id;
+    final idProducto = producto['id'];
+
+    if (idProducto == null) {
+      print('Error: Producto sin ID');
+      return;
+    }
+
+    final success = await _service.eliminarFavorito(idUsuario, idProducto);
+    if (success) {
+      _productosFavoritos.removeWhere((p) => p['id'] == idProducto);
+      notifyListeners();
     }
   }
 
-  // Método para limpiar todos los favoritos
+  // 👇 MODIFICADO: Ahora devuelve true si se agregó, false si se eliminó
+  Future<bool> toggleFavorito(
+    Map<String, dynamic> producto,
+    AuthProvider authProvider,
+  ) async {
+    final eraFavorito = esFavorito(producto);
+
+    if (eraFavorito) {
+      await eliminarFavorito(producto, authProvider);
+      return false; // Se eliminó
+    } else {
+      await agregarFavorito(producto, authProvider);
+      return true; // Se agregó
+    }
+  }
+
   void limpiarFavoritos() {
     _productosFavoritos.clear();
+    _idUsuarioActual = null;
+    notifyListeners();
+  }
+
+  // Llamar cuando el usuario cierra sesión
+  void cerrarSesion() {
+    _productosFavoritos = [];
+    _idUsuarioActual = null;
     notifyListeners();
   }
 }
