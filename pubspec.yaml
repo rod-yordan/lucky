@@ -39,6 +39,8 @@ dependencies:
   dio: ^5.9.1
   shared_preferences: ^2.5.4
   pusher_beams: ^1.1.2
+  pusher_channels_flutter: ^2.4.0
+  http: ^1.2.2
 
 dev_dependencies:
   flutter_test:

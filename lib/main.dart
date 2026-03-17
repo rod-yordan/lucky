@@ -4,6 +4,7 @@ import 'package:lucky/providers/auth_provider.dart';
 import 'package:lucky/providers/favoritos_provider.dart';
 import 'package:lucky/providers/generos_provider.dart';
 import 'package:lucky/screens/catalogo_parte2.dart';
+import 'package:lucky/screens/chat.dart';
 import 'package:lucky/screens/informacion_compra.dart';
 import 'package:provider/provider.dart';
 import 'package:lucky/providers/carrito_provider.dart';
@@ -197,6 +198,11 @@ final _router = GoRouter(
           generoId: extra['generoId'],
         );
       },
+    ),
+    GoRoute(
+      path: '/chat',
+      name: 'chat',
+      builder: (context, state) => const Chat(), 
     ),
   ],
 );

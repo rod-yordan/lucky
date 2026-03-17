@@ -138,6 +138,13 @@ class Perfil extends StatelessWidget {
                         );
                       },
                     ),
+                    _buildMenuItem(
+                      icon: Icons.chat_bubble_outline, 
+                      title: 'Chat con IA',
+                      onTap: () {
+                        context.push('/chat');
+                      },
+                    ),
 
                     const SizedBox(height: 32),
 
