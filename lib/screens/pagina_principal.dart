@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucky/models/banner_model.dart';
 import 'package:lucky/models/genero_model.dart';
 import 'package:lucky/models/producto_model.dart';
+import 'package:lucky/providers/banner_provider.dart';
 import 'package:lucky/screens/producto_card.dart';
 import 'package:lucky/services/genero_service.dart';
 import 'package:lucky/services/producto_service.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:provider/provider.dart';
 import 'package:lucky/providers/carrito_provider.dart';
+import 'package:cached_network_image/cached_network_image.dart'; // 👈 IMPORTAR
 
 class PaginaPrincipal extends StatefulWidget {
   const PaginaPrincipal({super.key});
@@ -20,7 +23,7 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
   final PageController _pageController = PageController();
   int _paginaActual = 0;
 
-  final List<String> banners = ['assets/banner1.png', 'assets/banner2.png'];
+  List<BannerModel> banners = [];
 
   final ProductoService _productoService = ProductoService();
   final GeneroService _generoService = GeneroService();
@@ -41,6 +44,7 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
   void initState() {
     super.initState();
     _cargarGeneros();
+    _cargarBanners();
     _cargarProductos();
   }
 
@@ -52,6 +56,16 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
         _autoScroll();
       }
     });
+  }
+
+  Future<void> _cargarBanners() async {
+    final bannerProvider = Provider.of<BannerProvider>(context, listen: false);
+    await bannerProvider.cargarBanners();
+    if (mounted) {
+      setState(() {
+        banners = bannerProvider.banners;
+      });
+    }
   }
 
   void _cargarProductos() {
@@ -156,10 +170,10 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
 
   void _autoScroll() async {
     while (mounted) {
-      await Future.delayed(const Duration(seconds: 3));
+      await Future.delayed(const Duration(seconds: 5));
       if (!mounted) return;
 
-      if (_pageController.hasClients) {
+      if (_pageController.hasClients && banners.isNotEmpty) {
         _paginaActual = (_paginaActual + 1) % banners.length;
         _pageController.animateToPage(
           _paginaActual,
@@ -177,7 +191,6 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
       body: SafeArea(
         child: Column(
           children: [
-            // Barra superior
             Container(
               color: Colors.white,
               child: Column(
@@ -196,7 +209,6 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
               ),
             ),
 
-            // Contenido
             Expanded(
               child: Container(
                 color: const Color(0xFFF7F7F7),
@@ -260,9 +272,8 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Image.asset('assets/logo.jpg', height: 45),
-                // 👈 SUBIMOS EL ICONO CON Transform.translate
                 Transform.translate(
-                  offset: const Offset(0, -9.5), // 👈 SUBE 2 PÍXELES
+                  offset: const Offset(0, -9.5),
                   child: Stack(
                     clipBehavior: Clip.none,
                     children: [
@@ -309,7 +320,6 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
             ),
             const SizedBox(height: 14),
 
-            // Campo de búsqueda
             GestureDetector(
               onTap: () {
                 context.go('/busqueda');
@@ -428,6 +438,10 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
   }
 
   Widget _bannerCarrusel() {
+    if (banners.isEmpty) {
+      return _bannerSkeleton();
+    }
+
     return SizedBox(
       height: 170,
       width: double.infinity,
@@ -438,10 +452,18 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
             itemCount: banners.length,
             onPageChanged: (i) => setState(() => _paginaActual = i),
             itemBuilder: (_, i) {
-              return Image.asset(
-                banners[i],
+              return CachedNetworkImage(
+                imageUrl: banners[i].imagen,
                 fit: BoxFit.cover,
                 width: double.infinity,
+                placeholder: (context, url) =>
+                    Container(color: Colors.grey.shade300),
+                errorWidget: (context, url, error) => Container(
+                  color: Colors.grey.shade200,
+                  child: const Center(
+                    child: Icon(Icons.broken_image, color: Colors.grey),
+                  ),
+                ),
               );
             },
           ),
@@ -468,6 +490,16 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _bannerSkeleton() {
+    return SizedBox(
+      height: 170,
+      width: double.infinity,
+      child: Container(
+        color: Colors.grey.shade300, // 👈 CAMBIADO A shade300 (más oscuro)
       ),
     );
   }

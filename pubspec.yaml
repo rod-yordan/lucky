@@ -41,6 +41,7 @@ dependencies:
   pusher_beams: ^1.1.2
   pusher_channels_flutter: ^2.4.0
   http: ^1.2.2
+  cached_network_image: ^3.3.0
 
 dev_dependencies:
   flutter_test:

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucky/providers/auth_provider.dart';
+import 'package:lucky/providers/banner_provider.dart'; // 👈 IMPORTAR
 import 'package:lucky/providers/favoritos_provider.dart';
 import 'package:lucky/providers/generos_provider.dart';
 import 'package:lucky/screens/catalogo_parte2.dart';
@@ -60,6 +61,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => CarritoProvider()),
         ChangeNotifierProvider(create: (_) => FavoritosProvider()),
         ChangeNotifierProvider(create: (_) => GenerosProvider()),
+        ChangeNotifierProvider(create: (_) => BannerProvider()), // 👈 AGREGADO
       ],
       child: MaterialApp.router(
         routerConfig: _router,
@@ -202,7 +204,7 @@ final _router = GoRouter(
     GoRoute(
       path: '/chat',
       name: 'chat',
-      builder: (context, state) => const Chat(), 
+      builder: (context, state) => const Chat(),
     ),
   ],
 );
