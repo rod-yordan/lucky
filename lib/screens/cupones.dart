@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucky/providers/carrito_provider.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 class Cupones extends StatefulWidget {
   const Cupones({super.key});
@@ -27,22 +28,17 @@ class _CuponesState extends State<Cupones> {
                   Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
-                      vertical: 7, // Cambiado a 7 como en el ejemplo
+                      vertical: 7,
                     ),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment
-                          .spaceBetween, // Cambiado a spaceBetween
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         GestureDetector(
                           onTap: () {
-                            // Verificar si se puede hacer pop
                             if (context.canPop()) {
                               context.pop();
                             } else {
-                              // Si no se puede hacer pop, navegar a una pantalla principal
-                              context.go(
-                                '/',
-                              ); // o la ruta que corresponda a tu pantalla principal
+                              context.go('/');
                             }
                           },
                           child: const Icon(
@@ -63,46 +59,41 @@ class _CuponesState extends State<Cupones> {
                           builder: (context, carritoProvider, child) {
                             final cantidadTotal = carritoProvider.cantidadTotal;
                             return Stack(
+                              clipBehavior: Clip.none,
                               children: [
                                 IconButton(
                                   onPressed: () {
                                     context.go('/carrito');
                                   },
                                   icon: const Icon(
-                                    Icons.shopping_cart_outlined,
-                                    size: 28, // Tamaño 28 como en el ejemplo
+                                    Symbols.shopping_bag,
+                                    size: 28,
                                     color: Colors.black,
                                   ),
                                 ),
                                 if (cantidadTotal > 0)
                                   Positioned(
-                                    right: 0,
-                                    top: 0,
+                                    right: 2, // 👈 MÁS A LA IZQUIERDA (era 0)
+                                    top: 4, // 👈 MÁS ABAJO (era 0)
                                     child: Container(
-                                      padding: const EdgeInsets.all(
-                                        4,
-                                      ), // Padding 4 como en el ejemplo
+                                      width: 16,
+                                      height: 16,
                                       decoration: const BoxDecoration(
-                                        color: Color(
-                                          0xFFED1C24,
-                                        ), // Color rojo como en el ejemplo
+                                        color: Color(0xFFED1C24),
                                         shape: BoxShape.circle,
                                       ),
-                                      constraints: const BoxConstraints(
-                                        minWidth:
-                                            20, // Tamaño mínimo 20 como en el ejemplo
-                                        minHeight: 20,
-                                      ),
-                                      child: Text(
-                                        cantidadTotal > 9
-                                            ? '9+'
-                                            : cantidadTotal.toString(),
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold,
+                                      child: Center(
+                                        child: Text(
+                                          cantidadTotal > 9
+                                              ? '9+'
+                                              : cantidadTotal.toString(),
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          textAlign: TextAlign.center,
                                         ),
-                                        textAlign: TextAlign.center,
                                       ),
                                     ),
                                   ),
@@ -125,7 +116,6 @@ class _CuponesState extends State<Cupones> {
                 child: ListView(
                   padding: const EdgeInsets.all(16),
                   children: [
-                    // Título de sección
                     const Padding(
                       padding: EdgeInsets.only(left: 8, bottom: 12),
                       child: Text(
@@ -137,9 +127,8 @@ class _CuponesState extends State<Cupones> {
                       ),
                     ),
 
-                    // Cupón 1: S/ 50 descuento en mujer
                     _CuponCard(
-                      icono: Icons.confirmation_number_outlined,
+                      icono: Symbols.confirmation_number,
                       titulo: 'Cupón de S/ 50',
                       descripcion:
                           'Cupón con valor de S/ 50 de descuento en prendas de mujer.',
@@ -149,9 +138,8 @@ class _CuponesState extends State<Cupones> {
 
                     const SizedBox(height: 12),
 
-                    // Cupón 2: S/ 20 descuento general
                     _CuponCard(
-                      icono: Icons.confirmation_number_outlined,
+                      icono: Symbols.confirmation_number,
                       titulo: 'Cupón de S/ 20',
                       descripcion:
                           'Cupón con valor de S/ 20 de descuento en cualquier prenda de la tienda.',
@@ -161,9 +149,8 @@ class _CuponesState extends State<Cupones> {
 
                     const SizedBox(height: 12),
 
-                    // Cupón 3: 30% descuento en poleras
                     _CuponCard(
-                      icono: Icons.percent_outlined,
+                      icono: Symbols.percent,
                       titulo: 'Cupón 30% OFF',
                       descripcion:
                           'Cupón de 30% de descuento en cualquier polera de la tienda.',
@@ -183,7 +170,6 @@ class _CuponesState extends State<Cupones> {
 
 // Widget para cada tarjeta de cupón
 class _CuponCard extends StatelessWidget {
-  final String? codigo;
   final IconData icono;
   final String titulo;
   final String descripcion;
@@ -191,7 +177,6 @@ class _CuponCard extends StatelessWidget {
   final Color colorFondo;
 
   const _CuponCard({
-    this.codigo,
     required this.icono,
     required this.titulo,
     required this.descripcion,
@@ -228,7 +213,6 @@ class _CuponCard extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                // Icono del cupón
                 Container(
                   width: 48,
                   height: 48,
@@ -240,35 +224,10 @@ class _CuponCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 16),
 
-                // Información del cupón
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Código del cupón si existe
-                      if (codigo != null) ...[
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFF0000).withAlpha(25),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            codigo!,
-                            style: const TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFFFF0000),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                      ],
-
-                      // Título
                       Text(
                         titulo,
                         style: const TextStyle(
@@ -277,8 +236,6 @@ class _CuponCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 4),
-
-                      // Descripción
                       Text(
                         descripcion,
                         style: TextStyle(
@@ -287,8 +244,6 @@ class _CuponCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 8),
-
-                      // Fecha de vencimiento
                       Row(
                         children: [
                           Icon(

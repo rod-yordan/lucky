@@ -5,6 +5,7 @@ import 'package:lucky/models/producto_model.dart';
 import 'package:lucky/screens/producto_card.dart';
 import 'package:lucky/services/genero_service.dart';
 import 'package:lucky/services/producto_service.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:provider/provider.dart';
 import 'package:lucky/providers/carrito_provider.dart';
 
@@ -259,49 +260,56 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Image.asset('assets/logo.jpg', height: 45),
-                Stack(
-                  children: [
-                    IconButton(
-                      onPressed: () {
-                        context.push('/carrito');
-                      },
-                      icon: const Icon(
-                        Icons.shopping_cart_outlined,
-                        size: 28,
-                        color: Colors.black,
-                      ),
-                    ),
-                    if (cantidadTotal > 0)
-                      Positioned(
-                        right: 0,
-                        top: 0,
-                        child: Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: const BoxDecoration(
-                            color: Color(0xFFED1C24),
-                            shape: BoxShape.circle,
-                          ),
-                          constraints: const BoxConstraints(
-                            minWidth: 20,
-                            minHeight: 20,
-                          ),
-                          child: Text(
-                            cantidadTotal > 9 ? '9+' : cantidadTotal.toString(),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
+                // 👈 SUBIMOS EL ICONO CON Transform.translate
+                Transform.translate(
+                  offset: const Offset(0, -9.5), // 👈 SUBE 2 PÍXELES
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          context.push('/carrito');
+                        },
+                        icon: const Icon(
+                          Symbols.shopping_bag,
+                          size: 28,
+                          color: Colors.black,
                         ),
                       ),
-                  ],
+                      if (cantidadTotal > 0)
+                        Positioned(
+                          right: 2,
+                          top: 4,
+                          child: Container(
+                            width: 16,
+                            height: 16,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFED1C24),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Center(
+                              child: Text(
+                                cantidadTotal > 9
+                                    ? '9+'
+                                    : cantidadTotal.toString(),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 14),
 
+            // Campo de búsqueda
             GestureDetector(
               onTap: () {
                 context.go('/busqueda');
@@ -345,7 +353,6 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
     );
   }
 
-  // Skeleton para géneros
   Widget _generosSkeleton() {
     return Center(
       child: Wrap(
@@ -364,7 +371,6 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
     );
   }
 
-  // Géneros
   Widget _generosChips() {
     final List<dynamic> items = [
       {'id': null, 'nombre': 'Todo'},
@@ -421,7 +427,6 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
     );
   }
 
-  // BANNER
   Widget _bannerCarrusel() {
     return SizedBox(
       height: 170,
@@ -440,7 +445,6 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
               );
             },
           ),
-          // Indicadores
           Positioned(
             bottom: 12,
             left: 0,
@@ -468,7 +472,6 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
     );
   }
 
-  // SECCIÓN DE PRODUCTOS CON FUTUREBUILDER
   Widget _buildSeccionProductos({
     required String titulo,
     required Future<List<ProductoModel>> future,
@@ -503,7 +506,6 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
     );
   }
 
-  // SECCIÓN CARGANDO
   Widget _buildSeccionCargando(String titulo) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -538,7 +540,6 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
     );
   }
 
-  // SKELETON PARA PRODUCTO
   Widget _buildProductoSkeleton() {
     return Container(
       width: 170,
@@ -581,7 +582,6 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
     );
   }
 
-  // error al cargar productos
   Widget _buildSeccionError(String titulo) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -611,7 +611,6 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
     );
   }
 
-  // cuando no hay productos
   Widget _buildSeccionVacia(String titulo) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -641,7 +640,6 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
     );
   }
 
-  // SECCIÓN REUTILIZABLE
   Widget _seccionProductos({
     required String titulo,
     required List<Map<String, dynamic>> productos,
@@ -663,7 +661,6 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
               ),
               GestureDetector(
                 onTap: () {
-                  // Navegar al catálogo con el filtro actual
                   final Map<String, dynamic> extra = {};
                   if (_modoPromociones) {
                     extra['en_oferta'] = true;
@@ -685,7 +682,6 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
     );
   }
 
-  // LISTA PRODUCTOS
   Widget _listaProductos(List<Map<String, dynamic>> lista) {
     return SizedBox(
       height: 330,
@@ -698,7 +694,6 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
     );
   }
 
-  // CARD PRODUCTO
   Widget _productoCard(Map<String, dynamic> p) {
     return ProductoCard(
       producto: p,

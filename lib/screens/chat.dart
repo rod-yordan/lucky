@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -5,6 +6,7 @@ import 'package:lucky/services/pusher_config.dart';
 import 'package:provider/provider.dart';
 import 'package:lucky/providers/auth_provider.dart';
 import 'package:lucky/providers/carrito_provider.dart';
+import 'package:lucky/utils/api_config.dart';
 import 'package:http/http.dart' as http;
 
 class Chat extends StatefulWidget {
@@ -24,28 +26,51 @@ class _ChatState extends State<Chat> {
   @override
   void initState() {
     super.initState();
-    _initPusher();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initPusher().then((_) {
+        setState(() {
+          _messages.add({
+            'text':
+                "¡Hola, soy Luck!, el asistente de C'Lucky. Estoy aquí para ayudarte en tus consultas. ¿En qué puedo ayudarte?",
+            'isUser': false,
+            'timestamp': DateTime.now(),
+          });
+        });
+      });
+    });
   }
 
   Future<void> _initPusher() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final userId = authProvider.usuario?.id.toString() ?? 'guest';
+    final token = authProvider.token;
+
+    if (token == null) {
+      return;
+    }
 
     await _pusherConfig.initPusher(
-      channelName: 'private-chat.$userId', 
+      channelName: 'private-chat.$userId',
       eventName: 'new-message',
+      authToken: token,
       onEventTriggered: (event) {
         if (!mounted) return;
 
-        dynamic data = (event.data is String)
-            ? jsonDecode(event.data.toString())
-            : event.data;
+        dynamic data;
+        if (event.data is String) {
+          try {
+            data = jsonDecode(event.data);
+          } catch (e) {
+            data = {'message': event.data};
+          }
+        } else {
+          data = event.data;
+        }
 
         setState(() {
           _messages.add({
             'text': data['message'] ?? data['mensaje'] ?? '...',
             'isUser': false,
-            'products': data['products'] ?? [],
             'timestamp': DateTime.now(),
           });
           _isLoading = false;
@@ -75,21 +100,19 @@ class _ChatState extends State<Chat> {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final userId = authProvider.usuario?.id;
 
-      // Enviar a tu backend Laravel
       final response = await http.post(
-        Uri.parse('http://localhost:8000/api/chat/message'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'user_id': userId,
-          'message': text,
-        }),
+        Uri.parse('${ApiConfig.baseUrl}/api/chat/message'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${authProvider.token}',
+        },
+        body: jsonEncode({'user_id': userId, 'message': text}),
       );
 
       if (response.statusCode != 200) {
-        throw Exception('Error enviando mensaje');
+        throw Exception('Error enviando mensaje: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error: $e');
       setState(() {
         _messages.add({
           'text': 'Lo siento, hubo un error. Intenta de nuevo.',
@@ -127,7 +150,6 @@ class _ChatState extends State<Chat> {
       body: SafeArea(
         child: Column(
           children: [
-            // BARRA SUPERIOR 
             Container(
               color: Colors.white,
               child: Column(
@@ -149,7 +171,7 @@ class _ChatState extends State<Chat> {
                           ),
                         ),
                         const Text(
-                          'Chat con IA',
+                          'Chat',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -207,19 +229,52 @@ class _ChatState extends State<Chat> {
               ),
             ),
 
-            // ÁREA DE CHAT
             Expanded(
               child: Container(
                 color: const Color(0xFFF7F7F7),
                 child: Column(
                   children: [
-                    // Lista de mensajes
                     Expanded(
                       child: ListView.builder(
                         controller: _scrollController,
                         padding: const EdgeInsets.all(16),
-                        itemCount: _messages.length,
+                        itemCount: _messages.length + (_isLoading ? 1 : 0),
                         itemBuilder: (context, index) {
+                          if (_isLoading && index == _messages.length) {
+                            return Align(
+                              alignment: Alignment.centerLeft,
+                              child: Container(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 10,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.black,
+                                  borderRadius: BorderRadius.circular(20)
+                                      .copyWith(
+                                        bottomLeft: const Radius.circular(4),
+                                      ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withAlpha(40),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    SizedBox(width: 4),
+                                    _TypingIndicator(),
+                                  ],
+                                ),
+                              ),
+                            );
+                          }
+
                           final msg = _messages[index];
                           final isUser = msg['isUser'];
 
@@ -234,100 +289,34 @@ class _ChatState extends State<Chat> {
                                 vertical: 10,
                               ),
                               decoration: BoxDecoration(
-                                color: isUser
-                                    ? const Color(0xFFED1C24)
-                                    : Colors.white,
-                                borderRadius: BorderRadius.circular(20).copyWith(
-                                  bottomRight: isUser
-                                      ? const Radius.circular(4)
-                                      : null,
-                                  bottomLeft: !isUser
-                                      ? const Radius.circular(4)
-                                      : null,
-                                ),
+                                color: isUser ? Colors.white : Colors.black,
+                                borderRadius: BorderRadius.circular(20)
+                                    .copyWith(
+                                      bottomRight: isUser
+                                          ? const Radius.circular(4)
+                                          : null,
+                                      bottomLeft: !isUser
+                                          ? const Radius.circular(4)
+                                          : null,
+                                    ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.grey.withAlpha(25),
+                                    color: Colors.black.withAlpha(40),
                                     blurRadius: 8,
-                                    offset: const Offset(0, 2),
+                                    offset: const Offset(0, 4),
                                   ),
                                 ],
                               ),
                               constraints: BoxConstraints(
-                                maxWidth: MediaQuery.of(context).size.width * 0.75,
+                                maxWidth:
+                                    MediaQuery.of(context).size.width * 0.75,
                               ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    msg['text'],
-                                    style: TextStyle(
-                                      color: isUser ? Colors.white : Colors.black,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                  if (msg['products'] != null &&
-                                      (msg['products'] as List).isNotEmpty) ...[
-                                    const SizedBox(height: 8),
-                                    const Text(
-                                      'Productos recomendados:',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    ...(msg['products'] as List).map((p) => 
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(vertical: 2),
-                                        child: Row(
-                                          children: [
-                                            Container(
-                                              width: 30,
-                                              height: 30,
-                                              decoration: BoxDecoration(
-                                                color: Colors.grey.shade200,
-                                                borderRadius: BorderRadius.circular(4),
-                                              ),
-                                              child: p['imagen'] != null
-                                                  ? Image.network(
-                                                      p['imagen'],
-                                                      fit: BoxFit.cover,
-                                                    )
-                                                  : const Icon(
-                                                      Icons.image,
-                                                      size: 16,
-                                                      color: Colors.grey,
-                                                    ),
-                                            ),
-                                            const SizedBox(width: 8),
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    p['nombre'] ?? 'Producto',
-                                                    style: const TextStyle(
-                                                      fontWeight: FontWeight.w500,
-                                                      fontSize: 12,
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                    'S/ ${p['precio'] ?? 0}',
-                                                    style: TextStyle(
-                                                      fontSize: 11,
-                                                      color: Colors.grey.shade600,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ],
+                              child: Text(
+                                msg['text'],
+                                style: TextStyle(
+                                  color: isUser ? Colors.black : Colors.white,
+                                  fontSize: 14,
+                                ),
                               ),
                             ),
                           );
@@ -335,31 +324,6 @@ class _ChatState extends State<Chat> {
                       ),
                     ),
 
-                    // Indicador de escritura
-                    if (_isLoading)
-                      const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Row(
-                          children: [
-                            SizedBox(width: 16),
-                            Text(
-                              'Escribiendo...',
-                              style: TextStyle(color: Colors.grey),
-                            ),
-                            SizedBox(width: 8),
-                            SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Color(0xFFED1C24),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                    // Input field
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
@@ -378,7 +342,7 @@ class _ChatState extends State<Chat> {
                             child: TextField(
                               controller: _controller,
                               decoration: InputDecoration(
-                                hintText: 'Escribe tu pregunta...',
+                                hintText: 'Escribe aquí...',
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(24),
                                   borderSide: BorderSide.none,
@@ -395,7 +359,7 @@ class _ChatState extends State<Chat> {
                           ),
                           const SizedBox(width: 8),
                           CircleAvatar(
-                            backgroundColor: const Color(0xFFED1C24),
+                            backgroundColor: Colors.black,
                             child: IconButton(
                               icon: const Icon(
                                 Icons.send,
@@ -415,6 +379,68 @@ class _ChatState extends State<Chat> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _TypingIndicator extends StatefulWidget {
+  const _TypingIndicator();
+
+  @override
+  State<_TypingIndicator> createState() => __TypingIndicatorState();
+}
+
+class __TypingIndicatorState extends State<_TypingIndicator>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late List<Animation<double>> _animations;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat();
+
+    _animations = List.generate(3, (i) {
+      return Tween<double>(begin: 0.3, end: 1.0).animate(
+        CurvedAnimation(
+          parent: _controller,
+          curve: Interval(i * 0.15, 0.5 + i * 0.15, curve: Curves.easeInOut),
+        ),
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(3, (index) {
+        return AnimatedBuilder(
+          animation: _animations[index],
+          builder: (context, child) {
+            return Container(
+              width: 4,
+              height: 4,
+              margin: const EdgeInsets.symmetric(horizontal: 1.5),
+              decoration: BoxDecoration(
+                color: Colors.white.withAlpha(
+                  (_animations[index].value * 255).round().clamp(0, 255),
+                ),
+                shape: BoxShape.circle,
+              ),
+            );
+          },
+        );
+      }),
     );
   }
 }

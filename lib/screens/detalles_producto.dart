@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:lucky/providers/carrito_provider.dart';
 import 'package:lucky/models/producto_model.dart';
 import 'package:lucky/models/variante_model.dart';
+import 'package:material_symbols_icons/symbols.dart'; // 👈 IMPORTAR
 
 class DetallesProducto extends StatefulWidget {
   final Map<String, dynamic> producto;
@@ -148,7 +149,7 @@ class _DetallesProductoState extends State<DetallesProducto> {
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
-                      Icons.check,
+                      Icons.check, // ✅ Este es de Icons (no hay en Symbols)
                       color: Colors.green,
                       size: 18,
                     ),
@@ -177,7 +178,6 @@ class _DetallesProductoState extends State<DetallesProducto> {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
     if (!authProvider.isLoggedIn) {
-      // Mostrar mensaje y redirigir al login
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Debes iniciar sesión para agregar al carrito'),
@@ -188,7 +188,6 @@ class _DetallesProductoState extends State<DetallesProducto> {
       return;
     }
 
-    // Si está logueado, agregar al carrito
     _agregarAlCarrito(context);
   }
 
@@ -198,7 +197,6 @@ class _DetallesProductoState extends State<DetallesProducto> {
       listen: false,
     );
 
-    // Crear producto con las selecciones del usuario y el ID de variante
     final productoCarrito = {
       'id': _producto.id,
       'id_variante': _varianteSeleccionada?.id,
@@ -253,7 +251,7 @@ class _DetallesProductoState extends State<DetallesProducto> {
                             context.pop();
                           },
                           child: const Icon(
-                            Icons.arrow_back,
+                            Icons.arrow_back, // ✅ Nativo (no hay en Symbols)
                             size: 24,
                             color: Colors.black,
                           ),
@@ -262,41 +260,42 @@ class _DetallesProductoState extends State<DetallesProducto> {
                           builder: (context, carritoProvider, child) {
                             final cantidadTotal = carritoProvider.cantidadTotal;
                             return Stack(
+                              clipBehavior:
+                                  Clip.none, // 👈 IGUAL QUE EN CUPONES
                               children: [
                                 IconButton(
                                   onPressed: () {
                                     context.push('/carrito');
                                   },
                                   icon: const Icon(
-                                    Icons.shopping_cart_outlined,
+                                    Symbols.shopping_bag, // 👈 CAMBIADO
                                     size: 28,
                                     color: Colors.black,
                                   ),
                                 ),
                                 if (cantidadTotal > 0)
                                   Positioned(
-                                    right: 0,
-                                    top: 0,
+                                    right: 2, // 👈 IGUAL QUE EN CUPONES
+                                    top: 4,
                                     child: Container(
-                                      padding: const EdgeInsets.all(4),
+                                      width: 16,
+                                      height: 16,
                                       decoration: const BoxDecoration(
                                         color: Color(0xFFED1C24),
                                         shape: BoxShape.circle,
                                       ),
-                                      constraints: const BoxConstraints(
-                                        minWidth: 20,
-                                        minHeight: 20,
-                                      ),
-                                      child: Text(
-                                        cantidadTotal > 9
-                                            ? '9+'
-                                            : cantidadTotal.toString(),
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold,
+                                      child: Center(
+                                        child: Text(
+                                          cantidadTotal > 9
+                                              ? '9+'
+                                              : cantidadTotal.toString(),
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          textAlign: TextAlign.center,
                                         ),
-                                        textAlign: TextAlign.center,
                                       ),
                                     ),
                                   ),
@@ -362,7 +361,7 @@ class _DetallesProductoState extends State<DetallesProducto> {
                                       color: Colors.grey[200],
                                       child: const Center(
                                         child: Icon(
-                                          Icons.error,
+                                          Symbols.image, // 👈 CAMBIADO
                                           size: 50,
                                           color: Colors.grey,
                                         ),
@@ -414,14 +413,12 @@ class _DetallesProductoState extends State<DetallesProducto> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Título
                             Text(
                               _producto.titulo,
                               style: const TextStyle(fontSize: 20),
                             ),
                             const SizedBox(height: 8),
 
-                            // Precios
                             Row(
                               children: [
                                 Text(
@@ -485,7 +482,6 @@ class _DetallesProductoState extends State<DetallesProducto> {
                             ),
                             const SizedBox(height: 8),
 
-                            // Descripción
                             if (_producto.descripcion.isNotEmpty) ...[
                               const Text(
                                 'Descripción:',
@@ -505,7 +501,6 @@ class _DetallesProductoState extends State<DetallesProducto> {
                               const SizedBox(height: 16),
                             ],
 
-                            // Selección de color
                             if (_coloresDisponibles.isNotEmpty) ...[
                               const Text(
                                 'Color:',
@@ -569,7 +564,6 @@ class _DetallesProductoState extends State<DetallesProducto> {
                               const SizedBox(height: 16),
                             ],
 
-                            // Selección de talla
                             if (_tallasDisponibles.isNotEmpty) ...[
                               const Text(
                                 'Talla:',
@@ -591,7 +585,6 @@ class _DetallesProductoState extends State<DetallesProducto> {
                                         ? () {
                                             setState(() {
                                               _tallaSeleccionada = talla;
-                                              // Resetear color si el actual no está disponible para esta talla
                                               if (_colorSeleccionado != null) {
                                                 final coloresTalla = _producto
                                                     .getColoresPorTalla(talla);
@@ -641,7 +634,6 @@ class _DetallesProductoState extends State<DetallesProducto> {
                               const SizedBox(height: 32),
                             ],
 
-                            // Stock disponible
                             if (_producto.stock > 0) ...[
                               Text(
                                 'Stock disponible: ${_producto.stock} unidades',
@@ -726,9 +718,15 @@ class _DetallesProductoState extends State<DetallesProducto> {
                             children: [
                               Icon(
                                 esFavorito
-                                    ? Icons.favorite
-                                    : Icons.favorite_border,
+                                    ? Symbols.favorite
+                                    : Symbols.favorite,
+                                fill: esFavorito
+                                    ? 1
+                                    : 0, // 👈 FILL PARA CONTROL
                                 size: 20,
+                                color: esFavorito
+                                    ? Colors.black
+                                    : Colors.grey.shade600,
                               ),
                               const SizedBox(width: 4),
                               Text(
@@ -764,7 +762,11 @@ class _DetallesProductoState extends State<DetallesProducto> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.shopping_cart_outlined, size: 20),
+                          const Icon(
+                            Symbols.shopping_bag, // 👈 CAMBIADO
+                            size: 20,
+                            color: Colors.white,
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             _combinacionDisponible ? 'Al carrito' : 'Sin stock',

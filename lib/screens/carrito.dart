@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:lucky/providers/carrito_provider.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 class Carrito extends StatefulWidget {
   const Carrito({super.key});
@@ -40,7 +41,7 @@ class _CarritoState extends State<Carrito> {
                             }
                           },
                           child: const Icon(
-                            Icons.arrow_back,
+                            Symbols.arrow_back,
                             size: 24,
                             color: Colors.black,
                           ),
@@ -74,13 +75,13 @@ class _CarritoState extends State<Carrito> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
-                            Icons.shopping_cart_outlined,
+                            Symbols.shopping_bag,
                             size: 80,
                             color: Colors.grey.shade300,
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            'Tu carrito está vacío',
+                            'Tu bolsa está vacía',
                             style: TextStyle(
                               fontSize: 18,
                               color: Colors.grey.shade600,
@@ -296,7 +297,7 @@ class _ItemCarritoConCuponesState extends State<_ItemCarritoConCupones> {
                             return Container(
                               color: Colors.grey.shade200,
                               child: Icon(
-                                Icons.broken_image,
+                                Symbols.image,
                                 size: 40,
                                 color: Colors.grey.shade400,
                               ),
@@ -305,7 +306,7 @@ class _ItemCarritoConCuponesState extends State<_ItemCarritoConCupones> {
                         )
                       : Center(
                           child: Icon(
-                            Icons.image,
+                            Symbols.image,
                             size: 40,
                             color: Colors.grey.shade400,
                           ),
@@ -319,7 +320,7 @@ class _ItemCarritoConCuponesState extends State<_ItemCarritoConCupones> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Título y botón eliminar
+                    // Título y botón eliminar (ahora con X)
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -343,9 +344,9 @@ class _ItemCarritoConCuponesState extends State<_ItemCarritoConCupones> {
                             carritoProvider.eliminarProducto(context, index);
                           },
                           icon: Icon(
-                            Icons.delete_outline,
+                            Symbols.close,
                             size: 20,
-                            color: Color(0xFFFF0000),
+                            color: Colors.black,
                           ),
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints(),
@@ -445,7 +446,7 @@ class _ItemCarritoConCuponesState extends State<_ItemCarritoConCupones> {
                                       )
                                     : null,
                                 icon: Icon(
-                                  Icons.remove,
+                                  Symbols.remove,
                                   size: 16,
                                   color: cantidad > 1
                                       ? Colors.black
@@ -466,7 +467,7 @@ class _ItemCarritoConCuponesState extends State<_ItemCarritoConCupones> {
                               IconButton(
                                 onPressed: () => carritoProvider
                                     .incrementarCantidad(context, index),
-                                icon: const Icon(Icons.add, size: 16),
+                                icon: Icon(Symbols.add, size: 16),
                                 padding: const EdgeInsets.all(4),
                                 constraints: const BoxConstraints(),
                               ),
@@ -511,8 +512,8 @@ class _ItemCarritoConCuponesState extends State<_ItemCarritoConCupones> {
                                 const SizedBox(width: 4),
                                 Icon(
                                   _cuponesExpandidos
-                                      ? Icons.keyboard_arrow_up
-                                      : Icons.keyboard_arrow_down,
+                                      ? Symbols.keyboard_arrow_up
+                                      : Symbols.keyboard_arrow_down,
                                   size: 16,
                                   color: Colors.black,
                                 ),
@@ -538,11 +539,7 @@ class _ItemCarritoConCuponesState extends State<_ItemCarritoConCupones> {
               padding: const EdgeInsets.only(bottom: 8),
               child: Row(
                 children: [
-                  Icon(
-                    Icons.local_offer_outlined,
-                    size: 16,
-                    color: Color(0xFFFF0000),
-                  ),
+                  Icon(Symbols.local_offer, size: 16, color: Color(0xFFFF0000)),
                   const SizedBox(width: 6),
                   Text(
                     'Cupones disponibles',

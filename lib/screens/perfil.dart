@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:lucky/providers/auth_provider.dart';
 import 'package:lucky/providers/carrito_provider.dart';
-import 'package:lucky/providers/favoritos_provider.dart'; // 👈 IMPORTAR
+import 'package:lucky/providers/favoritos_provider.dart';
 
 class Perfil extends StatelessWidget {
   const Perfil({super.key});
@@ -94,7 +94,6 @@ class Perfil extends StatelessWidget {
                       icon: Symbols.badge,
                       title: 'Información de cuenta',
                       onTap: () {
-                        // TODO: Navegar a editar perfil
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text('Próximamente: Editar perfil'),
@@ -106,7 +105,6 @@ class Perfil extends StatelessWidget {
                       icon: Symbols.shopping_bag,
                       title: 'Mis compras',
                       onTap: () {
-                        // TODO: Navegar a historial de compras
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text('Próximamente: Historial de compras'),
@@ -118,7 +116,6 @@ class Perfil extends StatelessWidget {
                       icon: Symbols.confirmation_number,
                       title: 'Mis cupones',
                       onTap: () {
-                        // TODO: Navegar a cupones del usuario
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text('Próximamente: Mis cupones'),
@@ -130,7 +127,6 @@ class Perfil extends StatelessWidget {
                       icon: Symbols.notifications,
                       title: 'Notificaciones',
                       onTap: () {
-                        // TODO: Configurar notificaciones
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text('Próximamente: Notificaciones'),
@@ -139,7 +135,7 @@ class Perfil extends StatelessWidget {
                       },
                     ),
                     _buildMenuItem(
-                      icon: Icons.chat_bubble_outline, 
+                      icon: Icons.chat_bubble_outline,
                       title: 'Chat con IA',
                       onTap: () {
                         context.push('/chat');

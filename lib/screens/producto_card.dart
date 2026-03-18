@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart'; // 👈 IMPORTAR
 
 class ProductoCard extends StatelessWidget {
   final Map<String, dynamic> producto;
@@ -20,11 +21,9 @@ class ProductoCard extends StatelessWidget {
   String _formatearPrecio(dynamic precio) {
     if (precio == null) return '0.00';
 
-    // Si ya es número
     if (precio is int) return precio.toStringAsFixed(2);
     if (precio is double) return precio.toStringAsFixed(2);
 
-    // Si es string, intentar convertirlo
     if (precio is String) {
       final numero = double.tryParse(precio);
       return numero?.toStringAsFixed(2) ?? '0.00';
@@ -97,7 +96,7 @@ class ProductoCard extends StatelessWidget {
                           color: Colors.grey.shade100,
                           child: Center(
                             child: Icon(
-                              Icons.broken_image,
+                              Symbols.image,
                               size: 40,
                               color: Colors.grey.shade400,
                             ),
@@ -110,7 +109,7 @@ class ProductoCard extends StatelessWidget {
                       color: Colors.grey.shade100,
                       child: Center(
                         child: Icon(
-                          Icons.image_not_supported_outlined,
+                          Symbols.image_not_supported,
                           size: 40,
                           color: Colors.grey.shade400,
                         ),
@@ -143,9 +142,8 @@ class ProductoCard extends StatelessWidget {
                           child: Padding(
                             padding: const EdgeInsets.only(left: 4, top: 2),
                             child: Icon(
-                              esFavorito
-                                  ? Icons.favorite
-                                  : Icons.favorite_border,
+                              Symbols.favorite,
+                              fill: esFavorito ? 1 : 0,
                               size: 20,
                               color: esFavorito
                                   ? Colors.black
@@ -158,7 +156,7 @@ class ProductoCard extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        'S/ ${_formatearPrecio(producto['precio'])}', // 👈 CORREGIDO
+                        'S/ ${_formatearPrecio(producto['precio'])}',
                         style: const TextStyle(
                           color: Color(0xFFED1C24),
                           fontWeight: FontWeight.bold,
@@ -194,7 +192,7 @@ class ProductoCard extends StatelessWidget {
                     Stack(
                       children: [
                         Text(
-                          'S/ ${_formatearPrecio(producto['precioAntes'])}', // 👈 CORREGIDO
+                          'S/ ${_formatearPrecio(producto['precioAntes'])}',
                           style: TextStyle(
                             color: Colors.grey.shade700,
                             fontSize: 12,

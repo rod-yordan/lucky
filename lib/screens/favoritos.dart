@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:lucky/providers/favoritos_provider.dart';
 import 'package:lucky/providers/auth_provider.dart';
 import 'package:lucky/providers/carrito_provider.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 class Favoritos extends StatefulWidget {
   const Favoritos({super.key});
@@ -59,41 +60,41 @@ class _FavoritosState extends State<Favoritos> {
                           builder: (context, carritoProvider, child) {
                             final cantidadTotal = carritoProvider.cantidadTotal;
                             return Stack(
+                              clipBehavior: Clip.none,
                               children: [
                                 IconButton(
                                   onPressed: () {
                                     context.go('/carrito');
                                   },
                                   icon: const Icon(
-                                    Icons.shopping_cart_outlined,
+                                    Symbols.shopping_bag,
                                     size: 28,
                                     color: Colors.black,
                                   ),
                                 ),
                                 if (cantidadTotal > 0)
                                   Positioned(
-                                    right: 0,
-                                    top: 0,
+                                    right: 2,
+                                    top: 4,
                                     child: Container(
-                                      padding: const EdgeInsets.all(4),
+                                      width: 16,
+                                      height: 16,
                                       decoration: const BoxDecoration(
                                         color: Color(0xFFED1C24),
                                         shape: BoxShape.circle,
                                       ),
-                                      constraints: const BoxConstraints(
-                                        minWidth: 20,
-                                        minHeight: 20,
-                                      ),
-                                      child: Text(
-                                        cantidadTotal > 9
-                                            ? '9+'
-                                            : cantidadTotal.toString(),
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold,
+                                      child: Center(
+                                        child: Text(
+                                          cantidadTotal > 9
+                                              ? '9+'
+                                              : cantidadTotal.toString(),
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          textAlign: TextAlign.center,
                                         ),
-                                        textAlign: TextAlign.center,
                                       ),
                                     ),
                                   ),
@@ -122,7 +123,7 @@ class _FavoritosState extends State<Favoritos> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
-                            Icons.favorite_border_outlined,
+                            Symbols.favorite, // 👈 CAMBIADO A Symbols
                             size: 80,
                             color: Colors.grey.shade300,
                           ),
