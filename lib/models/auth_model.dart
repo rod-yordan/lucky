@@ -1,9 +1,13 @@
+// models/auth_model.dart
 class UsuarioModel {
   final int id;
   final String nombres;
   final String apellidos;
   final String correo;
   final int idRol;
+  final String? telefono;
+  final String? numeroDocumento;
+  final int? idTipoDocumento;
   final String? createdAt;
   final String? updatedAt;
 
@@ -13,17 +17,23 @@ class UsuarioModel {
     required this.apellidos,
     required this.correo,
     required this.idRol,
+    this.telefono,
+    this.numeroDocumento,
+    this.idTipoDocumento,
     this.createdAt,
     this.updatedAt,
   });
 
   factory UsuarioModel.fromJson(Map<String, dynamic> json) {
     return UsuarioModel(
-      id: json['id'] ?? 0,
+      id: json['id'] ?? json['id_usuario'] ?? 0,
       nombres: json['nombres'] ?? '',
       apellidos: json['apellidos'] ?? '',
       correo: json['correo'] ?? '',
       idRol: json['id_rol'] ?? 2,
+      telefono: json['telefono'],
+      numeroDocumento: json['numero_documento'],
+      idTipoDocumento: json['id_tipo_documento'],
       createdAt: json['created_at'],
       updatedAt: json['updated_at'],
     );

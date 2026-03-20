@@ -80,6 +80,33 @@ class AuthService {
     }
   }
 
+  Future<UsuarioModel> updatePerfil({
+    required String nombres,
+    required String apellidos,
+    String? telefono,
+  }) async {
+    try {
+      final response = await _dio.put(
+        '/perfil',
+        data: {
+          'nombres': nombres,
+          'apellidos': apellidos,
+          'telefono': telefono,
+        },
+      );
+
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        return UsuarioModel.fromJson(response.data['user']);
+      } else {
+        throw Exception(
+          response.data['message'] ?? 'Error al actualizar perfil',
+        );
+      }
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
   Future<void> logout() async {
     await removeToken();
   }

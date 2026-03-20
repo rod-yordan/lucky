@@ -1,20 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucky/screens/categoria_card.dart';
+import 'package:lucky/providers/categoria_provider.dart';
+import 'package:provider/provider.dart';
 
-class CatalogoParte2 extends StatelessWidget {
+class CatalogoParte2 extends StatefulWidget {
   final String genero;
   final int? generoId;
 
   const CatalogoParte2({super.key, required this.genero, this.generoId});
 
-  final List<Map<String, dynamic>> _categorias = const [
-    {'titulo': 'Pantalones', 'imagen': 'assets/categoria_pantalones.jpg'},
-    {'titulo': 'Casacas', 'imagen': 'assets/categoria_casacas.jpg'},
-    {'titulo': 'Camisas', 'imagen': 'assets/categoria_camisas.jpg'},
-    {'titulo': 'Polos', 'imagen': 'assets/categoria_polos.jpg'},
-    {'titulo': 'Ropa deportiva', 'imagen': 'assets/categoria_deportiva.jpg'},
-  ];
+  @override
+  State<CatalogoParte2> createState() => _CatalogoParte2State();
+}
+
+class _CatalogoParte2State extends State<CatalogoParte2> {
+  final Map<String, String> _categorias = {
+    'Pantalones': 'pantalones',
+    'Casacas': 'casacas',
+    'Camisas': 'camisas',
+    'Polos': 'polos',
+    'Abrigos': 'abrigos',
+  };
+
+  String _obtenerImagen(String categoria) {
+    final nombreArchivo = _categorias[categoria] ?? categoria.toLowerCase();
+    final generoKey = widget.genero.toLowerCase();
+    return 'assets/${nombreArchivo}_$generoKey.jpg';
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // 👇 ESPERAR A QUE EL WIDGET ESTÉ CONSTRUIDO
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _cargarCategorias();
+    });
+  }
+
+  void _cargarCategorias() {
+    final categoriaProvider = Provider.of<CategoriaProvider>(
+      context,
+      listen: false,
+    );
+    categoriaProvider.cargarCategorias(generoId: widget.generoId);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +53,6 @@ class CatalogoParte2 extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            // BARRA SUPERIOR
             Container(
               color: Colors.white,
               child: Column(
@@ -51,7 +80,7 @@ class CatalogoParte2 extends StatelessWidget {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          genero,
+                          widget.genero,
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -65,7 +94,6 @@ class CatalogoParte2 extends StatelessWidget {
               ),
             ),
 
-            // CONTENIDO PRINCIPAL
             Expanded(
               child: Container(
                 color: const Color(0xFFF7F7F7),
@@ -75,35 +103,52 @@ class CatalogoParte2 extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
-                        child: GridView.builder(
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
-                                crossAxisSpacing: 16,
-                                mainAxisSpacing: 16,
-                                childAspectRatio: 0.75,
-                              ),
-                          itemCount: _categorias.length,
-                          itemBuilder: (context, index) {
-                            final categoria = _categorias[index];
-                            return CategoriaCard(
-                              titulo: categoria['titulo'],
-                              imagenPath: categoria['imagen'],
-                              onTap: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      'Categoría: ${categoria['titulo']} de $genero',
-                                    ),
-                                    duration: const Duration(seconds: 1),
+                        child: Consumer<CategoriaProvider>(
+                          builder: (context, categoriaProvider, child) {
+                            if (categoriaProvider.isLoading) {
+                              return _cargandoGrid();
+                            }
+
+                            if (categoriaProvider.categorias.isEmpty) {
+                              return const Center(
+                                child: Text('No hay categorías disponibles'),
+                              );
+                            }
+
+                            return GridView.builder(
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 2,
+                                    crossAxisSpacing: 16,
+                                    mainAxisSpacing: 16,
+                                    childAspectRatio: 0.75,
                                   ),
+                              itemCount: categoriaProvider.categorias.length,
+                              itemBuilder: (context, index) {
+                                final categoria =
+                                    categoriaProvider.categorias[index];
+                                final nombreCategoria =
+                                    categoria['nombre_categoria'];
+                                final imagenPath = _obtenerImagen(
+                                  nombreCategoria,
                                 );
-                                // Aquí luego irá la navegación a la siguiente pantalla
-                                // context.push('/productos-por-categoria', extra: {
-                                //   'genero': genero,
-                                //   'generoId': generoId,
-                                //   'categoria': categoria['titulo'],
-                                // });
+
+                                return CategoriaCard(
+                                  titulo: nombreCategoria,
+                                  imagenPath: imagenPath,
+                                  onTap: () {
+                                    context.push(
+                                      '/catalogo-parte3',
+                                      extra: {
+                                        'categoria': nombreCategoria,
+                                        'categoriaId':
+                                            categoria['id_categoria'],
+                                        'genero': widget.genero,
+                                        'generoId': widget.generoId,
+                                      },
+                                    );
+                                  },
+                                );
                               },
                             );
                           },
@@ -117,6 +162,26 @@ class CatalogoParte2 extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _cargandoGrid() {
+    return GridView.builder(
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+        childAspectRatio: 0.75,
+      ),
+      itemCount: 4,
+      itemBuilder: (context, index) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.grey.shade200,
+            borderRadius: BorderRadius.circular(12),
+          ),
+        );
+      },
     );
   }
 }

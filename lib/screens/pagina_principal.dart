@@ -10,7 +10,7 @@ import 'package:lucky/services/producto_service.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:provider/provider.dart';
 import 'package:lucky/providers/carrito_provider.dart';
-import 'package:cached_network_image/cached_network_image.dart'; // 👈 IMPORTAR
+import 'package:cached_network_image/cached_network_image.dart';
 
 class PaginaPrincipal extends StatefulWidget {
   const PaginaPrincipal({super.key});
@@ -28,9 +28,10 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
   final ProductoService _productoService = ProductoService();
   final GeneroService _generoService = GeneroService();
 
-  late Future<List<ProductoModel>> _recomendadosFuture;
-  late Future<List<ProductoModel>> _popularesFuture;
-  late Future<List<GeneroModel>> _generosFuture;
+  // Inicializar los Futures con valores vacíos
+  late Future<List<ProductoModel>> _recomendadosFuture = Future.value([]);
+  late Future<List<ProductoModel>> _popularesFuture = Future.value([]);
+  late Future<List<GeneroModel>> _generosFuture = Future.value([]);
 
   List<ProductoModel> _recomendados = [];
   List<ProductoModel> _populares = [];
@@ -43,9 +44,15 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
   @override
   void initState() {
     super.initState();
+
+    // Cargar géneros primero
     _cargarGeneros();
-    _cargarBanners();
-    _cargarProductos();
+
+    // Esperar al build para cargar banners y productos
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _cargarBanners();
+      _cargarProductos();
+    });
   }
 
   @override
@@ -498,9 +505,7 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
     return SizedBox(
       height: 170,
       width: double.infinity,
-      child: Container(
-        color: Colors.grey.shade300, // 👈 CAMBIADO A shade300 (más oscuro)
-      ),
+      child: Container(color: Colors.grey.shade300),
     );
   }
 

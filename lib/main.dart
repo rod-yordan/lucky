@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucky/providers/auth_provider.dart';
-import 'package:lucky/providers/banner_provider.dart'; // 👈 IMPORTAR
+import 'package:lucky/providers/banner_provider.dart';
+import 'package:lucky/providers/categoria_provider.dart';
 import 'package:lucky/providers/favoritos_provider.dart';
 import 'package:lucky/providers/generos_provider.dart';
 import 'package:lucky/screens/catalogo_parte2.dart';
+import 'package:lucky/screens/catalogo_parte3.dart';
 import 'package:lucky/screens/chat.dart';
 import 'package:lucky/screens/informacion_compra.dart';
+import 'package:lucky/screens/informacion_cuenta.dart'; // 👈 IMPORTAR
 import 'package:provider/provider.dart';
 import 'package:lucky/providers/carrito_provider.dart';
 import 'package:lucky/screens/main_layout.dart';
@@ -61,7 +64,8 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => CarritoProvider()),
         ChangeNotifierProvider(create: (_) => FavoritosProvider()),
         ChangeNotifierProvider(create: (_) => GenerosProvider()),
-        ChangeNotifierProvider(create: (_) => BannerProvider()), // 👈 AGREGADO
+        ChangeNotifierProvider(create: (_) => BannerProvider()),
+        ChangeNotifierProvider(create: (_) => CategoriaProvider()),
       ],
       child: MaterialApp.router(
         routerConfig: _router,
@@ -202,9 +206,28 @@ final _router = GoRouter(
       },
     ),
     GoRoute(
+      path: '/catalogo-parte3',
+      name: 'catalogoParte3',
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>;
+        return CatalogoParte3(
+          categoria: extra['categoria'],
+          categoriaId: extra['categoriaId'],
+          genero: extra['genero'],
+          generoId: extra['generoId'],
+        );
+      },
+    ),
+    GoRoute(
       path: '/chat',
       name: 'chat',
       builder: (context, state) => const Chat(),
+    ),
+    // 👇 NUEVA RUTA PARA INFORMACIÓN DE CUENTA
+    GoRoute(
+      path: '/informacion-cuenta',
+      name: 'informacionCuenta',
+      builder: (context, state) => const InformacionCuenta(),
     ),
   ],
 );

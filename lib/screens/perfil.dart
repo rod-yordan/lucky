@@ -94,11 +94,7 @@ class Perfil extends StatelessWidget {
                       icon: Symbols.badge,
                       title: 'Información de cuenta',
                       onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Próximamente: Editar perfil'),
-                          ),
-                        );
+                        context.push('/informacion-cuenta');
                       },
                     ),
                     _buildMenuItem(
@@ -116,11 +112,7 @@ class Perfil extends StatelessWidget {
                       icon: Symbols.confirmation_number,
                       title: 'Mis cupones',
                       onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Próximamente: Mis cupones'),
-                          ),
-                        );
+                        context.push('/cupones');
                       },
                     ),
                     _buildMenuItem(
@@ -214,12 +206,10 @@ class Perfil extends StatelessWidget {
             listen: false,
           );
           final favoritosProvider = Provider.of<FavoritosProvider>(
-            // 👈 AGREGAR
             context,
             listen: false,
           );
 
-          // Mostrar diálogo de confirmación
           final confirm = await showDialog<bool>(
             context: context,
             builder: (context) => AlertDialog(
@@ -244,10 +234,9 @@ class Perfil extends StatelessWidget {
           );
 
           if (confirm == true && context.mounted) {
-            // Cerrar sesión
             await authProvider.logout();
             carritoProvider.cerrarSesion();
-            favoritosProvider.cerrarSesion(); // 👈 LIMPIAR FAVORITOS
+            favoritosProvider.cerrarSesion();
 
             if (context.mounted) {
               context.go('/');

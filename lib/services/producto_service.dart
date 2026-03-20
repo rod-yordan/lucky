@@ -14,6 +14,7 @@ class ProductoService {
     int page = 0,
     int limit = 10,
     String? categoria,
+    int? categoriaId,
     String? genero,
     int? generoId,
     String? talla,
@@ -36,12 +37,15 @@ class ProductoService {
         'con_stock': soloConStock,
       };
 
-      if (categoria != null && categoria.isNotEmpty) {
+      // 👇 PRIORIZAR categoriaId sobre categoria (nombre)
+      if (categoriaId != null) {
+        queryParams['categoria'] = categoriaId;
+      } else if (categoria != null && categoria.isNotEmpty) {
         queryParams['categoria'] = categoria;
       }
 
       if (generoId != null) {
-        queryParams['genero_id'] = generoId;
+        queryParams['genero'] = generoId;
       } else if (genero != null && genero.isNotEmpty) {
         queryParams['genero'] = genero;
       }
@@ -140,7 +144,6 @@ class ProductoService {
     try {
       final queryParams = <String, dynamic>{'limit': limit};
 
-      // Agregar filtros si existen - Convertir a String
       if (filtros != null) {
         filtros.forEach((key, value) {
           queryParams[key] = value.toString();
@@ -171,7 +174,6 @@ class ProductoService {
     try {
       final queryParams = <String, dynamic>{'limit': limit};
 
-      // Agregar filtros si existen - Convertir a String
       if (filtros != null) {
         filtros.forEach((key, value) {
           queryParams[key] = value.toString();
@@ -203,7 +205,6 @@ class ProductoService {
     try {
       final queryParams = <String, dynamic>{'page': page, 'limit': limit};
 
-      // Agregar filtros si existen - Convertir a String
       if (filtros != null) {
         filtros.forEach((key, value) {
           queryParams[key] = value.toString();
@@ -246,7 +247,6 @@ class ProductoService {
         'limit': limit,
       };
 
-      // Agregar filtros si existen - Convertir a String
       if (filtros != null) {
         filtros.forEach((key, value) {
           queryParams[key] = value.toString();
@@ -285,7 +285,6 @@ class ProductoService {
     try {
       final queryParams = <String, dynamic>{'page': page, 'limit': limit};
 
-      // Agregar filtros si existen - Convertir a String
       if (filtros != null) {
         filtros.forEach((key, value) {
           queryParams[key] = value.toString();
@@ -324,7 +323,6 @@ class ProductoService {
     try {
       final queryParams = <String, dynamic>{'page': page, 'limit': limit};
 
-      // Agregar filtros si existen - Convertir a String
       if (filtros != null) {
         filtros.forEach((key, value) {
           queryParams[key] = value.toString();
@@ -369,7 +367,6 @@ class ProductoService {
         'limit': limit,
       };
 
-      // Agregar filtros si existen - Convertir a String
       if (filtros != null) {
         filtros.forEach((key, value) {
           queryParams[key] = value.toString();
