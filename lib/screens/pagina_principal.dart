@@ -737,7 +737,7 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
       onTap: () {
         context.push('/detallesProducto', extra: p);
       },
-      mostrarCorazon: false,
+      mostrarCorazon: true,
     );
   }
 }

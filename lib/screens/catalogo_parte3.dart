@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:lucky/screens/producto_card.dart';
 import 'package:lucky/services/producto_service.dart';
 import 'package:lucky/models/producto_model.dart';
-import 'package:dio/dio.dart';
 
 class CatalogoParte3 extends StatefulWidget {
   final String categoria;
@@ -25,120 +24,43 @@ class CatalogoParte3 extends StatefulWidget {
 
 class _CatalogoParte3State extends State<CatalogoParte3> {
   final ProductoService _productoService = ProductoService();
-  final Dio _dio = Dio(BaseOptions(baseUrl: 'http://localhost:8000/api'));
-
   List<ProductoModel> _productos = [];
   bool _isLoading = true;
-  bool _hasMore = true;
-  int _currentPage = 0;
-  final ScrollController _scrollController = ScrollController();
+  String? _error;
 
   @override
   void initState() {
     super.initState();
-    print('🎯 ENTRE A initState DE CatalogoParte3');
-    print('   categoria: ${widget.categoria}');
-    print('   categoriaId: ${widget.categoriaId}');
-    print('   genero: ${widget.genero}');
-    print('   generoId: ${widget.generoId}');
     _cargarProductos();
-    _scrollController.addListener(_onScroll);
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  void _onScroll() {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
-      if (!_isLoading && _hasMore) {
-        _cargarProductos();
-      }
-    }
   }
 
   Future<void> _cargarProductos() async {
-    if (_isLoading) return;
-
-    print('🟡 Iniciando _cargarProductos');
-    print('   _isLoading: $_isLoading');
-    print('   _currentPage: $_currentPage');
-
     setState(() {
       _isLoading = true;
+      _error = null;
     });
 
     try {
-      final url = '/productos';
-      final params = {
-        'page': _currentPage,
-        'limit': 10,
-        'categoria': widget.categoriaId,
-        'genero': widget.generoId,
-      };
+      final productos = await _productoService.getProductos(
+        page: 0,
+        limit: 50,
+        categoriaId: widget.categoriaId,
+        generoId: widget.generoId,
+      );
 
-      print('🔵 URL: $url');
-      print('🔵 Parámetros: $params');
-
-      final response = await _dio.get(url, queryParameters: params);
-
-      print('🔵 Status code: ${response.statusCode}');
-      print('🔵 Respuesta completa: ${response.data}');
-
-      if (response.data['success'] == true) {
-        final List<dynamic> lista = response.data['data'] ?? [];
-        print('✅ Productos encontrados: ${lista.length}');
-
-        if (lista.isNotEmpty) {
-          for (var item in lista) {
-            print('   - ${item['titulo']}');
-          }
-        }
-
-        final nuevosProductos = lista
-            .map((e) => ProductoModel.fromJson(e))
-            .toList();
-
-        setState(() {
-          if (nuevosProductos.isNotEmpty) {
-            _productos.addAll(nuevosProductos);
-            _currentPage++;
-            _hasMore = nuevosProductos.length == 10;
-          } else {
-            _hasMore = false;
-          }
-          _isLoading = false;
-        });
-      } else {
-        print('❌ Error en respuesta: ${response.data}');
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    } on DioException catch (e) {
-      print('🔴 DioException: ${e.message}');
-      print('🔴 Response: ${e.response?.data}');
-      print('🔴 Status: ${e.response?.statusCode}');
       setState(() {
+        _productos = productos;
         _isLoading = false;
       });
     } catch (e) {
-      print('🔴 Error general: $e');
       setState(() {
+        _error = e.toString();
         _isLoading = false;
       });
     }
   }
 
   Future<void> _refrescar() async {
-    setState(() {
-      _productos.clear();
-      _currentPage = 0;
-      _hasMore = true;
-    });
     await _cargarProductos();
   }
 
@@ -149,6 +71,7 @@ class _CatalogoParte3State extends State<CatalogoParte3> {
       body: SafeArea(
         child: Column(
           children: [
+            // BARRA SUPERIOR
             Container(
               color: Colors.white,
               child: Column(
@@ -204,20 +127,22 @@ class _CatalogoParte3State extends State<CatalogoParte3> {
               ),
             ),
 
+            // CONTENIDO
             Expanded(
               child: RefreshIndicator(
                 onRefresh: _refrescar,
                 color: const Color(0xFFED1C24),
-                child: _isLoading && _productos.isEmpty
+                child: _isLoading
                     ? const Center(
                         child: CircularProgressIndicator(
                           color: Color(0xFFED1C24),
                         ),
                       )
+                    : _error != null
+                    ? _errorState()
                     : _productos.isEmpty
                     ? _emptyState()
                     : GridView.builder(
-                        controller: _scrollController,
                         padding: const EdgeInsets.all(16),
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
@@ -226,18 +151,8 @@ class _CatalogoParte3State extends State<CatalogoParte3> {
                               mainAxisSpacing: 16,
                               childAspectRatio: 170 / 320,
                             ),
-                        itemCount: _productos.length + (_hasMore ? 1 : 0),
+                        itemCount: _productos.length,
                         itemBuilder: (context, index) {
-                          if (index == _productos.length) {
-                            return const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 16),
-                              child: Center(
-                                child: CircularProgressIndicator(
-                                  color: Color(0xFFED1C24),
-                                ),
-                              ),
-                            );
-                          }
                           final producto = _productos[index];
                           return ProductoCard(
                             producto: producto.toMap(),
@@ -255,6 +170,41 @@ class _CatalogoParte3State extends State<CatalogoParte3> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _errorState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.error_outline, size: 60, color: Colors.red.shade300),
+          const SizedBox(height: 16),
+          Text(
+            'Error al cargar productos',
+            style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _error ?? 'Intenta de nuevo más tarde',
+            style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: _cargarProductos,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFED1C24),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: const Text(
+              'Reintentar',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
       ),
     );
   }
