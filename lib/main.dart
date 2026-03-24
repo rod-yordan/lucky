@@ -9,7 +9,7 @@ import 'package:lucky/screens/catalogo_parte2.dart';
 import 'package:lucky/screens/catalogo_parte3.dart';
 import 'package:lucky/screens/chat.dart';
 import 'package:lucky/screens/informacion_compra.dart';
-import 'package:lucky/screens/informacion_cuenta.dart'; // 👈 IMPORTAR
+import 'package:lucky/screens/informacion_cuenta.dart'; 
 import 'package:provider/provider.dart';
 import 'package:lucky/providers/carrito_provider.dart';
 import 'package:lucky/screens/main_layout.dart';
