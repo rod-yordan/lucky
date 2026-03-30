@@ -278,7 +278,7 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Image.asset('assets/logo.jpg', height: 45),
+                Image.asset('assets/logo.png', height: 34),
                 Transform.translate(
                   offset: const Offset(0, -9.5),
                   child: Stack(

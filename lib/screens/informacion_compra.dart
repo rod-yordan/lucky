@@ -1,8 +1,10 @@
-// screens/informacion_compra.dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucky/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:lucky/providers/carrito_provider.dart';
+import 'package:lucky/models/ubicacion_item.dart';
+import 'package:lucky/services/ubicacion_service.dart';
 
 class InformacionCompra extends StatefulWidget {
   const InformacionCompra({super.key});
@@ -12,25 +14,162 @@ class InformacionCompra extends StatefulWidget {
 }
 
 class _InformacionCompraState extends State<InformacionCompra> {
-  // Controladores para los campos de texto
-  final TextEditingController _dniController = TextEditingController(
-    text: '88 888 888',
-  );
-  final TextEditingController _telefonoController = TextEditingController(
-    text: '+51 999 999 999',
-  );
+  final TextEditingController _numeroDocumentoController =
+      TextEditingController();
+  final TextEditingController _telefonoController = TextEditingController();
 
-  // Variables para los radio buttons
-  int _tipoEntrega = 0; // 0: Retiro en tienda, 1: Envío a provincia
+  final UbicacionService _ubicacionService = UbicacionService();
+
+  List<UbicacionItem> _tiposDocumento = [];
+  List<UbicacionItem> _departamentos = [];
+  List<UbicacionItem> _provincias = [];
+  List<UbicacionItem> _distritos = [];
+
+  UbicacionItem? _tipoDocumentoSeleccionado;
+  UbicacionItem? _departamentoSeleccionado;
+  UbicacionItem? _provinciaSeleccionada;
+  UbicacionItem? _distritoSeleccionado;
+
+  // 1 = tienda, 2 = envío
+  int _tipoEntrega = 1;
+
+  @override
+  void initState() {
+    super.initState();
+    _cargarTiposDocumento();
+    _cargarDepartamentos();
+  }
+
+  Future<void> _cargarTiposDocumento() async {
+    try {
+      final data = await _ubicacionService.obtenerTiposDocumento();
+
+      if (!mounted) return;
+
+      setState(() {
+        _tiposDocumento = data;
+      });
+    } catch (e) {
+      _mostrarError('No se pudieron cargar los tipos de documento');
+    }
+  }
+
+  Future<void> _cargarDepartamentos() async {
+    try {
+      final data = await _ubicacionService.obtenerDepartamentos();
+
+      if (!mounted) return;
+
+      setState(() {
+        _departamentos = data;
+      });
+    } catch (e) {
+      _mostrarError('No se pudieron cargar los departamentos');
+    }
+  }
+
+  Future<void> _cargarProvincias(int idDepartamento) async {
+    setState(() {
+      _provincias = [];
+      _distritos = [];
+      _provinciaSeleccionada = null;
+      _distritoSeleccionado = null;
+    });
+
+    try {
+      final data = await _ubicacionService.obtenerProvincias(idDepartamento);
+
+      if (!mounted) return;
+
+      setState(() {
+        _provincias = data;
+      });
+    } catch (e) {
+      _mostrarError('No se pudieron cargar las provincias');
+    }
+  }
+
+  Future<void> _cargarDistritos(int idProvincia) async {
+    setState(() {
+      _distritos = [];
+      _distritoSeleccionado = null;
+    });
+
+    try {
+      final data = await _ubicacionService.obtenerDistritos(idProvincia);
+
+      if (!mounted) return;
+
+      setState(() {
+        _distritos = data;
+      });
+    } catch (e) {
+      _mostrarError('No se pudieron cargar los distritos');
+    }
+  }
+
+  void _mostrarError(String mensaje) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(mensaje), backgroundColor: Colors.red),
+    );
+  }
+
+  void _continuarPago() {
+    if (_tipoDocumentoSeleccionado == null) {
+      _mostrarError('Selecciona el tipo de documento');
+      return;
+    }
+
+    if (_numeroDocumentoController.text.trim().isEmpty) {
+      _mostrarError('Ingresa tu número de documento');
+      return;
+    }
+
+    if (_telefonoController.text.trim().isEmpty) {
+      _mostrarError('Ingresa tu teléfono');
+      return;
+    }
+
+    if (_tipoEntrega == 2) {
+      if (_departamentoSeleccionado == null ||
+          _provinciaSeleccionada == null ||
+          _distritoSeleccionado == null) {
+        _mostrarError('Completa departamento, provincia y distrito');
+        return;
+      }
+    }
+
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final usuario = authProvider.usuario;
+
+    context.push(
+      '/resumen-compra',
+      extra: {
+        'nombreUsuario': '${usuario?.nombres ?? ''} ${usuario?.apellidos ?? ''}'
+            .trim(),
+        'idTipoDocumento': _tipoDocumentoSeleccionado!.id,
+        'tipoDocumentoNombre': _tipoDocumentoSeleccionado!.nombre,
+        'numeroDocumento': _numeroDocumentoController.text.trim(),
+        'telefono': _telefonoController.text.trim(),
+        'idTipoEntrega': _tipoEntrega,
+        'departamentoNombre': _departamentoSeleccionado?.nombre,
+        'provinciaNombre': _provinciaSeleccionada?.nombre,
+        'distritoNombre': _distritoSeleccionado?.nombre,
+        'idDistrito': _distritoSeleccionado?.id,
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      resizeToAvoidBottomInset: true,
       body: SafeArea(
         child: Column(
           children: [
-            // ================= BARRA SUPERIOR =================
             Container(
               color: Colors.white,
               child: Column(
@@ -71,336 +210,197 @@ class _InformacionCompraState extends State<InformacionCompra> {
                 ],
               ),
             ),
-
-            // ================= CONTENIDO PRINCIPAL =================
             Expanded(
-              child: Container(
-                color: const Color(0xFFF7F7F7),
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // ========== DATOS PERSONALES ==========
-                      const Padding(
-                        padding: EdgeInsets.only(left: 8, bottom: 12, top: 8),
-                        child: Text(
-                          'Datos personales',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return Container(
+                    color: const Color(0xFFF7F7F7),
+                    child: SingleChildScrollView(
+                      keyboardDismissBehavior:
+                          ScrollViewKeyboardDismissBehavior.onDrag,
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minHeight: constraints.maxHeight,
+                        ),
+                        child: Padding(
+                          padding: EdgeInsets.only(
+                            left: 24,
+                            right: 24,
+                            top: 24,
+                            bottom:
+                                MediaQuery.of(context).viewInsets.bottom + 24,
+                          ),
+                          child: IntrinsicHeight(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Datos personales',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                _campoDropdownUbicacion(
+                                  label: 'Tipo de documento',
+                                  value: _tipoDocumentoSeleccionado,
+                                  items: _tiposDocumento,
+                                  hint: 'Selecciona un tipo de documento',
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _tipoDocumentoSeleccionado = value;
+                                    });
+                                  },
+                                ),
+                                const SizedBox(height: 24),
+                                _campoTexto(
+                                  label: 'Número de documento',
+                                  placeholder: 'Ingresa tu número de documento',
+                                  controller: _numeroDocumentoController,
+                                ),
+                                const SizedBox(height: 24),
+                                _campoTexto(
+                                  label: 'Teléfono',
+                                  placeholder: 'Ingresa tu teléfono',
+                                  controller: _telefonoController,
+                                ),
+                                const SizedBox(height: 32),
+                                const Text(
+                                  'Datos de entrega',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+
+                                // RETIRO EN TIENDA = 1
+                                InkWell(
+                                  onTap: () {
+                                    setState(() {
+                                      _tipoEntrega = 1;
+
+                                      // limpiar ubicación si cambia a tienda
+                                      _departamentoSeleccionado = null;
+                                      _provinciaSeleccionada = null;
+                                      _distritoSeleccionado = null;
+                                      _provincias = [];
+                                      _distritos = [];
+                                    });
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 8,
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        _buildRadioCircle(
+                                          selected: _tipoEntrega == 1,
+                                        ),
+                                        const SizedBox(width: 12),
+                                        const Text(
+                                          'Retiro en tienda',
+                                          style: TextStyle(fontSize: 14),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+
+                                // ENVÍO = 2
+                                InkWell(
+                                  onTap: () {
+                                    setState(() {
+                                      _tipoEntrega = 2;
+                                    });
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 8,
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        _buildRadioCircle(
+                                          selected: _tipoEntrega == 2,
+                                        ),
+                                        const SizedBox(width: 12),
+                                        const Text(
+                                          'Envío a provincia',
+                                          style: TextStyle(fontSize: 14),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+
+                                const SizedBox(height: 20),
+
+                                if (_tipoEntrega == 2) ...[
+                                  _campoDropdownUbicacion(
+                                    label: 'Departamento',
+                                    value: _departamentoSeleccionado,
+                                    items: _departamentos,
+                                    hint: 'Selecciona un departamento',
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _departamentoSeleccionado = value;
+                                      });
+
+                                      if (value != null) {
+                                        _cargarProvincias(value.id);
+                                      }
+                                    },
+                                  ),
+                                  const SizedBox(height: 24),
+                                  _campoDropdownUbicacion(
+                                    label: 'Provincia',
+                                    value: _provinciaSeleccionada,
+                                    items: _provincias,
+                                    enabled: _departamentoSeleccionado != null,
+                                    hint: _departamentoSeleccionado == null
+                                        ? 'Primero selecciona un departamento'
+                                        : 'Selecciona una provincia',
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _provinciaSeleccionada = value;
+                                      });
+
+                                      if (value != null) {
+                                        _cargarDistritos(value.id);
+                                      }
+                                    },
+                                  ),
+                                  const SizedBox(height: 24),
+                                  _campoDropdownUbicacion(
+                                    label: 'Distrito',
+                                    value: _distritoSeleccionado,
+                                    items: _distritos,
+                                    enabled: _provinciaSeleccionada != null,
+                                    hint: _provinciaSeleccionada == null
+                                        ? 'Primero selecciona una provincia'
+                                        : 'Selecciona un distrito',
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _distritoSeleccionado = value;
+                                      });
+                                    },
+                                  ),
+                                ],
+
+                                const Spacer(),
+                              ],
+                            ),
                           ),
                         ),
                       ),
-
-                      // Tipo de documento
-                      Container(
-                        margin: const EdgeInsets.only(bottom: 16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Padding(
-                              padding: EdgeInsets.only(left: 8, bottom: 8),
-                              child: Text(
-                                'Tipo de documento',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.black87,
-                                ),
-                              ),
-                            ),
-                            Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: Colors.grey.shade300),
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 4,
-                              ),
-                              child: DropdownButtonHideUnderline(
-                                child: DropdownButton<String>(
-                                  value: 'DNI',
-                                  isExpanded: true,
-                                  icon: const Icon(Icons.arrow_drop_down),
-                                  items: ['DNI', 'CE', 'Pasaporte'].map((
-                                    String value,
-                                  ) {
-                                    return DropdownMenuItem<String>(
-                                      value: value,
-                                      child: Text(value),
-                                    );
-                                  }).toList(),
-                                  onChanged: (String? newValue) {},
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      // Número de documento
-                      _buildTextField(
-                        label: 'Número de documento',
-                        controller: _dniController,
-                      ),
-
-                      // Teléfono
-                      _buildTextField(
-                        label: 'Teléfono',
-                        controller: _telefonoController,
-                      ),
-
-                      const SizedBox(height: 24),
-                      Container(height: 1, color: Colors.grey.shade300),
-                      const SizedBox(height: 24),
-
-                      // ========== DATOS DE ENTREGA ==========
-                      const Padding(
-                        padding: EdgeInsets.only(left: 8, bottom: 12),
-                        child: Text(
-                          'Datos de entrega',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-
-                      // Opciones de entrega
-                      Container(
-                        margin: const EdgeInsets.only(bottom: 20),
-                        child: Column(
-                          children: [
-                            // Retiro en tienda
-                            InkWell(
-                              onTap: () {
-                                setState(() {
-                                  _tipoEntrega = 0;
-                                });
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 8,
-                                ),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      width: 20,
-                                      height: 20,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                          color: _tipoEntrega == 0
-                                              ? const Color(0xFFFF0000)
-                                              : Colors.grey.shade400,
-                                          width: 2,
-                                        ),
-                                      ),
-                                      child: _tipoEntrega == 0
-                                          ? Center(
-                                              child: Container(
-                                                width: 10,
-                                                height: 10,
-                                                decoration: const BoxDecoration(
-                                                  shape: BoxShape.circle,
-                                                  color: Color(0xFFFF0000),
-                                                ),
-                                              ),
-                                            )
-                                          : null,
-                                    ),
-                                    const SizedBox(width: 12),
-                                    const Text(
-                                      'Retiro en tienda',
-                                      style: TextStyle(fontSize: 14),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-
-                            // Envío a provincia
-                            InkWell(
-                              onTap: () {
-                                setState(() {
-                                  _tipoEntrega = 1;
-                                });
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 8,
-                                ),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      width: 20,
-                                      height: 20,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                          color: _tipoEntrega == 1
-                                              ? const Color(0xFFFF0000)
-                                              : Colors.grey.shade400,
-                                          width: 2,
-                                        ),
-                                      ),
-                                      child: _tipoEntrega == 1
-                                          ? Center(
-                                              child: Container(
-                                                width: 10,
-                                                height: 10,
-                                                decoration: const BoxDecoration(
-                                                  shape: BoxShape.circle,
-                                                  color: Color(0xFFFF0000),
-                                                ),
-                                              ),
-                                            )
-                                          : null,
-                                    ),
-                                    const SizedBox(width: 12),
-                                    const Text(
-                                      'Envío a provincia',
-                                      style: TextStyle(fontSize: 14),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      // Campos adicionales para envío a provincia (sin dirección)
-                      if (_tipoEntrega == 1) ...[
-                        // Provincia y Distrito
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Container(
-                                margin: const EdgeInsets.only(right: 8),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Padding(
-                                      padding: EdgeInsets.only(
-                                        left: 8,
-                                        bottom: 8,
-                                      ),
-                                      child: Text(
-                                        'Provincia',
-                                        style: TextStyle(fontSize: 14),
-                                      ),
-                                    ),
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(
-                                          color: Colors.grey.shade300,
-                                        ),
-                                      ),
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 4,
-                                      ),
-                                      child: DropdownButtonHideUnderline(
-                                        child: DropdownButton<String>(
-                                          value: 'Lima',
-                                          isExpanded: true,
-                                          icon: const Icon(
-                                            Icons.arrow_drop_down,
-                                          ),
-                                          items:
-                                              [
-                                                'Lima',
-                                                'Arequipa',
-                                                'Cusco',
-                                                'Trujillo',
-                                              ].map((String value) {
-                                                return DropdownMenuItem<String>(
-                                                  value: value,
-                                                  child: Text(value),
-                                                );
-                                              }).toList(),
-                                          onChanged: (String? newValue) {},
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              child: Container(
-                                margin: const EdgeInsets.only(left: 8),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Padding(
-                                      padding: EdgeInsets.only(
-                                        left: 8,
-                                        bottom: 8,
-                                      ),
-                                      child: Text(
-                                        'Distrito',
-                                        style: TextStyle(fontSize: 14),
-                                      ),
-                                    ),
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(
-                                          color: Colors.grey.shade300,
-                                        ),
-                                      ),
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 4,
-                                      ),
-                                      child: DropdownButtonHideUnderline(
-                                        child: DropdownButton<String>(
-                                          value: 'Miraflores',
-                                          isExpanded: true,
-                                          icon: const Icon(
-                                            Icons.arrow_drop_down,
-                                          ),
-                                          items:
-                                              [
-                                                'Miraflores',
-                                                'San Isidro',
-                                                'Barranco',
-                                                'Surco',
-                                              ].map((String value) {
-                                                return DropdownMenuItem<String>(
-                                                  value: value,
-                                                  child: Text(value),
-                                                );
-                                              }).toList(),
-                                          onChanged: (String? newValue) {},
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        // ❌ ELIMINADO: Campo de dirección
-                      ],
-                    ],
-                  ),
-                ),
+                    ),
+                  );
+                },
               ),
             ),
-
-            // ================= BARRA INFERIOR =================
             Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: Colors.white,
                 border: Border(
                   top: BorderSide(color: Colors.black12, width: 1),
@@ -409,7 +409,6 @@ class _InformacionCompraState extends State<InformacionCompra> {
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
-                  // Total
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -435,32 +434,21 @@ class _InformacionCompraState extends State<InformacionCompra> {
                     ],
                   ),
                   const SizedBox(height: 16),
-
-                  // Botón continuar con el pago
                   SizedBox(
                     width: double.infinity,
+                    height: 50,
                     child: ElevatedButton(
-                      onPressed: () {
-                        // Aquí irá la navegación a la pantalla de pago
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Procesando pago...'),
-                            duration: Duration(seconds: 2),
-                          ),
-                        );
-                      },
+                      onPressed: _continuarPago,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.black,
-                        foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        elevation: 0,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
                       child: const Text(
                         'Continuar con el pago',
                         style: TextStyle(
+                          color: Colors.white,
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
@@ -476,49 +464,108 @@ class _InformacionCompraState extends State<InformacionCompra> {
     );
   }
 
-  Widget _buildTextField({
+  Widget _campoTexto({
     required String label,
-    TextEditingController? controller,
-    String? hint,
+    required String placeholder,
+    required TextEditingController controller,
   }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 8, bottom: 8),
-            child: Text(
-              label,
-              style: const TextStyle(fontSize: 14, color: Colors.black87),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade200,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: Colors.grey.shade300),
+          ),
+          child: TextField(
+            controller: controller,
+            decoration: InputDecoration(
+              hintText: placeholder,
+              hintStyle: TextStyle(color: Colors.grey),
+              border: InputBorder.none,
             ),
           ),
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.grey.shade300),
+        ),
+      ],
+    );
+  }
+
+  Widget _campoDropdownUbicacion({
+    required String label,
+    required List<UbicacionItem> items,
+    required ValueChanged<UbicacionItem?> onChanged,
+    UbicacionItem? value,
+    bool enabled = true,
+    String hint = 'Selecciona una opción',
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: enabled ? Colors.grey.shade200 : Colors.grey.shade100,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: Colors.grey.shade300),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<UbicacionItem>(
+              value: value,
+              isExpanded: true,
+              hint: Text(hint),
+              icon: const Icon(Icons.arrow_drop_down),
+              items: items.map((item) {
+                return DropdownMenuItem<UbicacionItem>(
+                  value: item,
+                  child: Text(item.nombre),
+                );
+              }).toList(),
+              onChanged: enabled ? onChanged : null,
             ),
-            child: TextField(
-              controller: controller,
-              decoration: InputDecoration(
-                hintText: hint,
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 14,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRadioCircle({required bool selected}) {
+    return Container(
+      width: 20,
+      height: 20,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.grey.shade400, width: 2),
+      ),
+      child: selected
+          ? Center(
+              child: Container(
+                width: 10,
+                height: 10,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.black,
                 ),
               ),
-            ),
-          ),
-        ],
-      ),
+            )
+          : null,
     );
   }
 
   @override
   void dispose() {
-    _dniController.dispose();
+    _numeroDocumentoController.dispose();
     _telefonoController.dispose();
     super.dispose();
   }

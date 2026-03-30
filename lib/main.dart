@@ -3,13 +3,15 @@ import 'package:go_router/go_router.dart';
 import 'package:lucky/providers/auth_provider.dart';
 import 'package:lucky/providers/banner_provider.dart';
 import 'package:lucky/providers/categoria_provider.dart';
+import 'package:lucky/providers/checkout_provider.dart';
 import 'package:lucky/providers/favoritos_provider.dart';
 import 'package:lucky/providers/generos_provider.dart';
 import 'package:lucky/screens/catalogo_parte2.dart';
 import 'package:lucky/screens/catalogo_parte3.dart';
 import 'package:lucky/screens/chat.dart';
 import 'package:lucky/screens/informacion_compra.dart';
-import 'package:lucky/screens/informacion_cuenta.dart'; 
+import 'package:lucky/screens/resumen_compra.dart';
+import 'package:lucky/screens/informacion_cuenta.dart';
 import 'package:provider/provider.dart';
 import 'package:lucky/providers/carrito_provider.dart';
 import 'package:lucky/screens/main_layout.dart';
@@ -66,6 +68,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => GenerosProvider()),
         ChangeNotifierProvider(create: (_) => BannerProvider()),
         ChangeNotifierProvider(create: (_) => CategoriaProvider()),
+        ChangeNotifierProvider(create: (_) => CheckoutProvider()),
       ],
       child: MaterialApp.router(
         routerConfig: _router,
@@ -195,6 +198,14 @@ final _router = GoRouter(
       builder: (context, state) => const InformacionCompra(),
     ),
     GoRoute(
+      path: '/resumen-compra',
+      name: 'resumenCompra',
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>;
+        return ResumenCompra(data: extra);
+      },
+    ),
+    GoRoute(
       path: '/catalogo-parte2',
       name: 'catalogoParte2',
       builder: (context, state) {
@@ -223,7 +234,6 @@ final _router = GoRouter(
       name: 'chat',
       builder: (context, state) => const Chat(),
     ),
-    // 👇 NUEVA RUTA PARA INFORMACIÓN DE CUENTA
     GoRoute(
       path: '/informacion-cuenta',
       name: 'informacionCuenta',

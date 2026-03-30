@@ -1,4 +1,3 @@
-// iniciar_sesion.dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucky/providers/auth_provider.dart';
@@ -37,12 +36,10 @@ class _IniciarSesionState extends State<IniciarSesion> {
       );
 
       if (success) {
-        // ✅ Usar pushReplacement para reemplazar la pantalla actual con home
         if (mounted) {
           context.pushReplacement('/');
         }
 
-        // ✅ Cargar carrito en segundo plano (no bloquea la navegación)
         carritoProvider.cargarCarrito(context);
       } else if (mounted) {
         _mostrarError(authProvider.error ?? 'Error al iniciar sesión');
@@ -69,13 +66,18 @@ class _IniciarSesionState extends State<IniciarSesion> {
           builder: (context, authProvider, child) {
             return Column(
               children: [
-                // ================= BARRA SUPERIOR =================
                 Container(
                   color: Colors.white,
                   child: Column(
                     children: [
                       const SizedBox(height: 24),
-                      Center(child: Image.asset('logo.jpg', height: 45)),
+                      Center(
+                        child: Image.asset(
+                          'assets/logo.png',
+                          height: 34,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
                       const SizedBox(height: 16),
                       const Text(
                         'Bienvenido de vuelta',
@@ -86,96 +88,113 @@ class _IniciarSesionState extends State<IniciarSesion> {
                     ],
                   ),
                 ),
-
-                // ================= CONTENIDO
                 Expanded(
-                  child: Container(
-                    color: const Color(0xFFF7F7F7),
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 24),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return Container(
+                        color: const Color(0xFFF7F7F7),
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: SingleChildScrollView(
+                          keyboardDismissBehavior:
+                              ScrollViewKeyboardDismissBehavior.onDrag,
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              minHeight: constraints.maxHeight,
+                            ),
+                            child: Padding(
+                              padding: EdgeInsets.only(
+                                bottom: MediaQuery.of(
+                                  context,
+                                ).viewInsets.bottom,
+                              ),
+                              child: IntrinsicHeight(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const SizedBox(height: 24),
 
-                        // Campo de correo
-                        _campoTexto(
-                          label: 'Correo electrónico',
-                          placeholder: 'ejemplo@correo.com',
-                          controller: _emailController,
-                        ),
+                                    _campoTexto(
+                                      label: 'Correo electrónico',
+                                      placeholder: 'ejemplo@correo.com',
+                                      controller: _emailController,
+                                    ),
 
-                        const SizedBox(height: 24),
+                                    const SizedBox(height: 24),
 
-                        // Campo de contraseña
-                        _campoContrasena(),
+                                    _campoContrasena(),
 
-                        const SizedBox(height: 12),
+                                    const SizedBox(height: 12),
 
-                        // Olvidaste contraseña
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: GestureDetector(
-                            onTap: () {
-                              // Aquí puedes navegar a recuperar contraseña
-                            },
-                            child: const Text(
-                              '¿Olvidaste tu contraseña?',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 14,
+                                    Align(
+                                      alignment: Alignment.centerRight,
+                                      child: GestureDetector(
+                                        onTap: () {},
+                                        child: const Text(
+                                          '¿Olvidaste tu contraseña?',
+                                          style: TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+
+                                    const SizedBox(height: 32),
+
+                                    authProvider.isLoading
+                                        ? const Center(
+                                            child: CircularProgressIndicator(),
+                                          )
+                                        : _botonIniciarSesion(),
+
+                                    const Spacer(),
+
+                                    Center(
+                                      child: Column(
+                                        children: [
+                                          const Text(
+                                            '¿No tienes una cuenta?',
+                                            style: TextStyle(
+                                              color: Colors.black,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          TextButton(
+                                            onPressed: () {
+                                              context.go(
+                                                '/cuenta/registroUsuario',
+                                              );
+                                            },
+                                            style: TextButton.styleFrom(
+                                              padding: EdgeInsets.zero,
+                                              tapTargetSize:
+                                                  MaterialTapTargetSize
+                                                      .shrinkWrap,
+                                              minimumSize: Size.zero,
+                                            ),
+                                            child: const Text(
+                                              'Regístrate',
+                                              style: TextStyle(
+                                                color: Colors.black,
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+
+                                    const SizedBox(height: 24),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
                         ),
-
-                        const SizedBox(height: 32),
-
-                        // Botón de iniciar sesión
-                        authProvider.isLoading
-                            ? const Center(child: CircularProgressIndicator())
-                            : _botonIniciarSesion(),
-
-                        const Spacer(),
-
-                        // Registro
-                        Center(
-                          child: Column(
-                            children: [
-                              const Text(
-                                '¿No tienes una cuenta?',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 14,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-
-                              TextButton(
-                                onPressed: () {
-                                  context.go('/cuenta/registroUsuario');
-                                },
-                                style: TextButton.styleFrom(
-                                  padding: EdgeInsets.zero,
-                                  tapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
-                                  minimumSize: Size.zero,
-                                ),
-                                child: const Text(
-                                  'Regístrate',
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(height: 24),
-                      ],
-                    ),
+                      );
+                    },
                   ),
                 ),
               ],
@@ -186,7 +205,6 @@ class _IniciarSesionState extends State<IniciarSesion> {
     );
   }
 
-  // ================= CAMPO DE TEXTO =================
   Widget _campoTexto({
     required String label,
     required String placeholder,
@@ -220,7 +238,6 @@ class _IniciarSesionState extends State<IniciarSesion> {
     );
   }
 
-  // ================= CAMPO DE CONTRASEÑA =================
   Widget _campoContrasena() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -269,7 +286,6 @@ class _IniciarSesionState extends State<IniciarSesion> {
     );
   }
 
-  // ================= BOTÓN INICIAR SESIÓN =================
   Widget _botonIniciarSesion() {
     return SizedBox(
       width: double.infinity,

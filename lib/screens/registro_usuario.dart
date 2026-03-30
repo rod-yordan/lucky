@@ -15,7 +15,6 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
   bool _ocultarConfirmarContrasena = true;
   bool _isLoading = false;
 
-  // Controladores para los campos de texto
   final _nombresController = TextEditingController();
   final _apellidosController = TextEditingController();
   final _emailController = TextEditingController();
@@ -25,7 +24,6 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
   final _authService = AuthService();
 
   Future<void> _handleRegister() async {
-    // Validar campos
     if (_nombresController.text.isEmpty ||
         _apellidosController.text.isEmpty ||
         _emailController.text.isEmpty ||
@@ -35,19 +33,16 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
       return;
     }
 
-    // Validar que las contraseñas coincidan
     if (_passwordController.text != _confirmPasswordController.text) {
       _mostrarError('Las contraseñas no coinciden');
       return;
     }
 
-    // Validar formato de email
     if (!_emailController.text.contains('@')) {
       _mostrarError('Ingresa un correo electrónico válido');
       return;
     }
 
-    // Validar longitud mínima de contraseña (opcional)
     if (_passwordController.text.length < 6) {
       _mostrarError('La contraseña debe tener al menos 6 caracteres');
       return;
@@ -66,7 +61,6 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
       final response = await _authService.register(request);
 
       if (mounted) {
-        // Mostrar mensaje de éxito
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(response.message ?? 'Registro exitoso'),
@@ -74,7 +68,6 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
           ),
         );
 
-        // ✅ CORREGIDO: Ir a iniciar sesión después del registro exitoso
         context.go('/cuenta/iniciarSesion');
       }
     } catch (e) {
@@ -97,13 +90,18 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
       body: SafeArea(
         child: Column(
           children: [
-            // ================= BARRA SUPERIOR =================
             Container(
               color: Colors.white,
               child: Column(
                 children: [
                   const SizedBox(height: 24),
-                  Center(child: Image.asset('logo.jpg', height: 45)),
+                  Center(
+                    child: Image.asset(
+                      'logo.png',
+                      height: 34,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
                   const SizedBox(height: 16),
                   const Text(
                     'Únete a nuestra comunidad',
@@ -114,98 +112,113 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
                 ],
               ),
             ),
-
-            // ================= CONTENIDO
             Expanded(
-              child: Container(
-                color: const Color(0xFFF7F7F7),
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 24),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return Container(
+                    color: const Color(0xFFF7F7F7),
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: SingleChildScrollView(
+                      keyboardDismissBehavior:
+                          ScrollViewKeyboardDismissBehavior.onDrag,
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minHeight: constraints.maxHeight,
+                        ),
+                        child: Padding(
+                          padding: EdgeInsets.only(
+                            bottom: MediaQuery.of(context).viewInsets.bottom,
+                          ),
+                          child: IntrinsicHeight(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 24),
 
-                      _campoTexto(
-                        label: 'Nombres',
-                        placeholder: 'Juan Carlos',
-                        controller: _nombresController,
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      _campoTexto(
-                        label: 'Apellidos',
-                        placeholder: 'Peréz Alvarado',
-                        controller: _apellidosController,
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      _campoTexto(
-                        label: 'Correo electrónico',
-                        placeholder: 'ejemplo@correo.com',
-                        controller: _emailController,
-                        keyboardType: TextInputType.emailAddress,
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      _campoContrasena(),
-
-                      const SizedBox(height: 12),
-
-                      _campoConfirmarContrasena(),
-
-                      const SizedBox(height: 32),
-
-                      // Botón de registrarse
-                      _isLoading
-                          ? const Center(child: CircularProgressIndicator())
-                          : _botonRegistrarse(),
-
-                      const SizedBox(height: 24),
-
-                      // Iniciar sesión
-                      Center(
-                        child: Column(
-                          children: [
-                            const Text(
-                              '¿Ya tienes una cuenta?',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 14,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-
-                            TextButton(
-                              onPressed: () {
-                                // ✅ CORREGIDO: Navegar a iniciar sesión
-                                context.go('/cuenta/iniciarSesion');
-                              },
-                              style: TextButton.styleFrom(
-                                padding: EdgeInsets.zero,
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                minimumSize: Size.zero,
-                              ),
-                              child: const Text(
-                                'Inicia sesión',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
+                                _campoTexto(
+                                  label: 'Nombres',
+                                  placeholder: 'Juan Carlos',
+                                  controller: _nombresController,
                                 ),
-                              ),
+
+                                const SizedBox(height: 12),
+
+                                _campoTexto(
+                                  label: 'Apellidos',
+                                  placeholder: 'Peréz Alvarado',
+                                  controller: _apellidosController,
+                                ),
+
+                                const SizedBox(height: 12),
+
+                                _campoTexto(
+                                  label: 'Correo electrónico',
+                                  placeholder: 'ejemplo@correo.com',
+                                  controller: _emailController,
+                                  keyboardType: TextInputType.emailAddress,
+                                ),
+
+                                const SizedBox(height: 12),
+
+                                _campoContrasena(),
+
+                                const SizedBox(height: 12),
+
+                                _campoConfirmarContrasena(),
+
+                                const SizedBox(height: 32),
+
+                                _isLoading
+                                    ? const Center(
+                                        child: CircularProgressIndicator(),
+                                      )
+                                    : _botonRegistrarse(),
+
+                                const Spacer(),
+
+                                Center(
+                                  child: Column(
+                                    children: [
+                                      const Text(
+                                        '¿Ya tienes una cuenta?',
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      TextButton(
+                                        onPressed: () {
+                                          context.go('/cuenta/iniciarSesion');
+                                        },
+                                        style: TextButton.styleFrom(
+                                          padding: EdgeInsets.zero,
+                                          tapTargetSize:
+                                              MaterialTapTargetSize.shrinkWrap,
+                                          minimumSize: Size.zero,
+                                        ),
+                                        child: const Text(
+                                          'Inicia sesión',
+                                          style: TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+
+                                const SizedBox(height: 24),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
                       ),
-
-                      const SizedBox(height: 24),
-                    ],
-                  ),
-                ),
+                    ),
+                  );
+                },
               ),
             ),
           ],
@@ -214,7 +227,6 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
     );
   }
 
-  // ================= CAMPO DE TEXTO =================
   Widget _campoTexto({
     required String label,
     required String placeholder,
@@ -250,7 +262,6 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
     );
   }
 
-  // ================= CAMPO DE CONTRASEÑA =================
   Widget _campoContrasena() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -299,7 +310,6 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
     );
   }
 
-  // ================= CAMPO CONFIRMAR CONTRASEÑA =================
   Widget _campoConfirmarContrasena() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -350,7 +360,6 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
     );
   }
 
-  // ================= BOTÓN REGISTRARSE =================
   Widget _botonRegistrarse() {
     return SizedBox(
       width: double.infinity,
