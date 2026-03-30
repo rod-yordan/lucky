@@ -33,6 +33,14 @@ class _InformacionCompraState extends State<InformacionCompra> {
   // 1 = tienda, 2 = envío
   int _tipoEntrega = 1;
 
+  // Costo de envío calculado
+  double? _costoEnvioCalculado;
+
+  // Datos de la agencia
+  String? _nombreAgencia;
+  String? _direccionAgencia;
+  String? _tiempoEstimadoEnvio;
+
   @override
   void initState() {
     super.initState();
@@ -74,6 +82,10 @@ class _InformacionCompraState extends State<InformacionCompra> {
       _distritos = [];
       _provinciaSeleccionada = null;
       _distritoSeleccionado = null;
+      _costoEnvioCalculado = null;
+      _nombreAgencia = null;
+      _direccionAgencia = null;
+      _tiempoEstimadoEnvio = null;
     });
 
     try {
@@ -93,6 +105,10 @@ class _InformacionCompraState extends State<InformacionCompra> {
     setState(() {
       _distritos = [];
       _distritoSeleccionado = null;
+      _costoEnvioCalculado = null;
+      _nombreAgencia = null;
+      _direccionAgencia = null;
+      _tiempoEstimadoEnvio = null;
     });
 
     try {
@@ -105,6 +121,23 @@ class _InformacionCompraState extends State<InformacionCompra> {
       });
     } catch (e) {
       _mostrarError('No se pudieron cargar los distritos');
+    }
+  }
+
+  Future<void> _calcularEnvio(int idDistrito) async {
+    try {
+      final resultado = await _ubicacionService.calcularCostoEnvio(idDistrito);
+
+      if (mounted) {
+        setState(() {
+          _costoEnvioCalculado = resultado['costo_envio'] as double;
+          _nombreAgencia = resultado['nombre_agencia'] as String?;
+          _direccionAgencia = resultado['direccion_agencia'] as String?;
+          _tiempoEstimadoEnvio = resultado['tiempo_estimado'] as String?;
+        });
+      }
+    } catch (e) {
+      _mostrarError(e.toString());
     }
   }
 
@@ -158,6 +191,10 @@ class _InformacionCompraState extends State<InformacionCompra> {
         'provinciaNombre': _provinciaSeleccionada?.nombre,
         'distritoNombre': _distritoSeleccionado?.nombre,
         'idDistrito': _distritoSeleccionado?.id,
+        'costoEnvio': _costoEnvioCalculado ?? 0.0,
+        'nombreAgencia': _nombreAgencia,
+        'direccionAgencia': _direccionAgencia,
+        'tiempoEstimadoEnvio': _tiempoEstimadoEnvio,
       },
     );
   }
@@ -280,13 +317,15 @@ class _InformacionCompraState extends State<InformacionCompra> {
                                   onTap: () {
                                     setState(() {
                                       _tipoEntrega = 1;
-
-                                      // limpiar ubicación si cambia a tienda
                                       _departamentoSeleccionado = null;
                                       _provinciaSeleccionada = null;
                                       _distritoSeleccionado = null;
                                       _provincias = [];
                                       _distritos = [];
+                                      _costoEnvioCalculado = null;
+                                      _nombreAgencia = null;
+                                      _direccionAgencia = null;
+                                      _tiempoEstimadoEnvio = null;
                                     });
                                   },
                                   child: Padding(
@@ -313,6 +352,10 @@ class _InformacionCompraState extends State<InformacionCompra> {
                                   onTap: () {
                                     setState(() {
                                       _tipoEntrega = 2;
+                                      _costoEnvioCalculado = null;
+                                      _nombreAgencia = null;
+                                      _direccionAgencia = null;
+                                      _tiempoEstimadoEnvio = null;
                                     });
                                   },
                                   child: Padding(
@@ -384,6 +427,10 @@ class _InformacionCompraState extends State<InformacionCompra> {
                                       setState(() {
                                         _distritoSeleccionado = value;
                                       });
+
+                                      if (value != null && _tipoEntrega == 2) {
+                                        _calcularEnvio(value.id);
+                                      }
                                     },
                                   ),
                                 ],
@@ -421,8 +468,11 @@ class _InformacionCompraState extends State<InformacionCompra> {
                       ),
                       Consumer<CarritoProvider>(
                         builder: (context, carritoProvider, child) {
+                          final subtotal = carritoProvider.total;
+                          final totalConEnvio =
+                              subtotal + (_costoEnvioCalculado ?? 0);
                           return Text(
-                            'S/ ${carritoProvider.total.toStringAsFixed(2)}',
+                            'S/ ${totalConEnvio.toStringAsFixed(2)}',
                             style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
@@ -436,19 +486,20 @@ class _InformacionCompraState extends State<InformacionCompra> {
                   const SizedBox(height: 16),
                   SizedBox(
                     width: double.infinity,
-                    height: 50,
                     child: ElevatedButton(
                       onPressed: _continuarPago,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.black,
+                        foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(8),
                         ),
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
                       child: const Text(
                         'Continuar con el pago',
                         style: TextStyle(
-                          color: Colors.white,
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),

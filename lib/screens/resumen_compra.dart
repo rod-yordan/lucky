@@ -17,9 +17,20 @@ class _ResumenCompraState extends State<ResumenCompra> {
   final CheckoutService _checkoutService = CheckoutService();
   bool _procesando = false;
 
-  double _calcularCostoEnvio() {
-    // Por ahora no lo sumamos hasta integrarlo con backend
-    return 0.0;
+  double _obtenerCostoEnvio() {
+    return widget.data['costoEnvio'] as double? ?? 0.0;
+  }
+
+  String? _obtenerNombreAgencia() {
+    return widget.data['nombreAgencia'] as String?;
+  }
+
+  String? _obtenerDireccionAgencia() {
+    return widget.data['direccionAgencia'] as String?;
+  }
+
+  String? _obtenerTiempoEstimado() {
+    return widget.data['tiempoEstimadoEnvio'] as String?;
   }
 
   Future<void> _confirmarPedido() async {
@@ -87,11 +98,18 @@ class _ResumenCompraState extends State<ResumenCompra> {
 
     final nombreUsuario = widget.data['nombreUsuario'] ?? 'Usuario';
     final numeroDocumento = widget.data['numeroDocumento'] ?? '-';
+    final tipoDocumentoNombre = widget.data['tipoDocumentoNombre'] ?? '';
     final idTipoEntrega = widget.data['idTipoEntrega'] as int?;
     final distritoNombre = widget.data['distritoNombre'];
+    final departamentoNombre = widget.data['departamentoNombre'];
+    final provinciaNombre = widget.data['provinciaNombre'];
+
+    final costoEnvio = _obtenerCostoEnvio();
+    final nombreAgencia = _obtenerNombreAgencia();
+    final direccionAgencia = _obtenerDireccionAgencia();
+    final tiempoEstimado = _obtenerTiempoEstimado();
 
     final subtotal = carritoProvider.total;
-    final costoEnvio = _calcularCostoEnvio();
     final totalFinal = subtotal + costoEnvio;
 
     return Scaffold(
@@ -149,7 +167,7 @@ class _ResumenCompraState extends State<ResumenCompra> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Datos del comprador',
+                        'Información de envío',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
@@ -161,7 +179,12 @@ class _ResumenCompraState extends State<ResumenCompra> {
                         children: [
                           _infoRow('Nombre', nombreUsuario.toString()),
                           const SizedBox(height: 14),
-                          _infoRow('Documento', numeroDocumento.toString()),
+                          _infoRow(
+                            'Documento',
+                            tipoDocumentoNombre.isNotEmpty
+                                ? '$tipoDocumentoNombre: $numeroDocumento'
+                                : numeroDocumento.toString(),
+                          ),
                           const SizedBox(height: 14),
                           _infoRow(
                             'Entrega',
@@ -169,9 +192,35 @@ class _ResumenCompraState extends State<ResumenCompra> {
                                 ? 'Retiro en tienda'
                                 : 'Envío a provincia',
                           ),
-                          if (idTipoEntrega == 2 && distritoNombre != null) ...[
-                            const SizedBox(height: 14),
-                            _infoRow('Distrito', distritoNombre.toString()),
+                          if (idTipoEntrega == 2) ...[
+                            if (departamentoNombre != null) ...[
+                              const SizedBox(height: 14),
+                              _infoRow(
+                                'Departamento',
+                                departamentoNombre.toString(),
+                              ),
+                            ],
+                            if (provinciaNombre != null) ...[
+                              const SizedBox(height: 14),
+                              _infoRow('Provincia', provinciaNombre.toString()),
+                            ],
+                            if (distritoNombre != null) ...[
+                              const SizedBox(height: 14),
+                              _infoRow('Distrito', distritoNombre.toString()),
+                            ],
+                            if (nombreAgencia != null) ...[
+                              const SizedBox(height: 14),
+                              _infoRow('Agencia', nombreAgencia),
+                            ],
+                            if (direccionAgencia != null) ...[
+                              const SizedBox(height: 14),
+                              _infoRow('Dirección', direccionAgencia),
+                            ],
+                            if (tiempoEstimado != null &&
+                                tiempoEstimado.isNotEmpty) ...[
+                              const SizedBox(height: 14),
+                              _infoRow('Tiempo estimado', tiempoEstimado),
+                            ],
                           ],
                         ],
                       ),
@@ -179,62 +228,7 @@ class _ResumenCompraState extends State<ResumenCompra> {
                       const SizedBox(height: 28),
 
                       const Text(
-                        'Productos',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      if (productos.isEmpty)
-                        _infoCard(
-                          children: const [
-                            Text(
-                              'No hay productos en el carrito.',
-                              style: TextStyle(fontSize: 14),
-                            ),
-                          ],
-                        )
-                      else
-                        ...productos.map((producto) {
-                          final nombre =
-                              producto['nombre_producto'] ??
-                              producto['nombre'] ??
-                              'Producto';
-
-                          final cantidad =
-                              int.tryParse(
-                                (producto['cantidad'] ?? 1).toString(),
-                              ) ??
-                              1;
-
-                          final precio =
-                              double.tryParse(
-                                (producto['precio'] ??
-                                        producto['precio_unitario'] ??
-                                        0)
-                                    .toString(),
-                              ) ??
-                              0.0;
-
-                          final subtotalProducto = precio * cantidad;
-
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 14),
-                            child: _productoCard(
-                              nombre: nombre.toString(),
-                              cantidad: cantidad,
-                              precio: precio,
-                              subtotal: subtotalProducto,
-                            ),
-                          );
-                        }),
-
-                      const SizedBox(height: 28),
-
-                      const Text(
-                        'Resumen de pago',
+                        'Resumen de pedido',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
@@ -244,14 +238,39 @@ class _ResumenCompraState extends State<ResumenCompra> {
 
                       _infoCard(
                         children: [
-                          _resumenRow('Subtotal', subtotal),
-                          const SizedBox(height: 14),
-                          _resumenRow('Costo de envío', costoEnvio),
-                          const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 16),
-                            child: Divider(height: 1),
-                          ),
-                          _resumenRow('Total', totalFinal, destacado: true),
+                          // Productos
+                          ...productos.map((producto) {
+                            final nombre = producto['titulo'] ?? 'Producto';
+
+                            final cantidad =
+                                int.tryParse(
+                                  (producto['cantidad'] ?? 1).toString(),
+                                ) ??
+                                1;
+
+                            final precio =
+                                double.tryParse(
+                                  (producto['precio'] ?? 0).toString(),
+                                ) ??
+                                0.0;
+
+                            final subtotalProducto = precio * cantidad;
+
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: _resumenProductoRow(
+                                nombre: nombre.toString(),
+                                cantidad: cantidad,
+                                subtotal: subtotalProducto,
+                              ),
+                            );
+                          }).toList(),
+
+                          // Costo de envío
+                          if (costoEnvio > 0) ...[
+                            const SizedBox(height: 8),
+                            _resumenRow('Costo de envío', costoEnvio),
+                          ],
                         ],
                       ),
                     ],
@@ -274,7 +293,7 @@ class _ResumenCompraState extends State<ResumenCompra> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text(
-                        'Total a pagar:',
+                        'Total:',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -283,7 +302,7 @@ class _ResumenCompraState extends State<ResumenCompra> {
                       Text(
                         'S/ ${totalFinal.toStringAsFixed(2)}',
                         style: const TextStyle(
-                          fontSize: 22,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: Colors.black,
                         ),
@@ -291,16 +310,20 @@ class _ResumenCompraState extends State<ResumenCompra> {
                     ],
                   ),
                   const SizedBox(height: 16),
+
+                  // Botón continuar
                   SizedBox(
                     width: double.infinity,
-                    height: 52,
                     child: ElevatedButton(
                       onPressed: _procesando ? null : _confirmarPedido,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.black,
+                        foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(8),
                         ),
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
                       child: _procesando
                           ? const SizedBox(
@@ -316,7 +339,6 @@ class _ResumenCompraState extends State<ResumenCompra> {
                           : const Text(
                               'Confirmar pedido',
                               style: TextStyle(
-                                color: Colors.white,
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -353,7 +375,7 @@ class _ResumenCompraState extends State<ResumenCompra> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(
-          width: 95,
+          width: 110, // Aumentado para mejor alineación
           child: Text(
             '$label:',
             style: const TextStyle(
@@ -373,44 +395,37 @@ class _ResumenCompraState extends State<ResumenCompra> {
     );
   }
 
-  Widget _productoCard({
+  Widget _resumenProductoRow({
     required String nombre,
     required int cantidad,
-    required double precio,
     required double subtotal,
   }) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.black12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: Text(
             nombre,
-            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
           ),
-          const SizedBox(height: 10),
-          Text(
-            'Cantidad: $cantidad',
-            style: const TextStyle(fontSize: 14, color: Colors.black87),
+        ),
+        Container(
+          width: 50,
+          alignment: Alignment.center,
+          child: Text(
+            'x$cantidad',
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
           ),
-          const SizedBox(height: 6),
-          Text(
-            'Precio: S/ ${precio.toStringAsFixed(2)}',
-            style: const TextStyle(fontSize: 14, color: Colors.black87),
+        ),
+        SizedBox(
+          width: 80,
+          child: Text(
+            'S/ ${subtotal.toStringAsFixed(2)}',
+            textAlign: TextAlign.right,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
           ),
-          const SizedBox(height: 10),
-          Text(
-            'Subtotal: S/ ${subtotal.toStringAsFixed(2)}',
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
