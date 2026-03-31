@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucky/providers/auth_provider.dart';
 import 'package:lucky/providers/favoritos_provider.dart';
+import 'package:lucky/utils/api_config.dart';
 import 'package:provider/provider.dart';
 import 'package:lucky/providers/carrito_provider.dart';
 import 'package:lucky/models/producto_model.dart';
 import 'package:lucky/models/variante_model.dart';
-import 'package:material_symbols_icons/symbols.dart'; // 👈 IMPORTAR
+import 'package:material_symbols_icons/symbols.dart';
 
 class DetallesProducto extends StatefulWidget {
   final Map<String, dynamic> producto;
@@ -80,8 +81,8 @@ class _DetallesProductoState extends State<DetallesProducto> {
     // 1. Agregar imagen principal (si existe)
     if (_producto.imagenPrincipal.isNotEmpty) {
       String imgPrincipal = _producto.imagenPrincipal.replaceFirst(
-        'http://localhost:8000/productos/',
-        'http://localhost:8000/api/imagen/',
+        '${ApiConfig.baseUrl}/productos/',
+        '${ApiConfig.apiUrl}/imagen/',
       );
       todasLasImagenes.add(imgPrincipal);
     }
@@ -89,8 +90,8 @@ class _DetallesProductoState extends State<DetallesProducto> {
     // 2. Agregar imágenes de galería (sin duplicar la principal)
     for (var url in _producto.imagenes) {
       String urlTransformada = url.replaceFirst(
-        'http://localhost:8000/productos/',
-        'http://localhost:8000/api/imagen/',
+        '${ApiConfig.baseUrl}/productos/',
+        '${ApiConfig.apiUrl}/imagen/',
       );
       if (!todasLasImagenes.contains(urlTransformada)) {
         todasLasImagenes.add(urlTransformada);
@@ -103,8 +104,8 @@ class _DetallesProductoState extends State<DetallesProducto> {
   // TRANSFORMAR IMAGEN PRINCIPAL (por si se usa)
   String get imagenPrincipalTransformada {
     return _producto.imagenPrincipal.replaceFirst(
-      'http://localhost:8000/productos/',
-      'http://localhost:8000/api/imagen/',
+      '${ApiConfig.baseUrl}/productos/',
+      '${ApiConfig.apiUrl}/imagen/',
     );
   }
 
@@ -149,7 +150,7 @@ class _DetallesProductoState extends State<DetallesProducto> {
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
-                      Icons.check, // ✅ Este es de Icons (no hay en Symbols)
+                      Icons.check,
                       color: Colors.green,
                       size: 18,
                     ),
@@ -206,13 +207,13 @@ class _DetallesProductoState extends State<DetallesProducto> {
       'descuento': _producto.descuento,
       'imagenes': _producto.imagenes.map((url) {
         return url.replaceFirst(
-          'http://localhost:8000/productos/',
-          'http://localhost:8000/api/imagen/',
+          '${ApiConfig.baseUrl}/productos/',
+          '${ApiConfig.apiUrl}/imagen/',
         );
       }).toList(),
       'imagen_principal': _producto.imagenPrincipal.replaceFirst(
-        'http://localhost:8000/productos/',
-        'http://localhost:8000/api/imagen/',
+        '${ApiConfig.baseUrl}/productos/',
+        '${ApiConfig.apiUrl}/imagen/',
       ),
       'talla': _tallaSeleccionada,
       'color': _colorSeleccionado,
@@ -251,7 +252,7 @@ class _DetallesProductoState extends State<DetallesProducto> {
                             context.pop();
                           },
                           child: const Icon(
-                            Icons.arrow_back, // ✅ Nativo (no hay en Symbols)
+                            Icons.arrow_back,
                             size: 24,
                             color: Colors.black,
                           ),
@@ -260,22 +261,21 @@ class _DetallesProductoState extends State<DetallesProducto> {
                           builder: (context, carritoProvider, child) {
                             final cantidadTotal = carritoProvider.cantidadTotal;
                             return Stack(
-                              clipBehavior:
-                                  Clip.none, // 👈 IGUAL QUE EN CUPONES
+                              clipBehavior: Clip.none,
                               children: [
                                 IconButton(
                                   onPressed: () {
                                     context.push('/carrito');
                                   },
                                   icon: const Icon(
-                                    Symbols.shopping_bag, // 👈 CAMBIADO
+                                    Symbols.shopping_bag,
                                     size: 28,
                                     color: Colors.black,
                                   ),
                                 ),
                                 if (cantidadTotal > 0)
                                   Positioned(
-                                    right: 2, // 👈 IGUAL QUE EN CUPONES
+                                    right: 2,
                                     top: 4,
                                     child: Container(
                                       width: 16,
@@ -361,7 +361,7 @@ class _DetallesProductoState extends State<DetallesProducto> {
                                       color: Colors.grey[200],
                                       child: const Center(
                                         child: Icon(
-                                          Symbols.image, // 👈 CAMBIADO
+                                          Symbols.image,
                                           size: 50,
                                           color: Colors.grey,
                                         ),
@@ -720,9 +720,7 @@ class _DetallesProductoState extends State<DetallesProducto> {
                                 esFavorito
                                     ? Symbols.favorite
                                     : Symbols.favorite,
-                                fill: esFavorito
-                                    ? 1
-                                    : 0, // 👈 FILL PARA CONTROL
+                                fill: esFavorito ? 1 : 0,
                                 size: 20,
                                 color: esFavorito
                                     ? Colors.black
@@ -763,7 +761,7 @@ class _DetallesProductoState extends State<DetallesProducto> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           const Icon(
-                            Symbols.shopping_bag, // 👈 CAMBIADO
+                            Symbols.shopping_bag,
                             size: 20,
                             color: Colors.white,
                           ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:material_symbols_icons/symbols.dart'; // 👈 IMPORTAR
+import 'package:lucky/utils/api_config.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 class ProductoCard extends StatelessWidget {
   final Map<String, dynamic> producto;
@@ -38,8 +39,8 @@ class ProductoCard extends StatelessWidget {
         producto['imagen_principal']?.toString().trim() ?? '';
 
     final String imagenPrincipal = imagenOriginal.replaceFirst(
-      'http://localhost:8000/productos/',
-      'http://localhost:8000/api/imagen/',
+      '${ApiConfig.baseUrl}/productos/',
+      '${ApiConfig.apiUrl}/imagen/',
     );
 
     int descuentoPorcentaje = producto['descuento'] ?? 0;
