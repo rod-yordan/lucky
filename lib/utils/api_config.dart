@@ -1,5 +1,5 @@
 class ApiConfig {
-  static const String baseUrl = 'http://localhost:8000';
+  static const String baseUrl = 'https://luck-production-2830.up.railway.app';
 
   static const String apiUrl = '$baseUrl/api';
   static String get broadcastAuthUrl => '$baseUrl/api/broadcasting/auth';
