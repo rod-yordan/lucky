@@ -66,7 +66,7 @@ class _ResumenCompraState extends State<ResumenCompra> {
       );
 
       context.go(
-        '/pedido-completado',
+        '/compraExitosa',
         extra: {
           'numeroPedido': response['numero_pedido'],
           'totalPedido': response['total_pedido'],
@@ -375,7 +375,7 @@ class _ResumenCompraState extends State<ResumenCompra> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(
-          width: 110, // Aumentado para mejor alineación
+          width: 110,
           child: Text(
             '$label:',
             style: const TextStyle(

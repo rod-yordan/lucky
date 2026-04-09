@@ -9,6 +9,7 @@ import 'package:lucky/providers/generos_provider.dart';
 import 'package:lucky/screens/catalogo_parte2.dart';
 import 'package:lucky/screens/catalogo_parte3.dart';
 import 'package:lucky/screens/chat.dart';
+import 'package:lucky/screens/compra_exitosa.dart';
 import 'package:lucky/screens/informacion_compra.dart';
 import 'package:lucky/screens/resumen_compra.dart';
 import 'package:lucky/screens/informacion_cuenta.dart';
@@ -203,6 +204,13 @@ final _router = GoRouter(
       builder: (context, state) {
         final extra = state.extra as Map<String, dynamic>;
         return ResumenCompra(data: extra);
+      },
+    ),
+    GoRoute(
+      path: '/compraExitosa',
+      name: 'compraExitosa',
+      builder: (context, state) {
+        return CompraExitosa(extra: state.extra as Map<String, dynamic>?);
       },
     ),
     GoRoute(
