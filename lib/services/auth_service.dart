@@ -107,6 +107,33 @@ class AuthService {
     }
   }
 
+  Future<UsuarioModel> updateDatosContacto({
+    required int idTipoDocumento,
+    required String numeroDocumento,
+    required String telefono,
+  }) async {
+    try {
+      final response = await _dio.put(
+        '/perfil/datos-contacto',
+        data: {
+          'id_tipo_documento': idTipoDocumento,
+          'numero_documento': numeroDocumento,
+          'telefono': telefono,
+        },
+      );
+
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        return UsuarioModel.fromJson(response.data['data']);
+      } else {
+        throw Exception(
+          response.data['message'] ?? 'Error al actualizar datos de contacto',
+        );
+      }
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
   Future<void> logout() async {
     await removeToken();
   }

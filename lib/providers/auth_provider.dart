@@ -18,6 +18,11 @@ class AuthProvider extends ChangeNotifier {
   bool get isLoggedIn => _usuario != null && (_usuario?.id ?? 0) > 0;
   bool get isChecking => _isChecking;
 
+  // Getters para los datos de contacto
+  String? get numeroDocumento => _usuario?.numeroDocumento;
+  String? get telefono => _usuario?.telefono;
+  int? get idTipoDocumento => _usuario?.idTipoDocumento;
+
   AuthProvider() {
     _checkAuthStatus();
   }
@@ -153,6 +158,34 @@ class AuthProvider extends ChangeNotifier {
       final usuarioActualizado = await _authService.updatePerfil(
         nombres: nombres,
         apellidos: apellidos,
+        telefono: telefono,
+      );
+
+      _usuario = usuarioActualizado;
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> actualizarDatosContacto({
+    required int idTipoDocumento,
+    required String numeroDocumento,
+    required String telefono,
+  }) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final usuarioActualizado = await _authService.updateDatosContacto(
+        idTipoDocumento: idTipoDocumento,
+        numeroDocumento: numeroDocumento,
         telefono: telefono,
       );
 

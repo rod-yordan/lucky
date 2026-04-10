@@ -1,4 +1,3 @@
-// screens/perfil.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
@@ -101,11 +100,7 @@ class Perfil extends StatelessWidget {
                       icon: Symbols.shopping_bag,
                       title: 'Mis compras',
                       onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Próximamente: Historial de compras'),
-                          ),
-                        );
+                        context.push('/mis-pedidos'); // <-- ACTUALIZADO
                       },
                     ),
                     _buildMenuItem(

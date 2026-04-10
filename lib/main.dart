@@ -13,6 +13,7 @@ import 'package:lucky/screens/compra_exitosa.dart';
 import 'package:lucky/screens/informacion_compra.dart';
 import 'package:lucky/screens/resumen_compra.dart';
 import 'package:lucky/screens/informacion_cuenta.dart';
+import 'package:lucky/screens/pedidos.dart';
 import 'package:provider/provider.dart';
 import 'package:lucky/providers/carrito_provider.dart';
 import 'package:lucky/screens/main_layout.dart';
@@ -212,6 +213,11 @@ final _router = GoRouter(
       builder: (context, state) {
         return CompraExitosa(extra: state.extra as Map<String, dynamic>?);
       },
+    ),
+    GoRoute(
+      path: '/mis-pedidos',
+      name: 'misPedidos',
+      builder: (context, state) => const MisPedidos(),
     ),
     GoRoute(
       path: '/catalogo-parte2',
